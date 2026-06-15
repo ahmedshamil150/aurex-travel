@@ -1,0 +1,8 @@
+project memory
+
+Instructions for editors:
+Whoever edits this project must read this file first. Any updates or changes made to the project must be documented here in the Changelog section. Keep it up to date with every modification you make. This ensures we have a complete history of how the project evolved.
+
+Changelog:
+- 2026-06-15: Initialized basic landing page. Added "Book Now" button and booking form modal. Implemented WhatsApp integration to format form details and redirect to WhatsApp on submission. Styled with basic CSS to keep it clean, human-readable, and adhering to the requested color scheme (Black, Gold, White, Dark Grey).
+- 2026-06-15: Fixed errors by adding missing fields (Suitcases, Return Journey, Offered Price) and changed WhatsApp redirect from window.open to window.location.href to prevent popup blockers.
