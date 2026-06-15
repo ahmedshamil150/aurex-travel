@@ -67,8 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
             message += `*Notes:* ${data.notes}\n`;
         }
 
-        // WhatsApp number of the company (replace with actual number)
-        const whatsappNumber = '447000000000'; // Example UK format without +
+        // WhatsApp number of the company
+        const whatsappNumber = '923325308087'; // 03325308087 converted to international format for WhatsApp API
 
         // Encode message for URL
         const encodedMessage = encodeURIComponent(message);
