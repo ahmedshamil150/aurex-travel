@@ -1,0 +1,3 @@
+git add .
+>> git commit -m "Complete redesign of homepage with luxury aesthetic and new car assets"
+>> git push origin main

@@ -7,3 +7,4 @@ Changelog:
 - 2026-06-15: Initialized basic landing page. Added "Book Now" button and booking form modal. Implemented WhatsApp integration to format form details and redirect to WhatsApp on submission. Styled with basic CSS to keep it clean, human-readable, and adhering to the requested color scheme (Black, Gold, White, Dark Grey).
 - 2026-06-15: Fixed errors by adding missing fields (Suitcases, Return Journey, Offered Price) and changed WhatsApp redirect from window.open to window.location.href to prevent popup blockers.
 - 2026-06-15: Updated the hardcoded WhatsApp number to the client's provided number (03325308087 -> 923325308087) for testing/live deployment.
+- 2026-06-16: Applied a minimalist, premium design overhaul to style.css. Simplified colors to mostly dark greys/blacks with muted gold accents, removed gradients and heavy borders, increased whitespace, and refined typography.
