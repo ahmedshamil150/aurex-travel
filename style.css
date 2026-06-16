@@ -1,11 +1,13 @@
 /* Minimalist CSS Reset and Variables */
 :root {
-    --bg-color: #030303;
-    --text-main: #f0f0f0;
-    --text-muted: #888888;
+    --bg-color: #ffffff;
+    --text-main: #222222;
+    --text-muted: #666666;
     --accent: #d4af37; /* Refined Gold */
-    --border-color: #1a1a1a;
-    --nav-bg: rgba(3, 3, 3, 0.85);
+    --border-color: #eaeaea;
+    --nav-bg: rgba(3, 3, 3, 0.95);
+    --dark-bg: #030303;
+    --dark-text: #ffffff;
     --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -43,7 +45,7 @@ a {
 h1, h2, h3, h4 {
     font-weight: 400;
     line-height: 1.1;
-    color: #ffffff;
+    color: var(--text-main);
 }
 
 .section-title {
@@ -79,7 +81,7 @@ h1, h2, h3, h4 {
 .logo {
     font-size: 1.4rem;
     font-weight: 300;
-    color: var(--text-main);
+    color: var(--dark-text);
     letter-spacing: 4px;
 }
 
@@ -91,7 +93,7 @@ h1, h2, h3, h4 {
 }
 
 .nav-links a {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 0.85rem;
     font-weight: 400;
     text-transform: uppercase;
@@ -99,7 +101,7 @@ h1, h2, h3, h4 {
 }
 
 .nav-links a:hover {
-    color: var(--text-main);
+    color: var(--dark-text);
 }
 
 .btn-nav {
@@ -116,7 +118,7 @@ h1, h2, h3, h4 {
 .hamburger span {
     width: 30px;
     height: 1px;
-    background-color: var(--text-main);
+    background-color: var(--dark-text);
     transition: var(--transition);
 }
 
@@ -129,6 +131,10 @@ h1, h2, h3, h4 {
     text-align: center;
     padding: 0 20px;
     margin-top: 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('hero_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .hero-overlay {
@@ -151,11 +157,12 @@ h1, h2, h3, h4 {
     font-weight: 300;
     letter-spacing: -1px;
     margin-bottom: 1.5rem;
+    color: var(--dark-text);
 }
 
 .hero p {
     font-size: 1.1rem;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: 3rem;
     max-width: 600px;
     margin-left: auto;
@@ -184,14 +191,14 @@ button, .btn-primary, .btn-secondary, .btn-outline {
 }
 
 .btn-primary {
-    background-color: var(--text-main);
-    color: var(--bg-color);
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
 }
 
 .btn-primary:hover {
-    background-color: transparent;
-    color: var(--text-main);
-    border-color: var(--text-main);
+    background-color: var(--accent);
+    color: var(--dark-bg);
+    border-color: var(--accent);
 }
 
 .btn-secondary {
@@ -200,7 +207,8 @@ button, .btn-primary, .btn-secondary, .btn-outline {
 }
 
 .btn-secondary:hover {
-    border-color: var(--text-main);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .btn-outline {
@@ -209,8 +217,30 @@ button, .btn-primary, .btn-secondary, .btn-outline {
 }
 
 .btn-outline:hover {
-    color: var(--text-main);
-    border-color: var(--text-main);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Hero Buttons */
+.hero .btn-primary {
+    background-color: var(--accent);
+    color: var(--dark-bg);
+    border-color: var(--accent);
+}
+
+.hero .btn-primary:hover {
+    background-color: transparent;
+    color: var(--accent);
+}
+
+.hero .btn-secondary, .hero .btn-outline {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--dark-text);
+}
+
+.hero .btn-secondary:hover, .hero .btn-outline:hover {
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 /* Trust Badges */
@@ -289,7 +319,7 @@ button, .btn-primary, .btn-secondary, .btn-outline {
 /* Pricing Section */
 .pricing-section {
     padding: 8rem 0;
-    background-color: #010101;
+    background-color: #fafafa;
 }
 
 .pricing-grid {
@@ -358,7 +388,7 @@ button, .btn-primary, .btn-secondary, .btn-outline {
 /* Footer */
 .footer {
     padding: 6rem 0 3rem 0;
-    border-top: 1px solid var(--border-color);
+    background-color: var(--dark-bg);
 }
 
 .footer-grid {
@@ -370,14 +400,14 @@ button, .btn-primary, .btn-secondary, .btn-outline {
 
 .footer-logo {
     font-size: 1.4rem;
-    color: var(--text-main);
+    color: var(--dark-text);
     letter-spacing: 4px;
     margin-bottom: 1rem;
     font-weight: 300;
 }
 
 .footer-col h4 {
-    color: var(--text-main);
+    color: var(--dark-text);
     margin-bottom: 1.5rem;
     font-size: 0.85rem;
     text-transform: uppercase;
@@ -393,16 +423,16 @@ button, .btn-primary, .btn-secondary, .btn-outline {
 }
 
 .footer-col ul li a {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.9rem;
 }
 
 .footer-col ul li a:hover {
-    color: var(--text-main);
+    color: var(--accent);
 }
 
 .footer-col p {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.9rem;
 }
 
@@ -411,8 +441,8 @@ button, .btn-primary, .btn-secondary, .btn-outline {
     justify-content: space-between;
     align-items: center;
     padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-    color: var(--text-muted);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.8rem;
 }
 
