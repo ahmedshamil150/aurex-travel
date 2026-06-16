@@ -1,23 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('bookingModal');
-    const btn = document.getElementById('bookNowBtn');
+    const bookBtns = [
+        document.getElementById('bookNowBtn'),
+        document.getElementById('footerGetQuote'),
+        document.getElementById('footerBookOnline')
+    ];
+    
     const span = document.getElementsByClassName('close')[0];
     const form = document.getElementById('bookingForm');
 
-    // Open modal
-    btn.onclick = function () {
-        modal.style.display = 'block';
-    }
+    // Open modal for all booking buttons
+    bookBtns.forEach(btn => {
+        if (btn) {
+            btn.onclick = function (e) {
+                e.preventDefault();
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            }
+        }
+    });
 
     // Close modal
     span.onclick = function () {
         modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
     }
 
     // Close when clicking outside
     window.onclick = function (event) {
         if (event.target == modal) {
             modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
     }
 
@@ -44,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Format message for WhatsApp
-        let message = `*New Booking Request*\n\n`;
+        let message = `*New Booking Request - Aurex Executive Travel*\n\n`;
         message += `*Name:* ${data.fullName}\n`;
         message += `*Mobile:* ${data.mobile}\n`;
         message += `*Email:* ${data.email}\n`;
@@ -68,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // WhatsApp number of the company
-        const whatsappNumber = '923325308087'; // 03325308087 converted to international format for WhatsApp API
+        const whatsappNumber = '923325308087';
 
         // Encode message for URL
         const encodedMessage = encodeURIComponent(message);
@@ -77,10 +90,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
         // Redirect to WhatsApp
-        window.location.href = whatsappUrl;
+        window.open(whatsappUrl, '_blank');
 
         // Close modal after submission
         modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
         form.reset();
     });
+
+    // Mobile menu toggle logic
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+            if (navLinks.style.display === 'flex') {
+                navLinks.style.display = 'none';
+            } else {
+                navLinks.style.display = 'flex';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '70px';
+                navLinks.style.left = '0';
+                navLinks.style.width = '100%';
+                navLinks.style.backgroundColor = 'rgba(10, 10, 10, 0.98)';
+                navLinks.style.padding = '20px 0';
+                navLinks.style.borderBottom = '1px solid #333';
+            }
+        });
+    }
 });

@@ -4,21 +4,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aurex Executive Travel</title>
+    <title>Aurex Executive Travel | Premium Airport Transfers</title>
+    <meta name="description"
+        content="Reliable chauffeur-driven airport transfers from Cardiff to all major UK airports. Fixed pricing, professional drivers, and luxury vehicles.">
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <header class="hero">
-        <div class="container">
-            <h1>Premium Airport Transfers Executive Travel from Cardiff</h1>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">AUREX</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#services">Airport Transfers</a></li>
+                <li><a href="#fleet">Fleet</a></li>
+                <li><a href="#prices">Prices</a></li>
+                <li><a href="#contact" class="btn-nav">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Premium Airport Transfers & Executive Travel from Cardiff</h1>
             <p>Reliable chauffeur-driven airport transfers from Cardiff and South Wales to all major UK airports, with
                 fixed pricing, professional drivers, flight monitoring and luxury vehicles.</p>
-            <button type="button" id="bookNowBtn" class="btn-primary">Book Now</button>
+            <div class="hero-buttons">
+                <button id="bookNowBtn" class="btn-primary">Book Now</button>
+                <a href="#contact" class="btn-secondary">Get a Quote</a>
+                <a href="https://wa.me/923325308087" target="_blank" class="btn-outline">WhatsApp Us</a>
+                <a href="tel:+44000000000" class="btn-outline">Call Now</a>
+            </div>
         </div>
     </header>
 
-    <!-- Booking Modal -->
+    <!-- Trust Badges -->
+    <section class="trust-badges">
+        <div class="container badge-grid">
+            <div class="badge"><span>🕒</span> Available 24/7</div>
+            <div class="badge"><span>💷</span> Fixed Prices</div>
+            <div class="badge"><span>📜</span> Licensed Operator</div>
+            <div class="badge"><span>👔</span> Professional Drivers</div>
+            <div class="badge"><span>✈️</span> Flight Monitoring</div>
+            <div class="badge"><span>🤝</span> Meet & Greet</div>
+            <div class="badge"><span>🚘</span> Luxury Vehicles</div>
+        </div>
+    </section>
+
+    <!-- Fleet Options -->
+    <section id="fleet" class="fleet-section">
+        <div class="container">
+            <h2 class="section-title">Our Premium Fleet</h2>
+            <div class="fleet-grid">
+                <!-- Tesla Model Y -->
+                <div class="fleet-card">
+                    <img src="tesla-model-y.png" alt="Tesla Model Y">
+                    <div class="fleet-info">
+                        <h3>Tesla Model Y</h3>
+                        <p>Executive electric airport transfer, up to 4 passengers.</p>
+                    </div>
+                </div>
+                <!-- Mercedes E-Class -->
+                <div class="fleet-card">
+                    <img src="mercedes-e-class.png" alt="Mercedes E-Class">
+                    <div class="fleet-info">
+                        <h3>Mercedes E-Class</h3>
+                        <p>Luxury executive saloon, up to 4 passengers.</p>
+                    </div>
+                </div>
+                <!-- Mercedes V-Class -->
+                <div class="fleet-card">
+                    <img src="mercedes-v-class.png" alt="Mercedes V-Class">
+                    <div class="fleet-info">
+                        <h3>Mercedes V-Class</h3>
+                        <p>Luxury 7-seater for families, groups and business travel.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fixed Airport Prices -->
+    <section id="prices" class="pricing-section">
+        <div class="container">
+            <h2 class="section-title">Fixed Airport Prices</h2>
+            <div class="pricing-grid">
+                <!-- Standard Pricing -->
+                <div class="pricing-card">
+                    <h3>Tesla Model Y / Mercedes E-Class</h3>
+                    <ul>
+                        <li><span>Cardiff to Heathrow Airport</span> <span class="price">£230</span></li>
+                        <li><span>Cardiff to Bristol Airport</span> <span class="price">£135</span></li>
+                        <li><span>Cardiff to Cardiff Airport</span> <span class="price">£60</span></li>
+                        <li><span>Cardiff to Gatwick Airport</span> <span class="price">£320</span></li>
+                    </ul>
+                </div>
+                <!-- V-Class Pricing -->
+                <div class="pricing-card">
+                    <h3>Mercedes V-Class (7 Seater)</h3>
+                    <ul>
+                        <li><span>Cardiff to Heathrow Airport</span> <span class="price">£250</span></li>
+                        <li><span>Cardiff to Bristol Airport</span> <span class="price">£155</span></li>
+                        <li><span>Cardiff to Cardiff Airport</span> <span class="price">£80</span></li>
+                        <li><span>Cardiff to Gatwick Airport</span> <span class="price">£340</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services-section">
+        <div class="container">
+            <h2 class="section-title">Airport Transfers & Services</h2>
+            <p class="services-desc">Travel in comfort from Cardiff to Heathrow, Bristol, Gatwick, Cardiff Airport and
+                all major UK airports. Aurex Executive Travel offers fixed-price executive airport transfers with
+                professional drivers, flight monitoring, meet & greet service and luxury vehicles.</p>
+            <div class="services-grid">
+                <div class="service-item">Cardiff to Heathrow Airport</div>
+                <div class="service-item">Cardiff to Bristol Airport</div>
+                <div class="service-item">Cardiff to Gatwick Airport</div>
+                <div class="service-item">Cardiff Airport Transfers</div>
+                <div class="service-item">Corporate Travel</div>
+                <div class="service-item">Long Distance Travel</div>
+                <div class="service-item">Family Airport Transfers</div>
+                <div class="service-item">7-Seater Airport Transfers</div>
+                <div class="service-item">Meet & Greet Service</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h2 class="footer-logo">AUREX</h2>
+                <p>Premium Airport Transfers & Executive Travel from Cardiff.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#services">Airport Transfers</a></li>
+                    <li><a href="#fleet">Fleet</a></li>
+                    <li><a href="#prices">Prices</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Booking</h4>
+                <ul>
+                    <li><a href="#" id="footerGetQuote">Get a Quote</a></li>
+                    <li><a href="#" id="footerBookOnline">Book Online</a></li>
+                    <li><a href="#">Corporate Accounts</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Aurex Executive Travel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Booking Modal (Existing Structure kept for functionality) -->
     <div id="bookingModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
