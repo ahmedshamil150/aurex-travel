@@ -1,0 +1,127 @@
+Aurex Executive Travel – Best Website Proposal
+Main Website Style
+Luxury, simple, fast and mobile-friendly.
+Colours: black, gold, white and dark grey.
+Homepage Headline
+Premium Airport Transfers & Executive Travel Across the UK
+Homepage Subheading
+Reliable chauffeur-driven airport transfers from Cardiff and South Wales to all major
+UK airports, with fixed pricing, professional drivers, flight monitoring and luxury
+vehicles.
+Main Buttons
+ Book Now
+ Get a Quote
+ WhatsApp Us
+ Call Now
+Trust Badges
+ Available 24/7
+ Fixed Prices
+ Licensed Operator
+ Professional Drivers
+ Flight Monitoring
+ Meet & Greet
+ Luxury Vehicles
+Fleet Options
+Tesla Model Y
+Executive electric airport transfer, up to 4 passengers.
+Mercedes E-Class
+Luxury executive saloon, up to 4 passengers.
+Mercedes V-Class
+Luxury 7-seater for families, groups and business travel.
+Fixed Airport Prices
+Tesla Model Y / Mercedes E-Class
+Route Price
+Cardiff to Heathrow Airport £230
+Cardiff to Bristol Airport £135
+Cardiff to Cardiff Airport £60
+Cardiff to Gatwick Airport £320
+Mercedes V-Class 7 Seater
+Route Price
+Cardiff to Heathrow Airport £250
+Cardiff to Bristol Airport £155
+Cardiff to Cardiff Airport £80
+Cardiff to Gatwick Airport £340
+Booking / Quote System
+Customer should be able to choose:
+1. Fixed Price Booking
+2. Request Custom Quote
+3. Pay After Quote Accepted
+4. If customer want to input from and two and get a quote. The quote should be
+£2 a mile. For example for journey of 135 miles the quote should come up
+£270
+Customer Quote Option
+Customer enters journey details and their requested price.
+Admin receives the quote request.
+Admin can:
+ Accept the quote
+ Reject the quote
+ Change the price
+ Send payment link
+ Confirm booking after payment
+Booking Form Fields
+ Full name
+ Mobile number
+ Email address
+ Pickup address
+ Drop-off address
+ Airport
+ Flight number
+ Pickup date
+ Pickup time
+ Return journey required
+ Number of passengers
+ Suitcases
+ Vehicle choice
+ Customer offered price
+ Notes
+Payment Options
+ Pay full amount
+ Pay after admin approval
+ Stripe card payment
+ Apple Pay / Google Pay
+ PayPal optional
+Website Pages
+1. Home
+2. Airport Transfers
+3. Fleet
+4. Prices
+5. Get a Quote
+6. Book Online
+7. Corporate Accounts
+8. Contact
+9. Terms & Conditions
+10.Privacy Policy
+Airport Transfer Page Text
+Travel in comfort from Cardiff to Heathrow, Bristol, Gatwick, Cardiff Airport and all
+major UK airports. Aurex Executive Travel offers fixed-price executive airport
+transfers with professional drivers, flight monitoring, meet & greet service and luxury
+vehicles.
+Services
+ Cardiff to Heathrow Airport
+ Cardiff to Bristol Airport
+ Cardiff to Gatwick Airport
+ Cardiff Airport Transfers
+ Corporate Travel
+ Long Distance Travel
+ Family Airport Transfers
+ 7-Seater Airport Transfers
+ Meet & Greet Service
+Admin Dashboard
+Admin must be able to:
+ View all bookings
+ Accept or reject quotes
+ Edit prices
+ Send payment links
+ Assign vehicle
+ Mark booking as paid
+ Export bookings
+ See customer details
+ Send confirmation email
+Best Example Websites
+ https://tristarexecutivetravel.co.uk/
+ https://metexec.co.uk/
+ https://www.ndtravelcardiff.com/
+ https://executiveswifttravel.com/
+ https://pchauffeurscardiff.co.uk/
+Use the best parts from these websites, but make Aurex cleaner, easier to book and
+more focused on airport transfers.

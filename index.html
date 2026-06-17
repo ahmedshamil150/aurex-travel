@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aurex Executive Travel | Premium Airport Transfers</title>
     <meta name="description"
-        content="Reliable chauffeur-driven airport transfers from Cardiff to all major UK airports. Fixed pricing, professional drivers, and luxury vehicles.">
+        content="Reliable chauffeur-driven airport transfers across the UK to all major airports. Competitive pricing, professional drivers, and luxury vehicles.">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,11 +18,10 @@
         <div class="nav-container">
             <div class="logo">AUREX</div>
             <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#services">Airport Transfers</a></li>
-                <li><a href="#fleet">Fleet</a></li>
-                <li><a href="#prices">Prices</a></li>
-                <li><a href="#contact" class="btn-nav">Contact</a></li>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="about.html">Our Company</a></li>
+                <li><a href="contact.html" class="btn-nav">Contact</a></li>
             </ul>
             <div class="hamburger">
                 <span></span>
@@ -36,28 +35,68 @@
     <header id="home" class="hero">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1>Premium Airport Transfers & Executive Travel from Cardiff</h1>
-            <p>Reliable chauffeur-driven airport transfers from Cardiff and South Wales to all major UK airports, with
-                fixed pricing, professional drivers, flight monitoring and luxury vehicles.</p>
+            <h1>Premium Airport Transfers & Executive Travel Across the UK</h1>
+            <p>Reliable chauffeur-driven airport transfers from anywhere in the UK to all major airports, with
+                competitive pricing, professional drivers, flight monitoring and luxury vehicles.</p>
             <div class="hero-buttons">
-                <button id="bookNowBtn" class="btn-primary">Book Now</button>
-                <a href="#contact" class="btn-secondary">Get a Quote</a>
+                <a href="#quote" class="btn-primary">Get a Quote</a>
                 <a href="https://wa.me/923325308087" target="_blank" class="btn-outline">WhatsApp Us</a>
                 <a href="tel:+44000000000" class="btn-outline">Call Now</a>
             </div>
         </div>
     </header>
 
-    <!-- Trust Badges -->
+    <!-- Trust Stats -->
     <section class="trust-badges">
         <div class="container badge-grid">
-            <div class="badge"><i class="fa-solid fa-clock"></i> Available 24/7</div>
-            <div class="badge"><i class="fa-solid fa-tags"></i> Fixed Prices</div>
-            <div class="badge"><i class="fa-solid fa-id-badge"></i> Licensed Operator</div>
-            <div class="badge"><i class="fa-solid fa-user-tie"></i> Professional Drivers</div>
-            <div class="badge"><i class="fa-solid fa-plane-arrival"></i> Flight Monitoring</div>
-            <div class="badge"><i class="fa-solid fa-handshake"></i> Meet & Greet</div>
-            <div class="badge"><i class="fa-solid fa-car"></i> Luxury Vehicles</div>
+            <div class="badge">
+                <strong>50+</strong>
+                <span>Corporate Clients</span>
+            </div>
+            <div class="badge">
+                <strong>25K+</strong>
+                <span>Successful Transfers</span>
+            </div>
+            <div class="badge">
+                <strong>99%</strong>
+                <span>On-Time Rate</span>
+            </div>
+            <div class="badge">
+                <strong>24/7</strong>
+                <span>Availability</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Instant Quote Section -->
+    <section id="quote" class="quote-section">
+        <div class="container">
+            <h2 class="section-title">Instant Travel Quote</h2>
+            <p class="services-desc" style="margin-bottom: 2rem;">Get an instant estimate for your journey anywhere in the UK at a competitive rate of just £2 per mile.</p>
+            <div class="quote-calculator">
+                <form id="quoteForm">
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="quoteFrom">From</label>
+                            <input type="text" id="quoteFrom" placeholder="Enter pickup location" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="quoteTo">To</label>
+                            <input type="text" id="quoteTo" placeholder="Enter destination" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="quoteMiles">Estimated Distance (Miles)</label>
+                        <input type="number" id="quoteMiles" min="1" placeholder="e.g. 15" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Calculate Quote</button>
+                </form>
+                <div id="quoteResult" class="quote-result" style="display: none;">
+                    <h3>Estimated Price: <span id="estimatedPrice">£0</span></h3>
+                    <p>Based on <span id="estimatedDistance">0</span> miles at £2 per mile.</p>
+                    <a href="contact.html" class="btn-secondary" style="margin-top: 1rem;">Contact to Book</a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -94,52 +133,24 @@
         </div>
     </section>
 
-    <!-- Fixed Airport Prices -->
-    <section id="prices" class="pricing-section">
-        <div class="container">
-            <h2 class="section-title">Fixed Airport Prices</h2>
-            <div class="pricing-grid">
-                <!-- Standard Pricing -->
-                <div class="pricing-card">
-                    <h3>Tesla Model Y / Mercedes E-Class</h3>
-                    <ul>
-                        <li><span>Cardiff to Heathrow Airport</span> <span class="price">£230</span></li>
-                        <li><span>Cardiff to Bristol Airport</span> <span class="price">£135</span></li>
-                        <li><span>Cardiff to Cardiff Airport</span> <span class="price">£60</span></li>
-                        <li><span>Cardiff to Gatwick Airport</span> <span class="price">£320</span></li>
-                    </ul>
-                </div>
-                <!-- V-Class Pricing -->
-                <div class="pricing-card">
-                    <h3>Mercedes V-Class (7 Seater)</h3>
-                    <ul>
-                        <li><span>Cardiff to Heathrow Airport</span> <span class="price">£250</span></li>
-                        <li><span>Cardiff to Bristol Airport</span> <span class="price">£155</span></li>
-                        <li><span>Cardiff to Cardiff Airport</span> <span class="price">£80</span></li>
-                        <li><span>Cardiff to Gatwick Airport</span> <span class="price">£340</span></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Services Section -->
     <section id="services" class="services-section">
         <div class="container">
-            <h2 class="section-title">Airport Transfers & Services</h2>
-            <p class="services-desc">Travel in comfort from Cardiff to Heathrow, Bristol, Gatwick, Cardiff Airport and
-                all major UK airports. Aurex Executive Travel offers fixed-price executive airport transfers with
+            <h2 class="section-title">Nationwide Services</h2>
+            <p class="services-desc">Travel in comfort from anywhere in the UK to Heathrow, Bristol, Gatwick, and
+                all major UK airports. Aurex Executive Travel offers competitive executive transfers with
                 professional drivers, flight monitoring, meet & greet service and luxury vehicles.</p>
             <div class="services-grid">
-                <div class="service-item">Cardiff to Heathrow Airport</div>
-                <div class="service-item">Cardiff to Bristol Airport</div>
-                <div class="service-item">Cardiff to Gatwick Airport</div>
-                <div class="service-item">Cardiff Airport Transfers</div>
+                <div class="service-item">UK Wide Airport Transfers</div>
                 <div class="service-item">Corporate Travel</div>
+                <div class="service-item">Executive Travel</div>
                 <div class="service-item">Long Distance Travel</div>
                 <div class="service-item">Family Airport Transfers</div>
                 <div class="service-item">7-Seater Airport Transfers</div>
                 <div class="service-item">Meet & Greet Service</div>
+            </div>
+            <div style="margin-top: 3rem; text-align: left;">
+                <a href="services.html" class="btn-secondary">View All Services</a>
             </div>
         </div>
     </section>
@@ -149,24 +160,23 @@
         <div class="container footer-grid">
             <div class="footer-col">
                 <h2 class="footer-logo">AUREX</h2>
-                <p>Premium Airport Transfers & Executive Travel from Cardiff.</p>
+                <p>Premium Airport Transfers & Executive Travel Across the UK.</p>
             </div>
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#services">Airport Transfers</a></li>
-                    <li><a href="#fleet">Fleet</a></li>
-                    <li><a href="#prices">Prices</a></li>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="about.html">Our Company</a></li>
+                    <li><a href="contact.html">Contact</a></li>
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Booking</h4>
+                <h4>Contact Us</h4>
                 <ul>
-                    <li><a href="#" id="footerGetQuote">Get a Quote</a></li>
-                    <li><a href="#" id="footerBookOnline">Book Online</a></li>
-                    <li><a href="#">Corporate Accounts</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="tel:+44000000000">Call Us</a></li>
+                    <li><a href="https://wa.me/923325308087">WhatsApp</a></li>
+                    <li><a href="mailto:info@aurex.com">Email Us</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -181,87 +191,6 @@
             <p>&copy; 2026 Aurex Executive Travel. All rights reserved.</p>
         </div>
     </footer>
-
-    <!-- Booking Modal (Existing Structure kept for functionality) -->
-    <div id="bookingModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Book Your Transfer</h2>
-            <form id="bookingForm">
-                <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" required>
-                </div>
-                <div class="form-group">
-                    <label for="mobile">Mobile Number</label>
-                    <input type="tel" id="mobile" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="pickup">Pickup Address</label>
-                    <input type="text" id="pickup" required>
-                </div>
-                <div class="form-group">
-                    <label for="dropoff">Drop-off Address / Airport</label>
-                    <input type="text" id="dropoff" required>
-                </div>
-                <div class="form-group">
-                    <label for="flightNumber">Flight Number (Optional)</label>
-                    <input type="text" id="flightNumber">
-                </div>
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label for="date">Pickup Date</label>
-                        <input type="date" id="date" required>
-                    </div>
-                    <div class="form-group half">
-                        <label for="time">Pickup Time</label>
-                        <input type="time" id="time" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label for="passengers">Number of Passengers</label>
-                        <input type="number" id="passengers" min="1" required>
-                    </div>
-                    <div class="form-group half">
-                        <label for="suitcases">Suitcases</label>
-                        <input type="number" id="suitcases" min="0" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="vehicle">Vehicle Choice</label>
-                    <select id="vehicle" required>
-                        <option value="">Select Vehicle</option>
-                        <option value="Tesla Model Y">Tesla Model Y</option>
-                        <option value="Mercedes E-Class">Mercedes E-Class</option>
-                        <option value="Mercedes V-Class">Mercedes V-Class (7 Seater)</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group half">
-                        <label for="returnJourney">Return Journey Required?</label>
-                        <select id="returnJourney" required>
-                            <option value="No">No</option>
-                            <option value="Yes">Yes</option>
-                        </select>
-                    </div>
-                    <div class="form-group half">
-                        <label for="offeredPrice">Your Offered Price (£)</label>
-                        <input type="number" id="offeredPrice" min="0" placeholder="e.g. 150" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="notes">Additional Notes</label>
-                    <textarea id="notes" rows="3"></textarea>
-                </div>
-                <button type="submit" class="btn-primary full-width">Send Booking Request via WhatsApp</button>
-            </form>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 </body>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Aurex Executive Travel</title>
+    <meta name="description" content="Get in touch with Aurex Executive Travel for inquiries, bookings, and custom quotes.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">AUREX</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="about.html">Our Company</a></li>
+                <li><a href="contact.html" class="btn-nav">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1>Contact Us</h1>
+        <p>We're here to help. Get in touch with us to arrange your travel, request a custom quote, or ask any questions.</p>
+    </header>
+
+    <!-- Content -->
+    <section class="content-section">
+        <div class="container">
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div>
+                        <h3><i class="fa-solid fa-phone" style="color: var(--accent); margin-right: 10px;"></i> Phone</h3>
+                        <p><a href="tel:+44000000000">+44 000 000 000</a></p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Available 24/7 for bookings and support.</p>
+                    </div>
+                    <div>
+                        <h3><i class="fa-brands fa-whatsapp" style="color: var(--accent); margin-right: 10px;"></i> WhatsApp</h3>
+                        <p><a href="https://wa.me/923325308087">Message us on WhatsApp</a></p>
+                    </div>
+                    <div>
+                        <h3><i class="fa-solid fa-envelope" style="color: var(--accent); margin-right: 10px;"></i> Email</h3>
+                        <p><a href="mailto:info@aurex.com">info@aurex.com</a></p>
+                    </div>
+                    <div style="margin-top: 3rem;">
+                        <p>Looking for a quick price estimate?</p>
+                        <a href="index.html#quote" class="btn-secondary" style="margin-top: 1rem; display: inline-block;">Use Quote Calculator</a>
+                    </div>
+                </div>
+
+                <div class="contact-form-container">
+                    <form action="mailto:info@aurex.com" method="post" enctype="text/plain">
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group half">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject" name="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" rows="6" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="margin-top: 1rem;">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact-footer" class="footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h2 class="footer-logo">AUREX</h2>
+                <p>Premium Airport Transfers & Executive Travel Across the UK.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="about.html">Our Company</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <ul>
+                    <li><a href="tel:+44000000000">Call Us</a></li>
+                    <li><a href="https://wa.me/923325308087">WhatsApp</a></li>
+                    <li><a href="mailto:info@aurex.com">Email Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Aurex Executive Travel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
