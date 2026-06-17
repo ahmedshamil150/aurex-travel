@@ -1,0 +1,626 @@
+================================================================================
+  AUREX EXECUTIVE TRAVEL — WEBSITE OPERATIONS MANUAL
+  Complete Guide: How Everything Works
+================================================================================
+  Document version: June 2026
+  Applies to: All HTML pages, script.js, style.css
+  WhatsApp business number: +92 332 5308087
+================================================================================
+
+
+--------------------------------------------------------------------------------
+SECTION 1 — WEBSITE OVERVIEW
+--------------------------------------------------------------------------------
+
+The Aurex Executive Travel website is a static HTML/CSS/JavaScript website.
+There is no backend server, no database, and no admin login panel.
+
+All customer-facing actions (bookings, quotes, enquiries) are handled through
+WhatsApp. When a customer submits any form on the website, JavaScript reads
+the form fields, formats them into a structured WhatsApp message, and redirects
+the customer's browser directly to the WhatsApp chat with the business number.
+
+Technology stack:
+  - HTML5 (all pages)
+  - CSS3 (style.css — single stylesheet for the entire site)
+  - Vanilla JavaScript (script.js — single JS file for all pages)
+  - Font Awesome 6.4.0 (icons via CDN)
+  - Google Fonts — Inter (typography via CDN)
+  - No frameworks, no build tools, no server required
+
+Hosting: Any static web host (e.g. Netlify, GitHub Pages, cPanel file manager)
+  Simply upload all files to the root of your hosting directory and the site works.
+
+
+--------------------------------------------------------------------------------
+SECTION 2 — SITE PAGES
+--------------------------------------------------------------------------------
+
+The website has 12 pages:
+
+  1.  index.html          — Homepage
+  2.  airport-transfers.html — Airport Transfer Services
+  3.  fleet.html          — Our Fleet (vehicle details)
+  4.  prices.html         — Fixed Airport Transfer Prices
+  5.  quote.html          — Get a Quote (3-tab system)
+  6.  book.html           — Book Online (full booking form)
+  7.  corporate.html      — Corporate Accounts
+  8.  about.html          — Our Company
+  9.  contact.html        — Contact Us
+  10. services.html       — Services (detailed service breakdown)
+  11. terms.html          — Terms & Conditions
+  12. privacy.html        — Privacy Policy
+
+Navigation bar appears on every page. It includes 7 links:
+  Home | Airport Transfers | Fleet | Prices | Get a Quote | Book Online | Contact
+
+The "Book Online" link in the navbar is highlighted in gold to draw attention.
+On mobile, the navbar collapses into a hamburger menu (3 lines → X animation).
+
+
+--------------------------------------------------------------------------------
+SECTION 3 — THE QUOTE SYSTEM
+--------------------------------------------------------------------------------
+
+There are two places on the website where customers can get a quote:
+
+--- 3A. HOMEPAGE INSTANT CALCULATOR (index.html) ---
+
+Location: Scroll down the homepage to the "Get an Instant Quote" section.
+
+How it works:
+  1. Customer enters: pickup location, destination, and estimated distance in miles.
+  2. Customer clicks "Calculate Quote".
+  3. JavaScript multiplies miles × £2.
+  4. The estimated price appears instantly on the page.
+     Example: 135 miles × £2 = £270 shown immediately.
+  5. Two buttons appear: "Book Now" (goes to book.html) and "View Fixed Prices"
+     (goes to prices.html).
+
+This is an ESTIMATE only. No data is sent anywhere. Nothing goes to WhatsApp.
+It is purely a frontend calculation to help the customer understand the ballpark
+cost before they proceed to book or request a confirmed quote.
+
+Formula: Price (£) = Miles × 2
+
+
+--- 3B. QUOTE PAGE — THREE TABS (quote.html) ---
+
+The quote page has 3 tabs the customer can switch between:
+
+TAB 1 — "Instant Mile-Based Quote"
+  Same calculator as the homepage. Customer enters miles, price shows instantly.
+  Formula: Miles × £2. Example: 135 miles = £270.
+  After calculating, they see "Book Now" and "View Fixed Prices" buttons.
+
+TAB 2 — "Request Custom Quote"
+  For customers who want a personalised, confirmed price — especially for custom
+  routes, special requirements, or if they want to offer their own price.
+
+  Fields collected:
+    - Full name *
+    - Mobile / WhatsApp number *
+    - Pickup address *
+    - Drop-off / airport *
+    - Travel date *
+    - Pickup time *
+    - Number of passengers *
+    - Vehicle preference (dropdown)
+    - Offered price (optional — customer can name their price)
+    - Additional notes (optional)
+
+  What happens when submitted:
+  JavaScript formats all these fields into a structured WhatsApp message and
+  immediately redirects the customer to WhatsApp (wa.me/923325308087).
+
+  The WhatsApp message looks like this:
+  -----------------------------------------------
+  *Quote Request – Aurex Executive Travel*
+
+  *Name:* John Smith
+  *Mobile:* +44 7700 000000
+
+  *Pickup:* Cardiff City Centre, CF10 1AB
+  *Drop-off:* Heathrow Airport T5
+  *Date:* 2026-07-15
+  *Time:* 06:00
+  *Passengers:* 2
+  *Vehicle:* Mercedes E-Class
+  *Offered Price:* £200
+  *Notes:* Flight BA245, need meet & greet
+
+  Please confirm availability and provide a fixed price.
+  -----------------------------------------------
+
+  Admin response (YOU — the business owner):
+  After receiving this WhatsApp message, you (the admin) can:
+    - Reply with a confirmed fixed price
+    - Accept the customer's offered price
+    - Counter-offer a different price
+    - Decline if unavailable
+    - Ask for more details
+  This is all handled manually via WhatsApp conversation.
+
+TAB 3 — "View Fixed Prices"
+  Not a form. Just shows a brief note and a button linking to prices.html.
+
+
+--------------------------------------------------------------------------------
+SECTION 4 — THE BOOKING SYSTEM
+--------------------------------------------------------------------------------
+
+The main booking form is on book.html.
+
+--- HOW A CUSTOMER BOOKS ---
+
+Step 1 — Customer fills in the booking form (book.html).
+
+  The form is divided into two sections:
+
+  PERSONAL DETAILS:
+    - Full name *
+    - Mobile number *
+    - Email address *
+
+  JOURNEY DETAILS:
+    - Pickup address *
+    - Drop-off address *
+    - Airport (dropdown — 13 options including "Other")
+    - Flight number (optional)
+    - Pickup date *
+    - Pickup time *
+    - Return journey required (Yes / No)
+    - Number of passengers (1–7) *
+    - Number of suitcases (0–6+)
+    - Vehicle choice * (E-Class, S-Class, V-Class, Tesla, Any)
+    - Offered price (optional — if customer wants to name their budget)
+    - Additional notes (optional — child seats, return journey details, etc.)
+
+  Fields marked * are required. The form will not submit without them.
+
+Step 2 — Customer clicks "Submit Booking Request via WhatsApp".
+
+Step 3 — JavaScript collects all form values and builds a WhatsApp message.
+  The message is URL-encoded and the browser is redirected to:
+  https://wa.me/923325308087?text=[encoded message]
+
+  The WhatsApp message looks like this:
+  -----------------------------------------------
+  *Booking Request – Aurex Executive Travel*
+
+  *Name:* Jane Doe
+  *Mobile:* +44 7700 000000
+  *Email:* jane@example.com
+
+  *Pickup:* 12 High Street, Cardiff, CF10 1AA
+  *Drop-off:* Heathrow Airport Terminal 2
+  *Airport:* Heathrow Airport
+  *Flight Number:* BA456
+  *Date:* 2026-07-20
+  *Time:* 04:30
+  *Return Journey:* yes
+  *Passengers:* 3
+  *Suitcases:* 3
+  *Vehicle:* v-class
+  *Offered Price:* £240
+  *Notes:* Return journey on 25 July, 18:00 from Heathrow T2
+
+  Please confirm this booking and send a payment link.
+  -----------------------------------------------
+
+Step 4 — YOU (admin) receive the WhatsApp message.
+  You then:
+    - Check availability for the requested date/time/vehicle
+    - Confirm the price (fixed price, or negotiate if they offered a price)
+    - Send a secure payment link via Stripe, PayPal, or your preferred method
+    - Confirm the booking once payment is received
+    - Assign the driver and vehicle
+
+--- PRE-FILLED BOOKING FORM ---
+
+When a customer clicks "Book Now" from the prices page, the URL includes
+query parameters that pre-fill the booking form automatically. For example:
+
+  book.html?route=Cardiff+to+Heathrow&vehicle=e-class
+
+  This sets:
+    - Drop-off field to: "Cardiff to Heathrow"
+    - Vehicle dropdown to: "e-class"
+
+  This saves the customer time and reduces friction.
+
+--- PAYMENT OPTIONS ---
+
+The booking form shows payment method icons to set expectations:
+  - Card via Stripe
+  - Apple Pay
+  - Google Pay
+  - PayPal
+
+NOTE: Payment is NOT processed on the website. There is no payment gateway
+integrated into the site. The website only collects booking intent and sends
+it to WhatsApp. YOU then send a separate payment link (e.g. Stripe payment
+link, PayPal invoice) to the customer via WhatsApp or email after confirming
+the booking.
+
+To set up payment links you will need:
+  - A Stripe account (stripe.com) — to create card/Apple Pay/Google Pay links
+  - A PayPal Business account — to create PayPal invoice links
+
+
+--------------------------------------------------------------------------------
+SECTION 5 — FIXED PRICE TABLES (prices.html)
+--------------------------------------------------------------------------------
+
+The prices page shows two tables — one per vehicle class.
+
+TESLA MODEL Y / MERCEDES E-CLASS (up to 4 passengers):
+  Cardiff to Heathrow Airport    £230 [Book Now]
+  Cardiff to Bristol Airport     £135 [Book Now]
+  Cardiff to Cardiff Airport     £60  [Book Now]
+  Cardiff to Gatwick Airport     £320 [Book Now]
+  Cardiff to Birmingham Airport  From £180 [Get Quote]
+  Cardiff to Manchester Airport  From £260 [Get Quote]
+  Cardiff to Stansted Airport    From £350 [Get Quote]
+  Cardiff to Luton Airport       From £300 [Get Quote]
+
+MERCEDES V-CLASS (up to 7 passengers):
+  Cardiff to Heathrow Airport    £250 [Book Now]
+  Cardiff to Bristol Airport     £155 [Book Now]
+  Cardiff to Cardiff Airport     £80  [Book Now]
+  Cardiff to Gatwick Airport     £340 [Book Now]
+  Cardiff to Birmingham Airport  From £200 [Get Quote]
+  Cardiff to Manchester Airport  From £290 [Get Quote]
+  Cardiff to Stansted Airport    From £380 [Get Quote]
+  Cardiff to Luton Airport       From £330 [Get Quote]
+
+"Book Now" buttons link to book.html pre-filled with route and vehicle.
+"Get Quote" buttons link to quote.html for routes without a fixed listed price.
+
+All prices EXCLUDE VAT. This is noted on the page.
+Return journeys are priced as two separate one-way transfers.
+
+TO UPDATE PRICES: Open prices.html in a text editor and change the numbers
+directly in the HTML table cells. Also update the snapshot on index.html
+(the price-snap-card divs in the "Fixed Airport Transfer Prices" section).
+
+
+--------------------------------------------------------------------------------
+SECTION 6 — CORPORATE ACCOUNTS (corporate.html)
+--------------------------------------------------------------------------------
+
+The corporate accounts page targets businesses that want ongoing travel.
+
+The page features an enquiry form that collects:
+  - Contact name *
+  - Company name *
+  - Business email *
+  - Phone *
+  - Estimated journeys per month (dropdown)
+  - Description of requirements (textarea)
+
+On submission, JavaScript formats this into a WhatsApp message sent to the
+business number:
+
+  -----------------------------------------------
+  *Corporate Account Enquiry – Aurex Executive Travel*
+
+  *Name:* David Jones
+  *Company:* Jones & Partners Ltd
+  *Email:* david@jonespartners.co.uk
+  *Phone:* +44 7700 111111
+  *Journeys/Month:* 10–20 journeys
+  *Requirements:* Regular transfers for 3 executives, mainly Heathrow and Bristol.
+  Need monthly invoice.
+
+  Please get in touch to discuss a corporate account.
+  -----------------------------------------------
+
+You then contact the business by phone or WhatsApp to set up their account.
+Corporate accounts are managed manually — there is no automated invoicing built
+into the website.
+
+
+--------------------------------------------------------------------------------
+SECTION 7 — CONTACT FORM (contact.html)
+--------------------------------------------------------------------------------
+
+The contact page has a standard enquiry form with:
+  - Full name
+  - Email address
+  - Subject
+  - Message
+
+This form uses the HTML mailto: action (action="mailto:info@aurex.com").
+This means it opens the customer's default email client with the fields
+pre-filled. It does NOT send email automatically through a server.
+
+For reliable email delivery, consider replacing the mailto: action with
+a free service like Formspree (formspree.io) or EmailJS (emailjs.com).
+
+The contact page also shows direct contact methods:
+  - Phone: +44 000 000 000 (needs updating with real number)
+  - WhatsApp: wa.me/923325308087
+  - Email: info@aurex.com
+
+
+--------------------------------------------------------------------------------
+SECTION 8 — ADMIN WORKFLOW (DAY-TO-DAY OPERATIONS)
+--------------------------------------------------------------------------------
+
+Since the website has no backend, all admin tasks are done manually.
+Here is the full workflow for handling each type of incoming message:
+
+--- INCOMING BOOKING REQUEST ---
+
+1. Receive WhatsApp message labelled "*Booking Request – Aurex Executive Travel*"
+2. Check the details: date, time, pickup, drop-off, passengers, vehicle
+3. Check your availability for that date/time
+4. If available:
+   a. Reply with confirmation and the confirmed price
+   b. Send payment link (Stripe or PayPal)
+   c. Once payment received, send booking confirmation
+   d. Note the booking in your own system/calendar
+   e. Assign driver and vehicle
+   f. Provide driver's name and mobile to the customer
+5. If NOT available:
+   a. Reply apologising and offer alternative dates/times if possible
+
+--- INCOMING QUOTE REQUEST ---
+
+1. Receive WhatsApp message labelled "*Quote Request – Aurex Executive Travel*"
+2. Review the route, date, passengers, and vehicle preference
+3. Check if customer has included an offered price
+4. Calculate your price for the route:
+   - Use the £2/mile rate as a starting point
+   - Or use your own pricing knowledge
+5. Reply with:
+   a. Your confirmed fixed price (or accept their offered price)
+   b. Ask for date/time if not provided
+6. If customer accepts, ask them to submit a booking form or book directly
+   via book.html
+7. Send payment link and confirm
+
+--- INCOMING CORPORATE ENQUIRY ---
+
+1. Receive WhatsApp message labelled "*Corporate Account Enquiry*"
+2. Call or WhatsApp the contact to discuss:
+   - Typical routes and frequency
+   - Preferred vehicles
+   - Payment terms (monthly invoice)
+   - Dedicated account setup
+3. Agree commercial terms
+4. Set up informal account: keep company name, contact details, billing email
+5. Invoice monthly via email (use a tool like Wave, FreshBooks, or QuickBooks)
+
+
+--------------------------------------------------------------------------------
+SECTION 9 — THINGS TO UPDATE BEFORE GOING LIVE
+--------------------------------------------------------------------------------
+
+Before launching the website to real customers, update these items:
+
+1. PHONE NUMBER
+   Currently shown as: +44 000 000 000
+   Files to update: index.html, airport-transfers.html, fleet.html, prices.html,
+   quote.html, book.html, corporate.html, about.html, contact.html, services.html,
+   terms.html, privacy.html
+   Search for "+44000000000" and replace with your real UK number.
+
+2. EMAIL ADDRESS
+   Currently: info@aurex.com
+   Update in: contact.html (form action + displayed link) and all footer cols.
+   Also update terms.html and privacy.html contact email.
+
+3. WHATSAPP NUMBER
+   Currently: 923325308087 (this is already the real number per project notes)
+   To change it: open script.js, find line:  const WA_NUMBER = '923325308087';
+   Change to your WhatsApp number in international format WITHOUT the + sign.
+   E.g. for +44 7700 123456 use: 447700123456
+
+4. PRICES
+   Update prices.html tables and the homepage price snapshot (index.html)
+   if your pricing changes.
+
+5. COMPANY REGISTRATION / LICENSING INFO
+   If you want to add your operator's licence number or company registration,
+   add it to the footer or about.html page.
+
+6. GOOGLE MAPS / ADDRESS
+   If you want to add a map to the contact page, embed a Google Maps iframe.
+   No API key is needed for basic embeds.
+
+7. REAL VEHICLE PHOTOS
+   The current photos (hero_bg.png, tesla-model-y.png, mercedes-e-class.png,
+   mercedes-v-class.png) should be your own high-quality images.
+   Replace the files with the same filenames to avoid changing code.
+
+
+--------------------------------------------------------------------------------
+SECTION 10 — JAVASCRIPT REFERENCE (script.js)
+--------------------------------------------------------------------------------
+
+All JavaScript is in one file: script.js. Here is what each part does:
+
+WA_NUMBER (constant)
+  The WhatsApp number all forms send to.
+  Change this one value to update all forms at once.
+
+Navbar scroll effect
+  Changes the navbar bottom border opacity when the user scrolls past 50px.
+  Just a visual refinement — no functional impact.
+
+Mobile menu toggle
+  Toggles the nav-links visibility on mobile.
+  Also animates the hamburger icon into an X when open.
+
+sendToWhatsApp(message) function
+  The core utility. Takes a text string and redirects browser to:
+  https://wa.me/[WA_NUMBER]?text=[URL encoded message]
+
+Homepage instant calculator (quoteForm)
+  Listens for submit on #quoteForm.
+  Calculates miles × 2, shows the result in #quoteResult.
+  Does NOT send any data anywhere.
+
+Quote page tab switching
+  Listens for clicks on .quote-tab buttons.
+  Shows/hides .quote-tab-content divs using active class.
+
+Quote page instant calculator (instantQuoteForm)
+  Same logic as homepage calculator but on quote.html.
+
+Custom quote form (customQuoteForm)
+  Listens for submit on #customQuoteForm.
+  Builds a formatted WhatsApp message from form fields.
+  Calls sendToWhatsApp().
+
+Booking form (bookingForm)
+  Listens for submit on #bookingForm.
+  Builds a comprehensive formatted WhatsApp message from all form fields.
+  Calls sendToWhatsApp().
+
+Corporate form (corporateForm)
+  Listens for submit on #corporateForm.
+  Builds a formatted WhatsApp message.
+  Calls sendToWhatsApp().
+
+Smooth scrolling
+  Intercepts clicks on all <a href="#..."> anchor links and smoothly scrolls.
+  Also closes mobile menu if open when a link is clicked.
+
+URL parameter pre-fill (book.html)
+  On book.html only, reads URL query parameters:
+    ?route=Cardiff+to+Heathrow  → sets drop-off field
+    ?vehicle=e-class            → sets vehicle dropdown
+  This allows prices.html "Book Now" buttons to pre-populate the form.
+
+
+--------------------------------------------------------------------------------
+SECTION 11 — CSS REFERENCE (style.css)
+--------------------------------------------------------------------------------
+
+The entire site uses one stylesheet. Key sections:
+
+  :root variables        — All colours and shadows defined here. Change --accent
+                           to update gold colour site-wide. Change --dark-bg for
+                           the black/near-black colour.
+
+  .navbar                — Fixed top navigation. Dark background always.
+  .hero                  — Full-height homepage banner with background image.
+  .page-header           — Dark header used on all inner pages.
+  .trust-strip           — 7 trust badges on homepage (inline row on desktop).
+  .prices-snapshot       — Price cards on homepage.
+  .price-table-block     — Full price tables on prices.html.
+  .quote-calculator      — The white bordered form container used on multiple pages.
+  .quote-tabs            — The 3-tab system on quote.html.
+  .booking-intro         — The 3-step visual at top of book.html.
+  .fleet-detail-card     — Alternating two-column layout on fleet.html.
+  .included-grid         — 3-column feature grid used on multiple pages.
+  .service-detail-block  — Icon + content rows on services.html.
+  .value-card            — Core values cards on about.html.
+  .legal-content         — Styled content block for terms and privacy pages.
+  .footer                — Dark footer grid layout.
+
+  Responsive breakpoints:
+    @media (max-width: 1024px) — Tablets: badge grid becomes 2 columns
+    @media (max-width: 900px)  — Fleet detail cards go single column
+    @media (max-width: 768px)  — Mobile: hamburger nav, stacked forms
+    @media (max-width: 480px)  — Small mobile: single column grids
+
+
+--------------------------------------------------------------------------------
+SECTION 12 — ADDING OR CHANGING CONTENT
+--------------------------------------------------------------------------------
+
+To change the hero background image:
+  Replace hero_bg.png with your own image (keep the same filename).
+
+To add a new vehicle to the fleet:
+  1. Add a new .fleet-detail-card block in fleet.html
+  2. Add it as an option in the vehicle dropdown in book.html and quote.html
+  3. Add a fleet card to index.html
+
+To add a new airport route price:
+  1. Add a new <tr> row to both tables in prices.html
+  2. Add a corresponding price-snap-card to index.html if it is a key route
+
+To change the £2/mile rate:
+  Open script.js and find: const price = miles * 2;
+  Change 2 to your new rate per mile. This appears in two places in the file
+  (homepage form and quote page form). Search for "miles * 2" to find both.
+
+To add a new page:
+  Copy any existing page as a template.
+  Update the <title> and <meta description> tags.
+  Update the navbar "active" link (add class="btn-nav" to the correct nav item).
+  Link to it from the footer and navbar.
+
+
+--------------------------------------------------------------------------------
+SECTION 13 — FUTURE IMPROVEMENTS (NOT YET BUILT)
+--------------------------------------------------------------------------------
+
+These features were requested in the spec but require backend development
+(a server, database, and code beyond HTML/CSS/JS):
+
+1. ADMIN DASHBOARD
+   Viewing all bookings, accepting/rejecting quotes, editing prices, assigning
+   vehicles, marking bookings as paid, exporting booking data.
+   Requires: Backend (Node.js, Python, PHP, etc.) + database (MySQL, MongoDB, etc.)
+
+2. AUTOMATED PAYMENT PROCESSING
+   Taking card payment directly on the site without manual payment links.
+   Requires: Stripe API integration with server-side code.
+
+3. AUTOMATED CONFIRMATION EMAILS
+   Sending booking confirmation emails automatically after payment.
+   Requires: Email service API (SendGrid, Mailgun, etc.) + backend.
+
+4. CUSTOMER ACCOUNTS
+   Customers logging in to view/manage their bookings.
+   Requires: Full backend with authentication system.
+
+5. REAL-TIME AVAILABILITY CALENDAR
+   Showing which dates/times are available for booking.
+   Requires: Backend with booking database.
+
+Until these are built, all of the above is handled manually via WhatsApp
+conversation between the admin and the customer. The current system works well
+for a small/medium volume of bookings and requires no technical maintenance.
+
+
+--------------------------------------------------------------------------------
+SECTION 14 — FILE LIST
+--------------------------------------------------------------------------------
+
+index.html              Homepage
+airport-transfers.html  Airport Transfers page
+fleet.html              Fleet page
+prices.html             Prices page
+quote.html              Get a Quote page
+book.html               Book Online page
+corporate.html          Corporate Accounts page
+about.html              Our Company / About page
+contact.html            Contact page
+services.html           Services detail page
+terms.html              Terms & Conditions
+privacy.html            Privacy Policy
+style.css               All CSS styles (single file)
+script.js               All JavaScript (single file)
+hero_bg.png             Homepage hero background image
+tesla-model-y.png       Tesla Model Y photo
+mercedes-e-class.png    Mercedes E-Class photo
+mercedes-v-class.png    Mercedes V-Class photo
+project_memory.txt      Project changelog for developers
+WEBSITE_OPERATIONS.txt  This document
+Aurex.txt               Original client requirements spec
+Aurex.pdf               Original client requirements (PDF format)
+README.md               Basic project readme
+
+
+================================================================================
+  END OF DOCUMENT
+  For questions about this document contact the developer or refer to
+  project_memory.txt for the full changelog of all changes made.
+================================================================================

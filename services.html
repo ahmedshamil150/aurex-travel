@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Services | Aurex Executive Travel</title>
-    <meta name="description" content="Discover our range of executive travel services, including UK airport transfers, corporate travel, and more.">
+    <meta name="description" content="Comprehensive executive travel services — airport transfers, corporate accounts, long-distance chauffeur hire, events, hotel transfers, and VIP transportation across the UK.">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,9 +18,24 @@
             <div class="logo">AUREX</div>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
-                <li><a href="services.html" class="btn-nav">Services</a></li>
-                <li><a href="about.html">Our Company</a></li>
+                <li><a href="airport-transfers.html">Airport Transfers</a></li>
+                <li><a href="fleet.html">Fleet</a></li>
+                <li><a href="prices.html">Prices</a></li>
+                <li><a href="services.html">Services</a></li>
+                                <li class="nav-dropdown">
+                    <a href="#" class="nav-dropdown-toggle">Drive With Us <i class="fa-solid fa-chevron-down"></i></a>
+                    <ul class="nav-dropdown-menu">
+                        <li><a href="driver-register.html"><i class="fa-solid fa-user-tie"></i> Register as Driver</a></li>
+                        <li><a href="driver-register.html#requirements"><i class="fa-solid fa-list-check"></i> Driver Requirements</a></li>
+                        <li><a href="vehicle-register.html"><i class="fa-solid fa-car"></i> Register a Vehicle</a></li>
+                        <li><a href="vehicle-register.html#vehicle-requirements"><i class="fa-solid fa-clipboard-check"></i> Vehicle Requirements</a></li>
+                    </ul>
+                </li>
                 <li><a href="contact.html">Contact</a></li>
+                <li class="nav-cta-group">
+                    <a href="quote.html" class="nav-btn-outline">Get a Quote</a>
+                    <a href="book.html" class="nav-btn-solid">Book Now</a>
+                </li>
             </ul>
             <div class="hamburger">
                 <span></span>
@@ -33,26 +48,99 @@
     <!-- Page Header -->
     <header class="page-header">
         <h1>Our Services</h1>
-        <p>Comprehensive executive travel solutions designed to meet the highest standards of luxury, comfort, and reliability across the UK.</p>
+        <p>Comprehensive executive travel solutions designed for corporate professionals, business travellers, and discerning private clients across the UK.</p>
     </header>
 
-    <!-- Content -->
+    <!-- Airport Transfer Services -->
     <section class="content-section">
         <div class="container">
-            <div class="content-block">
-                <h3>Airport Transfers</h3>
-                <p>We provide seamless airport transfers to and from all major UK airports including Heathrow, Gatwick, Bristol, Birmingham, and Manchester. Enjoy a stress-free start or end to your journey with our flight monitoring, and complimentary meet and greet service inside the arrivals terminal.</p>
-                
-                <h3 style="margin-top: 3rem;">Corporate & Business Travel</h3>
-                <p>First impressions matter. Our corporate travel services ensure that you and your clients arrive at meetings, conferences, or events on time and in style. We offer competitive pricing, account management, and a fleet of premium vehicles that reflect your professional image.</p>
-                
-                <h3 style="margin-top: 3rem;">Long Distance & Executive Travel</h3>
-                <p>Whether you're traveling across cities or require a chauffeur for the day, our long-distance executive travel service guarantees utmost comfort. With spacious vehicles like the Mercedes V-Class and Tesla Model Y, you can relax, catch up on work, or simply enjoy the ride.</p>
-                
-                <div style="margin-top: 4rem;">
-                    <a href="index.html#quote" class="btn-primary">Get an Instant Quote</a>
+
+            <div class="service-detail-block">
+                <div class="service-detail-icon"><i class="fa-solid fa-plane-arrival"></i></div>
+                <div class="service-detail-content">
+                    <h2>Airport Transfer Services</h2>
+                    <p>We provide seamless, pre-booked chauffeur-driven transfers to and from all major UK airports including Heathrow, Gatwick, Stansted, Luton, Birmingham, Manchester, and Bristol. Our airport transfer service is built around your schedule — not the other way around.</p>
+                    <ul class="service-features">
+                        <li><i class="fa-solid fa-check"></i> Real-time flight monitoring with automatic schedule adjustments</li>
+                        <li><i class="fa-solid fa-check"></i> Meet &amp; greet inside the arrivals terminal with a personalised name board</li>
+                        <li><i class="fa-solid fa-check"></i> 60 minutes complimentary waiting time for delayed or early flights</li>
+                        <li><i class="fa-solid fa-check"></i> Fixed-price quotes with no hidden charges — guaranteed upfront</li>
+                        <li><i class="fa-solid fa-check"></i> Available 24/7, including overnight, early-morning, and red-eye pickups</li>
+                        <li><i class="fa-solid fa-check"></i> Luggage assistance as standard</li>
+                    </ul>
                 </div>
             </div>
+
+            <div class="service-detail-block">
+                <div class="service-detail-icon"><i class="fa-solid fa-briefcase"></i></div>
+                <div class="service-detail-content">
+                    <h2>Business &amp; Corporate Travel</h2>
+                    <p>First impressions matter. Our corporate travel services are designed for executives, business travellers, and companies that require reliable, professional ground transportation.</p>
+                    <ul class="service-features">
+                        <li><i class="fa-solid fa-check"></i> Corporate travel accounts with dedicated account management</li>
+                        <li><i class="fa-solid fa-check"></i> Monthly invoicing for businesses — no card required per trip</li>
+                        <li><i class="fa-solid fa-check"></i> Professional chauffeur service for meetings, conferences, and events</li>
+                        <li><i class="fa-solid fa-check"></i> Discreet, professional service that reflects your corporate image</li>
+                        <li><i class="fa-solid fa-check"></i> DBS-checked chauffeurs trained in executive service standards</li>
+                        <li><i class="fa-solid fa-check"></i> Complimentary Wi-Fi and refreshments available on request</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-detail-block">
+                <div class="service-detail-icon"><i class="fa-solid fa-road"></i></div>
+                <div class="service-detail-content">
+                    <h2>Long-Distance &amp; Executive Travel</h2>
+                    <p>Whether you're travelling between cities or require a chauffeur for an extended engagement, our long-distance executive service guarantees comfort throughout. Relax, catch up on work, or arrive refreshed at your destination.</p>
+                    <ul class="service-features">
+                        <li><i class="fa-solid fa-check"></i> City-to-city executive travel across the entire UK</li>
+                        <li><i class="fa-solid fa-check"></i> Hourly chauffeur hire for multi-stop journeys and day trips</li>
+                        <li><i class="fa-solid fa-check"></i> Spacious Mercedes V-Class for group or luggage-heavy travel</li>
+                        <li><i class="fa-solid fa-check"></i> Professional driver with extensive knowledge of UK routes</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-detail-block">
+                <div class="service-detail-icon"><i class="fa-solid fa-champagne-glasses"></i></div>
+                <div class="service-detail-content">
+                    <h2>Private &amp; Leisure Travel</h2>
+                    <p>From weddings and special occasions to hotel transfers and private holidays, we provide a premium transportation experience for every milestone.</p>
+                    <ul class="service-features">
+                        <li><i class="fa-solid fa-check"></i> Private airport transfers for families and individuals</li>
+                        <li><i class="fa-solid fa-check"></i> Wedding and special occasion transportation</li>
+                        <li><i class="fa-solid fa-check"></i> Hotel transfers — arrivals and departures handled seamlessly</li>
+                        <li><i class="fa-solid fa-check"></i> Bespoke tours and day trips with a professional chauffeur</li>
+                        <li><i class="fa-solid fa-check"></i> Comfortable 7-seater option for family groups</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-detail-block">
+                <div class="service-detail-icon"><i class="fa-solid fa-crown"></i></div>
+                <div class="service-detail-content">
+                    <h2>VIP &amp; Specialist Transportation</h2>
+                    <p>For clients requiring the highest level of discretion and premium service, our VIP transportation offering is tailored to your specific needs.</p>
+                    <ul class="service-features">
+                        <li><i class="fa-solid fa-check"></i> Confidential, discreet service at all times</li>
+                        <li><i class="fa-solid fa-check"></i> Premium Mercedes S-Class available for VIP journeys</li>
+                        <li><i class="fa-solid fa-check"></i> Fully licensed and insured — £10 million public liability coverage</li>
+                        <li><i class="fa-solid fa-check"></i> Bespoke itineraries and multi-vehicle coordination</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Pricing note -->
+            <div class="pricing-note">
+                <h3>Our Pricing</h3>
+                <p>All prices are fixed and provided upfront — no hidden charges, no surprises. Pricing varies based on journey distance, vehicle type, and specific requirements. We do not publish flat per-mile rates because every journey is quoted individually to ensure accuracy and fairness.</p>
+                <p style="margin-top: 1rem;">Contact us or use the quote form below to receive a personalised, fixed-price quote for your journey.</p>
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="index.html#quote" class="btn-primary">Request a Quote</a>
+                    <a href="contact.html" class="btn-secondary">Contact Us</a>
+                </div>
+            </div>
+
         </div>
     </section>
 
@@ -61,7 +149,7 @@
         <div class="container footer-grid">
             <div class="footer-col">
                 <h2 class="footer-logo">AUREX</h2>
-                <p>Premium Airport Transfers & Executive Travel Across the UK.</p>
+                <p>Premium Airport Transfers &amp; Executive Travel Across the UK.</p>
             </div>
             <div class="footer-col">
                 <h4>Quick Links</h4>
@@ -69,8 +157,21 @@
                     <li><a href="index.html">Home</a></li>
                     <li><a href="services.html">Services</a></li>
                     <li><a href="about.html">Our Company</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                </ul>
+                                    <li class="nav-dropdown">
+                    <a href="#" class="nav-dropdown-toggle">Drive With Us <i class="fa-solid fa-chevron-down"></i></a>
+                    <ul class="nav-dropdown-menu">
+                        <li><a href="driver-register.html"><i class="fa-solid fa-user-tie"></i> Register as Driver</a></li>
+                        <li><a href="driver-register.html#requirements"><i class="fa-solid fa-list-check"></i> Driver Requirements</a></li>
+                        <li><a href="vehicle-register.html"><i class="fa-solid fa-car"></i> Register a Vehicle</a></li>
+                        <li><a href="vehicle-register.html#vehicle-requirements"><i class="fa-solid fa-clipboard-check"></i> Vehicle Requirements</a></li>
+                    </ul>
+                </li>
+                <li><a href="contact.html">Contact</a></li>
+                <li class="nav-cta-group">
+                    <a href="quote.html" class="nav-btn-outline">Get a Quote</a>
+                    <a href="book.html" class="nav-btn-solid">Book Now</a>
+                </li>
+            </ul>
             </div>
             <div class="footer-col">
                 <h4>Contact Us</h4>
@@ -83,7 +184,7 @@
             <div class="footer-col">
                 <h4>Legal</h4>
                 <ul>
-                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Terms &amp; Conditions</a></li>
                     <li><a href="#">Privacy Policy</a></li>
                 </ul>
             </div>
