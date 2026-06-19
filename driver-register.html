@@ -184,14 +184,16 @@
             </div>
 
             <form id="driverApplicationForm"
-                  action="https://formspree.io/f/xlgkqdvb"
+                  action="https://api.web3forms.com/submit"
                   method="POST"
                   enctype="multipart/form-data"
                   class="driver-form">
 
-                <!-- Hidden fields for email routing -->
-                <input type="hidden" name="_subject" value="New Driver Application — Aurex Executive Travel">
-                <input type="hidden" name="_replyto" value="info@aurex.com">
+                <!-- Web3Forms access key -->
+                <input type="hidden" name="access_key" value="af0f8944-4df1-4133-819e-1f5f559ccd2c">
+                <input type="hidden" name="subject" value="New Driver Application — Aurex Executive Travel">
+                <input type="hidden" name="from_name" value="Aurex Website — Driver Portal">
+                <input type="hidden" name="redirect" value="https://web3forms.com/success">
 
                 <!-- Personal Details -->
                 <h3 class="form-section-title">Personal Details</h3>
