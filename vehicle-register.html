@@ -134,13 +134,14 @@
             </div>
 
             <form id="vehicleRegistrationForm"
-                  action="https://formspree.io/f/YOUR_FORMSPREE_ID"
+                  action="https://forminit.com/f/VEHICLE_FORM_ID"
                   method="POST"
                   enctype="multipart/form-data"
                   class="driver-form">
 
+                <!-- Forminit config -->
                 <input type="hidden" name="_subject" value="New Vehicle Registration — Aurex Executive Travel">
-                <input type="hidden" name="_replyto" value="info@aurex.com">
+                <input type="hidden" name="_redirect" value="success.html?type=vehicle">
 
                 <!-- Driver Info -->
                 <h3 class="form-section-title">Your Details (Registered Driver)</h3>
