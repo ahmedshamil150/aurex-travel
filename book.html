@@ -47,22 +47,24 @@
     <!-- Page Header -->
     <header class="page-header">
         <h1>Book Online</h1>
-        <p>Complete the form below to send your booking request. We'll confirm availability and send a payment link.</p>
+        <p>Fill in your journey details, send your request, then pay securely via PayPal to confirm your booking.</p>
     </header>
 
     <!-- Booking Form -->
     <section class="content-section">
         <div class="container">
 
+            <!-- Steps -->
             <div class="booking-intro">
-                <div class="booking-step"><span>1</span><p>Fill in your journey details below</p></div>
+                <div class="booking-step"><span>1</span><p>Fill in your journey details</p></div>
                 <div class="booking-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-                <div class="booking-step"><span>2</span><p>We confirm availability &amp; price</p></div>
+                <div class="booking-step"><span>2</span><p>Your request is emailed to our team</p></div>
                 <div class="booking-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-                <div class="booking-step"><span>3</span><p>Pay securely online to confirm</p></div>
+                <div class="booking-step"><span>3</span><p>Pay via PayPal to confirm</p></div>
             </div>
 
-            <div class="quote-calculator" style="max-width: 900px;">
+            <!-- STEP 1 — Booking Form -->
+            <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
                 <form id="bookingForm">
 
                     <h3 class="form-section-title">Personal Details</h3>
@@ -175,27 +177,77 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="bookOfferedPrice">Your Offered Price (£) — optional</label>
-                        <input type="number" id="bookOfferedPrice" name="offeredPrice" placeholder="Leave blank to accept fixed price" min="1">
+                        <label for="bookAmount">Journey Price (£) *</label>
+                        <input type="number" id="bookAmount" name="amount" placeholder="Check prices page or enter your agreed price" min="1" required>
+                        <span style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:0.4rem;">
+                            Not sure? <a href="prices.html" target="_blank" style="color:var(--accent);">View fixed prices</a> or <a href="quote.html" target="_blank" style="color:var(--accent);">get a quote</a> first.
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="bookNotes">Additional Notes</label>
-                        <textarea id="bookNotes" name="notes" rows="4" placeholder="Child seats, accessibility needs, meet & greet instructions, return journey date/time..."></textarea>
+                        <textarea id="bookNotes" name="notes" rows="4" placeholder="Child seats, accessibility needs, meet &amp; greet instructions, return journey date/time..."></textarea>
                     </div>
 
-                    <div class="payment-options-info">
-                        <h4><i class="fa-solid fa-lock" style="color:var(--accent); margin-right:8px;"></i>Payment Options</h4>
-                        <p>After submitting, we'll review your booking and send a secure payment link. You can pay via:</p>
-                        <div class="payment-icons">
-                            <span><i class="fa-brands fa-cc-stripe"></i> Card (Stripe)</span>
-                            <span><i class="fa-brands fa-apple-pay"></i> Apple Pay</span>
-                            <span><i class="fa-brands fa-google-pay"></i> Google Pay</span>
-                            <span><i class="fa-brands fa-paypal"></i> PayPal</span>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-primary full-width" style="margin-top: 2rem;">Submit Booking Request via WhatsApp</button>
+                    <button type="submit" id="bookSubmitBtn" class="btn-primary full-width" style="margin-top: 1.5rem;">
+                        <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Send Booking Request &amp; Proceed to Payment
+                    </button>
                 </form>
+            </div>
+
+            <!-- STEP 2 — Payment Panel (shown after WhatsApp redirect) -->
+            <div id="paymentPanel" class="payment-panel" style="display:none; max-width: 900px;">
+
+                <div class="payment-panel-header">
+                    <div class="payment-panel-icon"><i class="fa-solid fa-check"></i></div>
+                    <div>
+                        <h3>Booking Request Sent!</h3>
+                        <p>Your details have been emailed to our team. Now pay via PayPal to confirm your booking.</p>
+                    </div>
+                </div>
+
+                <div class="payment-summary">
+                    <div class="payment-summary-row">
+                        <span>Journey</span>
+                        <strong id="payFromTo">—</strong>
+                    </div>
+                    <div class="payment-summary-row">
+                        <span>Date &amp; Time</span>
+                        <strong id="payDateTime">—</strong>
+                    </div>
+                    <div class="payment-summary-row">
+                        <span>Vehicle</span>
+                        <strong id="payVehicle">—</strong>
+                    </div>
+                    <div class="payment-summary-row payment-summary-total">
+                        <span>Total to Pay</span>
+                        <strong id="payTotal">£—</strong>
+                    </div>
+                </div>
+
+                <div class="payment-methods">
+                    <h4>Pay securely via PayPal</h4>
+                    <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.5rem;">
+                        Click the button below to pay via PayPal. You can use your PayPal balance, any debit or credit card — no PayPal account required.
+                    </p>
+                    <a id="paypalPayBtn" href="#" target="_blank" class="paypal-pay-btn">
+                        <i class="fa-brands fa-paypal"></i> Pay with PayPal
+                    </a>
+                    <p style="font-size:0.78rem; color:var(--text-muted); margin-top:1rem; text-align:center;">
+                        You will be taken to PayPal's secure payment page. After paying, return here or check your email for confirmation.
+                    </p>
+                </div>
+
+                <div class="payment-panel-note">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <p>Your booking is not confirmed until payment is received. Once paid, our team will send a booking confirmation to your email within 30 minutes.</p>
+                </div>
+
+                <div style="margin-top:2rem; text-align:center;">
+                    <button id="editBookingBtn" class="btn-secondary" style="width:auto;">
+                        <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>Edit Booking Details
+                    </button>
+                </div>
+
             </div>
 
         </div>
@@ -215,29 +267,15 @@
                     <li><a href="airport-transfers.html">Airport Transfers</a></li>
                     <li><a href="fleet.html">Fleet</a></li>
                     <li><a href="prices.html">Prices</a></li>
-                    <li><a href="book.html">Book Online</a></li>
-                                    <li class="nav-dropdown">
-                    <a href="#" class="nav-dropdown-toggle">Drive With Us <i class="fa-solid fa-chevron-down"></i></a>
-                    <ul class="nav-dropdown-menu">
-                        <li><a href="driver-register.html"><i class="fa-solid fa-user-tie"></i> Register as Driver</a></li>
-                        <li><a href="driver-register.html#requirements"><i class="fa-solid fa-list-check"></i> Driver Requirements</a></li>
-                        <li><a href="vehicle-register.html"><i class="fa-solid fa-car"></i> Register a Vehicle</a></li>
-                        <li><a href="vehicle-register.html#vehicle-requirements"><i class="fa-solid fa-clipboard-check"></i> Vehicle Requirements</a></li>
-                    </ul>
-                </li>
-                <li><a href="contact.html">Contact</a></li>
-                <li class="nav-cta-group">
-                    <a href="quote.html" class="nav-btn-outline">Get a Quote</a>
-                    <a href="book.html" class="nav-btn-solid">Book Now</a>
-                </li>
-            </ul>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
             </div>
             <div class="footer-col">
                 <h4>Contact Us</h4>
                 <ul>
                     <li><a href="tel:+44000000000">Call Us</a></li>
                     <li><a href="https://wa.me/923325308087">WhatsApp</a></li>
-                    <li><a href="mailto:info@aurex.com">Email Us</a></li>
+                    <li><a href="mailto:info@aurexexecutivetravel.com">Email Us</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -254,6 +292,144 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // ── Web3Forms access key (get yours free at https://web3forms.com) ──
+        const WEB3FORMS_KEY = 'YOUR_WEB3FORMS_KEY';
+
+        // ── PayPal email ──
+        const PAYPAL_EMAIL  = 'nayyer75@yahoo.com';
+
+        const bookingForm  = document.getElementById('bookingForm');
+        const formSection  = document.getElementById('bookingFormSection');
+        const payPanel     = document.getElementById('paymentPanel');
+        const editBtn      = document.getElementById('editBookingBtn');
+        const submitBtn    = document.getElementById('bookSubmitBtn');
+
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const name       = document.getElementById('bookName').value.trim();
+                const mobile     = document.getElementById('bookMobile').value.trim();
+                const email      = document.getElementById('bookEmail').value.trim();
+                const pickup     = document.getElementById('bookPickup').value.trim();
+                const dropoff    = document.getElementById('bookDropoff').value.trim();
+                const airport    = document.getElementById('bookAirport').value || 'N/A';
+                const flight     = document.getElementById('bookFlight').value.trim() || 'N/A';
+                const date       = document.getElementById('bookDate').value;
+                const time       = document.getElementById('bookTime').value;
+                const returnJ    = document.getElementById('bookReturn').value;
+                const passengers = document.getElementById('bookPassengers').value;
+                const suitcases  = document.getElementById('bookSuitcases').value;
+                const vehicle    = document.getElementById('bookVehicle').value;
+                const amount     = document.getElementById('bookAmount').value;
+                const notes      = document.getElementById('bookNotes').value.trim();
+
+                // ── Disable button while sending ──
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Sending…';
+
+                // ── Build structured email body ──
+                const emailBody =
+                    `BOOKING REQUEST — Aurex Executive Travel\n` +
+                    `${'─'.repeat(45)}\n\n` +
+                    `CUSTOMER DETAILS\n` +
+                    `Name:             ${name}\n` +
+                    `Mobile:           ${mobile}\n` +
+                    `Email:            ${email}\n\n` +
+                    `JOURNEY DETAILS\n` +
+                    `Pickup:           ${pickup}\n` +
+                    `Drop-off:         ${dropoff}\n` +
+                    `Airport:          ${airport}\n` +
+                    `Flight Number:    ${flight}\n` +
+                    `Date:             ${date}\n` +
+                    `Time:             ${time}\n` +
+                    `Return Journey:   ${returnJ === 'yes' ? 'Yes' : 'No'}\n` +
+                    `Passengers:       ${passengers}\n` +
+                    `Suitcases:        ${suitcases}\n` +
+                    `Vehicle:          ${vehicle}\n` +
+                    `Journey Price:    £${parseFloat(amount).toFixed(2)}\n` +
+                    (notes ? `Notes:            ${notes}\n` : '') +
+                    `\n✅ Customer is proceeding to PayPal payment of £${parseFloat(amount).toFixed(2)}.`;
+
+                // ── Send via Web3Forms ──
+                try {
+                    const res = await fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify({
+                            access_key:  WEB3FORMS_KEY,
+                            subject:     `Booking Request — ${name} | ${pickup} → ${dropoff} on ${date}`,
+                            message:     emailBody,
+                            // Mirror customer fields so Web3Forms formats them nicely
+                            name:        name,
+                            email:       email,
+                            phone:       mobile,
+                            pickup:      pickup,
+                            dropoff:     dropoff,
+                            airport:     airport,
+                            flight:      flight,
+                            date:        date,
+                            time:        time,
+                            return_journey: returnJ === 'yes' ? 'Yes' : 'No',
+                            passengers:  passengers,
+                            suitcases:   suitcases,
+                            vehicle:     vehicle,
+                            price:       `£${parseFloat(amount).toFixed(2)}`,
+                            notes:       notes || '—',
+                            from_page:   'book.html'
+                        })
+                    });
+
+                    const json = await res.json();
+
+                    if (!res.ok || !json.success) {
+                        throw new Error(json.message || 'Submission failed');
+                    }
+
+                    // ── Success: populate payment panel ──
+                    document.getElementById('payFromTo').textContent   = `${pickup} → ${dropoff}`;
+                    document.getElementById('payDateTime').textContent  = `${date} at ${time}`;
+                    document.getElementById('payVehicle').textContent   = vehicle;
+                    document.getElementById('payTotal').textContent     = `£${parseFloat(amount).toFixed(2)}`;
+
+                    // Build PayPal payment link
+                    const paypalNote = encodeURIComponent(`Aurex Executive Travel – ${pickup} to ${dropoff} on ${date}`);
+                    const paypalUrl  = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(PAYPAL_EMAIL)}&amount=${parseFloat(amount).toFixed(2)}&currency_code=GBP&item_name=${paypalNote}&no_shipping=1`;
+                    document.getElementById('paypalPayBtn').href = paypalUrl;
+
+                    // Show payment panel
+                    formSection.style.display = 'none';
+                    payPanel.style.display    = 'block';
+                    payPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                } catch (err) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Send Booking Request &amp; Proceed to Payment';
+                    alert('Sorry, there was a problem sending your booking request. Please try again or contact us directly at info@aurexexecutivetravel.com.');
+                    console.error('Web3Forms error:', err);
+                }
+            });
+        }
+
+        // Edit button — go back to form
+        if (editBtn) {
+            editBtn.addEventListener('click', function() {
+                payPanel.style.display    = 'none';
+                formSection.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Send Booking Request &amp; Proceed to Payment';
+                formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        }
+
+        // Pre-fill from URL params (from prices page Book Now buttons)
+        const params       = new URLSearchParams(window.location.search);
+        const dropoffField = document.getElementById('bookDropoff');
+        const vehicleField = document.getElementById('bookVehicle');
+        if (params.get('route')   && dropoffField) dropoffField.value = params.get('route').replace(/\+/g, ' ');
+        if (params.get('vehicle') && vehicleField) vehicleField.value = params.get('vehicle');
+    </script>
 </body>
 
 </html>

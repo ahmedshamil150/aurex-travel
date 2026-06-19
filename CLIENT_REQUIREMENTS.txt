@@ -1,0 +1,261 @@
+================================================================================
+  AUREX EXECUTIVE TRAVEL — WHAT I NEED FROM YOU
+  Please read through and provide everything listed below
+================================================================================
+  Prepared by: Developer
+  Date: June 2026
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. DOMAIN CREDENTIALS
+--------------------------------------------------------------------------------
+
+What I need from you:
+  - Your domain name (e.g. aurextravel.co.uk or aurexexecutive.com)
+  - Your login credentials for your domain registrar
+    (e.g. GoDaddy, Namecheap, 123-Reg, Google Domains)
+  - OR: Access to your DNS settings panel so I can point the domain
+    to your hosting server
+
+If you do not have a domain yet:
+  - I recommend purchasing one from Namecheap (namecheap.com) or
+    GoDaddy (godaddy.com)
+  - A .co.uk domain costs approximately £10/year
+  - A .com domain costs approximately £12/year
+  - Buy it using your business email address
+
+What I will do with it:
+  - Point your domain to your website
+  - Set up your SSL certificate (the padlock / https://) — this is free
+
+
+--------------------------------------------------------------------------------
+2. YOUR BUSINESS DETAILS
+--------------------------------------------------------------------------------
+
+Please send me the following so I can update the website with your real info:
+
+  a) Business Email Address
+     - The email address where ALL enquiries, bookings, and form submissions
+       should arrive (e.g. info@aurextravel.co.uk)
+     - This will replace the current placeholder: info@aurexexecutivetravel.com
+
+  b) Business Phone Number
+     - The UK number your customers should call
+     - This will replace the current placeholder: +44 000 000 000
+
+  c) WhatsApp Number
+     - Your WhatsApp is currently set to: +92 332 5308087
+     - Please confirm this is correct, or send me the right number
+
+  d) Business Address (optional)
+     - If you want your address shown on the Contact page
+     - If not, I will keep it as contact by phone / WhatsApp / email only
+
+  e) Your Company Legal Name
+     - The registered name of your company
+     - Needed for the Terms & Conditions and Privacy Policy pages
+
+  f) Company Registration Number (if you have one)
+     - For the legal pages and footer
+
+  g) Operator's Licence Number
+     - Your private hire operator licence number
+     - Displaying this on the website builds trust with customers
+
+
+--------------------------------------------------------------------------------
+3. FORMINIT — DOCUMENT UPLOAD FORMS
+--------------------------------------------------------------------------------
+
+Forminit is the service that lets drivers upload their documents (DBS, licence,
+passport, etc.) and sends those files directly to your email inbox.
+
+Your driver registration form is already connected and working.
+I still need a second form set up for the VEHICLE REGISTRATION form.
+
+--- HOW TO CREATE THE VEHICLE REGISTRATION FORM (takes 2 minutes) ---
+
+Step 1 — Go to: https://app.forminit.com/
+Step 2 — Log in to your account
+Step 3 — Click "New Form" or the "+" button
+Step 4 — Name it: "Vehicle Registration — Aurex Executive Travel"
+Step 5 — Under Notifications or Email settings, set the recipient to your
+          business email address so you receive each submission
+Step 6 — Click "Create" or "Save"
+Step 7 — On the form detail page, find your Form ID — it is either shown
+          in the page URL or in the form settings. It looks like: xik1462b4tw
+Step 8 — Copy that ID and send it to me
+
+--- PREFER TO HAND IT OVER? ---
+
+If you would rather I handle it, just share your Forminit login and I will:
+  - Create the vehicle registration form for you
+  - Set up email notifications to go to your business email
+  - Test both forms to make sure everything is working
+
+  Forminit account email:    ___________________________
+  Forminit account password: ___________________________
+
+  (Please share securely — do not send by regular text message.
+   WhatsApp is fine, or use a password sharing tool.)
+
+
+--------------------------------------------------------------------------------
+4. PAYMENT INTEGRATION
+--------------------------------------------------------------------------------
+
+You want customers to be able to pay directly on the website after their
+booking is confirmed, with the money going into your bank account.
+
+RECOMMENDED: Stripe
+
+Stripe is the most trusted payment processor in the UK. It supports card
+payments, Apple Pay, and Google Pay. Money is paid out directly to your UK
+bank account, usually within 2 business days.
+
+--- HOW TO SET UP YOUR STRIPE ACCOUNT ---
+
+Step 1 — Go to: https://stripe.com/gb
+Step 2 — Click "Start now" and sign up with your business email
+Step 3 — Complete identity verification (5–10 minutes)
+         You will need:
+           - Your full legal name
+           - Your business name and address
+           - Your UK bank account details (sort code + account number)
+           - Your mobile number for verification
+Step 4 — Once your account is active, go to:
+          Developers → API Keys
+Step 5 — You will see two keys:
+           - Publishable key  (starts with pk_live_...)  ← SAFE TO SHARE
+           - Secret key       (starts with sk_live_...)  ← NEVER SHARE THIS
+Step 6 — Send me ONLY the Publishable key (pk_live_...)
+          Keep your Secret key private at all times
+
+--- PREFER TO HAND IT OVER? ---
+
+If you would rather I set it up for you, share your Stripe login and I will
+handle the full integration.
+
+  Stripe account email:    ___________________________
+  Stripe account password: ___________________________
+
+--- STRIPE FEES (for your reference) ---
+
+  - 1.5% + 20p per successful UK card transaction
+  - No monthly fees, no setup cost
+  - Apple Pay and Google Pay included at no extra charge
+
+--- PAYPAL (optional alternative) ---
+
+PayPal can also be added alongside or instead of Stripe.
+Please confirm which you want:
+
+  [ ] Stripe (card / Apple Pay / Google Pay)  ← recommended
+  [ ] PayPal
+  [ ] Both Stripe and PayPal
+
+
+--------------------------------------------------------------------------------
+5. CHAUFFEUR DRIVE SYSTEMS (CDS) — BOOKING INTEGRATION
+--------------------------------------------------------------------------------
+
+You have an existing account at: https://app.chauffeurdrivesystems.com/
+
+CDS is a professional chauffeur booking and dispatch management platform.
+The goal is to connect your Aurex website to CDS so bookings flow straight in
+without you having to copy anything manually.
+
+--- OPTION A — CDS WEB BOOKING WIDGET (best option if available) ---
+
+CDS may provide an embeddable booking form that can sit directly on your
+website, so customers book without ever leaving your site.
+
+To check if this is available on your plan:
+  1. Log in to CDS at: https://app.chauffeurdrivesystems.com/
+  2. Go to Settings → look for "Web Widget", "Booking Widget", or "Integrations"
+  3. If available, you will see an embed code (a snippet of HTML/JavaScript)
+  4. Copy that code and send it to me — I will embed it cleanly into your
+     website so it matches your black and gold design
+
+--- OPTION B — CDS API INTEGRATION (advanced, if your plan supports it) ---
+
+If CDS offers API access on your plan, I can build a direct connection so
+that every booking submitted on your website is automatically created inside
+CDS, with no manual work needed on your end.
+
+To check if this is available:
+  1. Log in to CDS and look in Settings → Developers / API
+  2. Or contact CDS support directly:
+     Email: ask via the chat on their website
+     Ask them: "Does my current plan include API access or a web booking
+                widget I can embed on my own website?"
+  3. If yes, they will give you an API key — send that key to me
+
+--- OPTION C — DIRECT LINK (simplest option, works with any plan) ---
+
+If your CDS plan does not include a widget or API access, the simplest
+solution is to link your "Book Now" button directly to your CDS booking page.
+
+  - Your CDS booking portal has its own URL
+    (something like: https://booking.chauffeurdrivesystems.com/yourcompany)
+  - I will point the "Book Now" button on your website straight to that URL
+  - Customers click "Book Now", they are taken to your CDS booking page
+    in a new tab, and they complete their booking there
+  - This requires zero technical setup — just send me your CDS booking link
+  - The downside is customers leave your website to complete the booking,
+    but this is a perfectly normal and widely used approach
+
+To find your CDS booking link:
+  1. Log in to CDS
+  2. Go to Settings → Web Portal / Client Portal / Booking Link
+  3. Copy the URL and send it to me
+
+--- WHAT I NEED FROM YOU FOR CDS ---
+
+Please send me ONE of the following:
+
+  [ ] Option A — CDS widget embed code
+      (Copy from your CDS settings and paste it here)
+
+  [ ] Option B — CDS API key
+      (From CDS Settings → API / Developers)
+
+  [ ] Option C — Your CDS direct booking page URL
+      (The link customers would use to book through CDS directly)
+
+  [ ] Not sure — I will log into CDS for you
+      CDS account email:    ___________________________
+      CDS account password: ___________________________
+
+
+--------------------------------------------------------------------------------
+SUMMARY — QUICK CHECKLIST
+--------------------------------------------------------------------------------
+
+Please send me the following:
+
+  [ ]  1. Domain name + registrar login OR DNS access
+  [ ]  2. Business email address
+  [ ]  3. Business phone number
+  [ ]  4. WhatsApp number confirmation (+92 332 5308087 — correct or not?)
+  [ ]  5. Business address (optional)
+  [ ]  6. Company legal name
+  [ ]  7. Company registration number (if applicable)
+  [ ]  8. Operator's licence number
+  [ ]  9. Forminit — Vehicle Registration form ID
+           OR your Forminit login so I can create it for you
+  [ ] 10. Stripe Publishable key (pk_live_...)
+           OR your Stripe login so I can set it up
+           OR confirm if you want PayPal instead / as well
+  [ ] 11. CDS — choose one option:
+           A) Widget embed code from CDS settings
+           B) CDS API key
+           C) Your CDS direct booking page URL
+           OR your CDS login so I can check on your behalf
+
+
+================================================================================
+  END OF DOCUMENT
+================================================================================

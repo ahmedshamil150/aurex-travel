@@ -1411,3 +1411,153 @@ input:focus, select:focus, textarea:focus {
    RESPONSIVE — DRIVER PORTAL
 ======================== */
 /* All driver portal responsive rules are in the main @media (max-width: 900px) block above */
+
+/* ========================
+   PAYMENT PANEL (book.html)
+======================== */
+.payment-panel {
+    background: var(--bg-color);
+    border: 1px solid var(--border-strong);
+    border-top: 4px solid var(--accent);
+    box-shadow: var(--shadow-card);
+    padding: 3rem;
+    margin: 0 auto;
+}
+
+.payment-panel-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.payment-panel-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(212,175,55,0.12);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.payment-panel-icon i {
+    color: var(--accent);
+    font-size: 1.2rem;
+}
+
+.payment-panel-header h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+}
+
+.payment-panel-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Summary table */
+.payment-summary {
+    background: #fafafa;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2.5rem;
+}
+
+.payment-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.payment-summary-row:last-child { border-bottom: none; }
+.payment-summary-row span { color: var(--text-muted); }
+.payment-summary-row strong { color: var(--text-main); font-weight: 600; }
+
+.payment-summary-total {
+    background: var(--dark-bg);
+}
+
+.payment-summary-total span {
+    color: rgba(255,255,255,0.7) !important;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.payment-summary-total strong {
+    color: var(--accent) !important;
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+/* Payment methods */
+.payment-methods {
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid #003087;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.payment-methods h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.paypal-pay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    background: #003087;
+    color: #ffffff !important;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: none;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.paypal-pay-btn i { font-size: 1.4rem; }
+
+.paypal-pay-btn:hover {
+    background: #001f5c;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,48,135,0.3);
+}
+
+/* Info note */
+.payment-panel-note {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: rgba(212,175,55,0.05);
+    border: 1px solid rgba(212,175,55,0.25);
+    font-size: 0.88rem;
+}
+
+.payment-panel-note i {
+    color: var(--accent);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.payment-panel-note p { color: var(--text-muted); line-height: 1.7; margin: 0; }
+
+@media (max-width: 900px) {
+    .payment-panel { padding: 1.75rem; }
+    .payment-panel-header { flex-direction: column; gap: 0.75rem; }
+    .paypal-pay-btn { width: 100%; justify-content: center; }
+    .payment-summary-row { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    .payment-summary-total { flex-direction: row !important; align-items: center !important; }
+}
