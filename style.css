@@ -1,6 +1,6 @@
 /* ===================================================
    Aurex Executive Travel — Main Stylesheet
-   Color scheme: Black · Gold (#d4af37) · White · Dark Grey
+   Color scheme: Black · Gold (#d4af37) · Teal (#1a5068) · White · Dark Grey
    =================================================== */
 
 /* Reset & Variables */
@@ -9,6 +9,9 @@
     --text-main: #222222;
     --text-muted: #666666;
     --accent: #d4af37;           /* Refined Gold */
+    --teal: #1a5068;             /* Brand Teal */
+    --teal-light: #236080;       /* Teal hover / lighter variant */
+    --teal-dark: #123a4d;        /* Teal deep / shadow variant */
     --border-color: #eaeaea;
     --border-strong: #d8d8d8;
     --shadow-soft: 0 18px 45px rgba(3, 3, 3, 0.08);
@@ -177,7 +180,9 @@ h1, h2, h3, h4 { font-weight: 400; line-height: 1.15; color: var(--text-main); }
     justify-content: center;
     text-align: center;
     padding: 0 20px;
-    background: linear-gradient(rgba(0,0,0,0.62), rgba(0,0,0,0.62)), url('hero_bg.png');
+    background:
+        linear-gradient(135deg, rgba(18, 58, 77, 0.82) 0%, rgba(26, 80, 104, 0.70) 40%, rgba(3, 3, 3, 0.72) 100%),
+        url('hero_bg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -214,12 +219,23 @@ h1, h2, h3, h4 { font-weight: 400; line-height: 1.15; color: var(--text-main); }
 /* Page Header (interior pages) */
 .page-header {
     padding: 12rem 20px 6rem 20px;
-    background-color: var(--dark-bg);
+    background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 60%, var(--teal-light) 100%);
     text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.page-header h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--dark-text); margin-bottom: 1rem; }
-.page-header p { color: rgba(255,255,255,0.65); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+.page-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('hero_bg.png') center/cover no-repeat;
+    opacity: 0.07;
+    pointer-events: none;
+}
+
+.page-header h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--dark-text); margin-bottom: 1rem; position: relative; }
+.page-header p { color: rgba(255,255,255,0.75); font-size: 1.1rem; max-width: 600px; margin: 0 auto; position: relative; }
 
 /* ========================
    BUTTONS
@@ -333,7 +349,7 @@ button, .btn-primary, .btn-secondary, .btn-outline {
 /* ========================
    QUOTE SECTION
 ======================== */
-.quote-section { padding: 8rem 0; background-color: #f7f7f7; }
+.quote-section { padding: 8rem 0; background: linear-gradient(160deg, #f0f5f7 0%, #e6eff3 100%); }
 
 .quote-calculator {
     background-color: var(--bg-color);
@@ -595,7 +611,7 @@ input:focus, select:focus, textarea:focus {
 /* ========================
    FOOTER
 ======================== */
-.footer { padding: 6rem 0 3rem 0; background-color: var(--dark-bg); }
+.footer { padding: 6rem 0 3rem 0; background: linear-gradient(160deg, var(--teal-dark) 0%, #0d2e3a 100%); }
 
 .footer-grid {
     display: grid;
@@ -724,6 +740,7 @@ input:focus, select:focus, textarea:focus {
     flex-wrap: wrap;
     justify-content: center;
     gap: 0;
+    background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
 }
 
 .trust-item {
@@ -734,8 +751,8 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.85rem;
     font-weight: 400;
     letter-spacing: 0.5px;
-    color: var(--text-main);
-    border-right: 1px solid var(--border-color);
+    color: rgba(255,255,255,0.85);
+    border-right: 1px solid rgba(255,255,255,0.12);
 }
 
 .trust-item:last-child { border-right: none; }
@@ -748,7 +765,7 @@ input:focus, select:focus, textarea:focus {
 /* ========================
    PRICE SNAPSHOT (homepage)
 ======================== */
-.prices-snapshot { padding: 8rem 0; background-color: #f7f7f7; }
+.prices-snapshot { padding: 8rem 0; background: linear-gradient(160deg, #f0f5f7 0%, #e6eff3 100%); }
 
 .price-snapshot-grid {
     display: grid;
