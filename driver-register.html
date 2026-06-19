@@ -184,50 +184,44 @@
             </div>
 
             <form id="driverApplicationForm"
-                  action="https://forminit.com/f/xik1462b4tw"
-                  method="POST"
                   enctype="multipart/form-data"
                   class="driver-form">
-
-                <!-- Forminit config -->
-                <input type="hidden" name="_subject" value="New Driver Application — Aurex Executive Travel">
-                <input type="hidden" name="_redirect" value="success.html?type=driver">
 
                 <!-- Personal Details -->
                 <h3 class="form-section-title">Personal Details</h3>
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="drvFirstName">First Name *</label>
-                        <input type="text" id="drvFirstName" name="first_name" required>
+                        <input type="text" id="drvFirstName" name="fi-sender-firstName" required>
                     </div>
                     <div class="form-group half">
                         <label for="drvLastName">Last Name *</label>
-                        <input type="text" id="drvLastName" name="last_name" required>
+                        <input type="text" id="drvLastName" name="fi-sender-lastName" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="drvEmail">Email Address *</label>
-                        <input type="email" id="drvEmail" name="email" required>
+                        <input type="email" id="drvEmail" name="fi-sender-email" required>
                     </div>
                     <div class="form-group half">
                         <label for="drvMobile">Mobile Number *</label>
-                        <input type="tel" id="drvMobile" name="mobile" placeholder="+44 000 000 000" required>
+                        <input type="tel" id="drvMobile" name="fi-sender-phone" placeholder="+44 000 000 000" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="drvDOB">Date of Birth *</label>
-                        <input type="date" id="drvDOB" name="dob" required>
+                        <input type="date" id="drvDOB" name="fi-date-dateOfBirth" required>
                     </div>
                     <div class="form-group half">
                         <label for="drvNI">National Insurance Number *</label>
-                        <input type="text" id="drvNI" name="ni_number" placeholder="e.g. AB 12 34 56 C" required>
+                        <input type="text" id="drvNI" name="fi-text-niNumber" placeholder="e.g. AB 12 34 56 C" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="drvAddress">Full Home Address *</label>
-                    <input type="text" id="drvAddress" name="address" placeholder="Full address including postcode" required>
+                    <input type="text" id="drvAddress" name="fi-sender-address" placeholder="Full address including postcode" required>
                 </div>
 
                 <!-- Licence Details -->
@@ -235,11 +229,11 @@
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="drvLicenceNum">DVLA Driving Licence Number *</label>
-                        <input type="text" id="drvLicenceNum" name="dvla_licence_number" placeholder="e.g. JONES001234AB9IJ" required>
+                        <input type="text" id="drvLicenceNum" name="fi-text-dvlaLicenceNumber" placeholder="e.g. JONES001234AB9IJ" required>
                     </div>
                     <div class="form-group half">
                         <label for="drvLicenceYears">Years Held Driving Licence *</label>
-                        <select id="drvLicenceYears" name="licence_years_held" required>
+                        <select id="drvLicenceYears" name="fi-select-licenceYearsHeld" required>
                             <option value="" disabled selected>Select</option>
                             <option>1–2 years</option>
                             <option>3–5 years</option>
@@ -251,7 +245,7 @@
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="drvPHDL">Do you hold a Private Hire Driver Licence (PHDL)?</label>
-                        <select id="drvPHDL" name="has_phdl">
+                        <select id="drvPHDL" name="fi-select-hasPHDL">
                             <option value="yes">Yes — I have a valid PHDL</option>
                             <option value="no">No — I am applying / in process</option>
                             <option value="need-help">No — I need help getting one</option>
@@ -259,17 +253,17 @@
                     </div>
                     <div class="form-group half">
                         <label for="drvPHDLNum">PHDL Licence Number (if held)</label>
-                        <input type="text" id="drvPHDLNum" name="phdl_number" placeholder="Leave blank if not yet held">
+                        <input type="text" id="drvPHDLNum" name="fi-text-phldNumber" placeholder="Leave blank if not yet held">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="drvPHDLExpiry">PHDL Expiry Date (if held)</label>
-                        <input type="date" id="drvPHDLExpiry" name="phdl_expiry">
+                        <input type="date" id="drvPHDLExpiry" name="fi-date-phldExpiry">
                     </div>
                     <div class="form-group half">
                         <label for="drvDBSStatus">DBS Check Status *</label>
-                        <select id="drvDBSStatus" name="dbs_status" required>
+                        <select id="drvDBSStatus" name="fi-select-dbsStatus" required>
                             <option value="" disabled selected>Select</option>
                             <option value="have">I have a valid Enhanced DBS (within 2 months)</option>
                             <option value="applied">Applied — waiting for result</option>
@@ -279,7 +273,7 @@
                 </div>
                 <div class="form-group">
                     <label for="drvPoints">Driving Licence Penalty Points</label>
-                    <select id="drvPoints" name="penalty_points">
+                    <select id="drvPoints" name="fi-select-penaltyPoints">
                         <option value="0">0 points — clean licence</option>
                         <option value="1-3">1–3 points</option>
                         <option value="4-6">4–6 points</option>
@@ -292,7 +286,7 @@
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="drvExperience">Professional Driving Experience</label>
-                        <select id="drvExperience" name="experience">
+                        <select id="drvExperience" name="fi-select-drivingExperience">
                             <option value="none">None — first time applying</option>
                             <option value="under1">Less than 1 year</option>
                             <option value="1-3">1–3 years</option>
@@ -302,7 +296,7 @@
                     </div>
                     <div class="form-group half">
                         <label for="drvVehicleOwn">Do you own a suitable vehicle?</label>
-                        <select id="drvVehicleOwn" name="owns_vehicle">
+                        <select id="drvVehicleOwn" name="fi-select-ownsVehicle">
                             <option value="yes">Yes</option>
                             <option value="no">No — I need to arrange one</option>
                         </select>
@@ -310,12 +304,12 @@
                 </div>
                 <div class="form-group">
                     <label for="drvNotes">Additional Notes / Any Convictions or Endorsements to Declare</label>
-                    <textarea id="drvNotes" name="notes" rows="3" placeholder="Anything relevant to your application..."></textarea>
+                    <textarea id="drvNotes" name="fi-text-notes" rows="3" placeholder="Anything relevant to your application..."></textarea>
                 </div>
 
                 <!-- Document Uploads -->
                 <h3 class="form-section-title" style="margin-top:2.5rem;">Document Uploads</h3>
-                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Upload clear photos or scans of your documents. Accepted formats: JPG, PNG, PDF. Max 10MB per file. All documents are sent directly to <strong>info@aurex.com</strong>.</p>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">Upload clear photos or scans of your documents. Accepted formats: JPG, PNG, PDF. Max 25MB per file. All documents are sent directly to <strong>info@aurex.com</strong>.</p>
 
                 <div class="upload-grid">
                     <div class="upload-item">
@@ -323,7 +317,7 @@
                             <i class="fa-solid fa-id-card"></i>
                             DVLA Driving Licence (Front) *
                         </label>
-                        <input type="file" id="uploadDVLA" name="dvla_front" accept="image/*,.pdf" required>
+                        <input type="file" id="uploadDVLA" name="fi-file-dvlaFront" accept="image/*,.pdf" required>
                         <span class="upload-hint">Photocard front — colour image</span>
                     </div>
                     <div class="upload-item">
@@ -331,7 +325,7 @@
                             <i class="fa-solid fa-id-card"></i>
                             DVLA Driving Licence (Back)
                         </label>
-                        <input type="file" id="uploadDVLABack" name="dvla_back" accept="image/*,.pdf">
+                        <input type="file" id="uploadDVLABack" name="fi-file-dvlaBack" accept="image/*,.pdf">
                         <span class="upload-hint">Photocard back / paper counterpart</span>
                     </div>
                     <div class="upload-item">
@@ -339,7 +333,7 @@
                             <i class="fa-solid fa-certificate"></i>
                             Private Hire Driver Licence
                         </label>
-                        <input type="file" id="uploadPHDL" name="phdl_document" accept="image/*,.pdf">
+                        <input type="file" id="uploadPHDL" name="fi-file-phdlDocument" accept="image/*,.pdf">
                         <span class="upload-hint">Paper licence + badge if applicable</span>
                     </div>
                     <div class="upload-item">
@@ -347,7 +341,7 @@
                             <i class="fa-solid fa-shield-halved"></i>
                             Enhanced DBS Certificate
                         </label>
-                        <input type="file" id="uploadDBS" name="dbs_certificate" accept="image/*,.pdf">
+                        <input type="file" id="uploadDBS" name="fi-file-dbsCertificate" accept="image/*,.pdf">
                         <span class="upload-hint">Must be within 2 months</span>
                     </div>
                     <div class="upload-item">
@@ -355,7 +349,7 @@
                             <i class="fa-solid fa-stethoscope"></i>
                             D4 Medical Form
                         </label>
-                        <input type="file" id="uploadMedical" name="d4_medical" accept="image/*,.pdf">
+                        <input type="file" id="uploadMedical" name="fi-file-d4Medical" accept="image/*,.pdf">
                         <span class="upload-hint">GP-signed DVLA D4 form</span>
                     </div>
                     <div class="upload-item">
@@ -363,7 +357,7 @@
                             <i class="fa-solid fa-passport"></i>
                             Passport / Right to Work *
                         </label>
-                        <input type="file" id="uploadPassport" name="passport" accept="image/*,.pdf" required>
+                        <input type="file" id="uploadPassport" name="fi-file-passport" accept="image/*,.pdf" required>
                         <span class="upload-hint">Passport or biometric card</span>
                     </div>
                     <div class="upload-item">
@@ -371,15 +365,15 @@
                             <i class="fa-solid fa-house"></i>
                             Proof of Address *
                         </label>
-                        <input type="file" id="uploadProofAddress" name="proof_of_address" accept="image/*,.pdf" required>
+                        <input type="file" id="uploadProofAddress" name="fi-file-proofOfAddress" accept="image/*,.pdf" required>
                         <span class="upload-hint">Bank statement / utility bill (within 3 months)</span>
                     </div>
                     <div class="upload-item">
                         <label for="uploadInsurance">
                             <i class="fa-solid fa-file-shield"></i>
-                            Hire & Reward Insurance
+                            Hire &amp; Reward Insurance
                         </label>
-                        <input type="file" id="uploadInsurance" name="insurance" accept="image/*,.pdf">
+                        <input type="file" id="uploadInsurance" name="fi-file-insurance" accept="image/*,.pdf">
                         <span class="upload-hint">Policy covering private hire work</span>
                     </div>
                     <div class="upload-item">
@@ -387,7 +381,7 @@
                             <i class="fa-solid fa-camera"></i>
                             Profile Photo *
                         </label>
-                        <input type="file" id="uploadPhoto" name="profile_photo" accept="image/*" required>
+                        <input type="file" id="uploadPhoto" name="fi-file-profilePhoto" accept="image/*" required>
                         <span class="upload-hint">Plain background, face clearly visible</span>
                     </div>
                 </div>
@@ -395,21 +389,24 @@
                 <!-- Declaration -->
                 <div class="declaration-box">
                     <label class="checkbox-label">
-                        <input type="checkbox" name="declaration" required>
+                        <input type="checkbox" id="drvDeclaration" required>
                         <span>I confirm that all information and documents provided are genuine, accurate, and belong to me. I understand that providing false information will result in my application being rejected and may be reported to the relevant authorities. *</span>
                     </label>
                     <label class="checkbox-label" style="margin-top:0.75rem;">
-                        <input type="checkbox" name="privacy_consent" required>
+                        <input type="checkbox" id="drvPrivacy" required>
                         <span>I consent to Aurex Executive Travel storing and processing my personal data and documents for the purpose of this driver application, in accordance with the <a href="privacy.html" target="_blank">Privacy Policy</a>. *</span>
                     </label>
                     <label class="checkbox-label" style="margin-top:0.75rem;">
-                        <input type="checkbox" name="whatsapp_consent">
+                        <input type="checkbox" id="drvWhatsapp">
                         <span>I also consent to my application details being shared on the company WhatsApp for faster processing by the team.</span>
                     </label>
                 </div>
 
+                <!-- Status message -->
+                <div id="driverFormStatus" style="display:none; margin-top:1.5rem; padding:1rem 1.5rem; border-left:4px solid var(--accent); background:rgba(212,175,55,0.06); font-size:0.9rem;"></div>
+
                 <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:2rem;">
-                    <button type="submit" class="btn-primary" id="submitDriverForm">Submit Application by Email</button>
+                    <button type="submit" class="btn-primary" id="submitDriverForm">Submit Application</button>
                     <button type="button" class="btn-secondary" id="submitDriverWhatsApp">Also Send Summary via WhatsApp</button>
                 </div>
 
@@ -457,5 +454,50 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="https://forminit.com/sdk/v1/forminit.js"></script>
+    <script>
+        const forminit = new Forminit();
+        const driverForm = document.getElementById('driverApplicationForm');
+        const driverStatus = document.getElementById('driverFormStatus');
+        const driverSubmitBtn = document.getElementById('submitDriverForm');
+
+        if (driverForm) {
+            driverForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Check declarations manually (not named fields)
+                if (!document.getElementById('drvDeclaration').checked) {
+                    driverStatus.style.display = 'block';
+                    driverStatus.style.borderColor = '#e55';
+                    driverStatus.textContent = 'Please confirm the declaration before submitting.';
+                    return;
+                }
+                if (!document.getElementById('drvPrivacy').checked) {
+                    driverStatus.style.display = 'block';
+                    driverStatus.style.borderColor = '#e55';
+                    driverStatus.textContent = 'Please accept the privacy consent before submitting.';
+                    return;
+                }
+
+                driverSubmitBtn.textContent = 'Submitting...';
+                driverSubmitBtn.disabled = true;
+                driverStatus.style.display = 'none';
+
+                const { data, error } = await forminit.submit('xik1462b4tw', new FormData(driverForm));
+
+                if (error) {
+                    driverStatus.style.display = 'block';
+                    driverStatus.style.borderColor = '#e55';
+                    driverStatus.textContent = 'Error: ' + error.message + '. Please try again or contact us directly.';
+                    driverSubmitBtn.textContent = 'Submit Application';
+                    driverSubmitBtn.disabled = false;
+                    return;
+                }
+
+                // Success — redirect to success page
+                window.location.href = 'success.html?type=driver';
+            });
+        }
+    </script>
 </body>
 </html>
