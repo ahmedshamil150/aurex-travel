@@ -271,21 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Driver Application form submit confirmation ---
-    const driverAppForm = document.getElementById('driverApplicationForm');
-    if (driverAppForm) {
-        driverAppForm.addEventListener('submit', (e) => {
-            // Formspree handles the actual submission.
-            // We show a brief confirmation message after submit.
-            // The default Formspree redirect handles the thank-you page.
-            const btn = document.getElementById('submitDriverForm');
-            if (btn) {
-                btn.textContent = 'Submitting...';
-                btn.disabled = true;
-            }
-        });
-    }
-
     // --- Vehicle Registration: WhatsApp summary button ---
     const vehicleWABtn = document.getElementById('submitVehicleWhatsApp');
     if (vehicleWABtn) {
@@ -318,18 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 `\n📎 Full registration with vehicle photos sent to ${COMPANY_EMAIL}.\nPlease review and confirm.`;
 
             sendToWhatsApp(message);
-        });
-    }
-
-    // --- Vehicle Registration form submit confirmation ---
-    const vehicleRegForm = document.getElementById('vehicleRegistrationForm');
-    if (vehicleRegForm) {
-        vehicleRegForm.addEventListener('submit', () => {
-            const btn = document.getElementById('submitVehicleForm');
-            if (btn) {
-                btn.textContent = 'Submitting...';
-                btn.disabled = true;
-            }
         });
     }
 
