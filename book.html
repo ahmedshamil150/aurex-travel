@@ -79,8 +79,8 @@
                             <input type="text" id="bookName" name="name" required>
                         </div>
                         <div class="form-group half">
-                            <label for="bookEmail">Email Address *</label>
-                            <input type="email" id="bookEmail" name="_replyto" placeholder="you@example.com" required>
+                            <label for="bookEmail">Email Address</label>
+                            <input type="email" id="bookEmail" name="_replyto" placeholder="you@example.com">
                         </div>
                     </div>
                     <div class="form-row">
@@ -397,8 +397,8 @@
                 const message = `*Booking Request – Aurex Executive Travel (URGENT)*
 
 *Name:* ${name}
-*Mobile:* ${mobile}
-*Email:* ${email}
+*Mobile:* ${mobile}${email ? `
+*Email:* ${email}` : ''}
 
 *Pickup:* ${pickup}
 *Drop-off:* ${dropoff}
