@@ -63,7 +63,7 @@
             <!-- Instant Calculator -->
             <div class="quote-tab-content active" id="tab-instant">
                 <div class="quote-calculator">
-                    <p style="margin-bottom: 2rem; color: var(--text-muted);">Enter your journey distance in miles and get an instant estimate at <strong>£2 per mile</strong>. For example, a 135-mile journey = <strong>£270</strong>.</p>
+                    <p style="margin-bottom: 2rem; color: var(--text-muted);">Enter your pickup and drop-off locations and get an instant estimate at <strong>£2 per mile</strong>.</p>
                     <form id="instantQuoteForm">
                         <div class="form-row">
                             <div class="form-group half">
@@ -75,19 +75,14 @@
                                 <input type="text" id="iTo" placeholder="e.g. Heathrow Airport" required>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="iMiles">Estimated Distance (Miles)</label>
-                            <input type="number" id="iMiles" min="1" placeholder="e.g. 135" required>
-                        </div>
                         <button type="submit" class="btn-primary">Calculate Estimate</button>
                     </form>
                     <div id="instantResult" class="quote-result" style="display:none;">
                         <h3>Estimated Price: <span id="calcPrice">£0</span></h3>
                         <p>Based on <span id="calcMiles">0</span> miles at £2 per mile.</p>
-                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">This is an estimate. For a fixed confirmed price, use the custom quote form or view our price list.</p>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">This is an estimate. For a confirmed booking, continue to the booking form.</p>
                         <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
-                            <a href="book.html" class="btn-primary">Book Now</a>
-                            <a href="prices.html" class="btn-secondary">View Fixed Prices</a>
+                            <a href="book.html" class="btn-primary" id="instantBookNow">Book Now</a>
                         </div>
                     </div>
                 </div>
@@ -98,7 +93,7 @@
                 <div class="quote-calculator">
                     <p style="margin-bottom: 2rem; color: var(--text-muted);">Fill in your journey details and your offered price. We'll review and get back to you — we can accept, adjust, or send you a confirmed fixed price.</p>
                     <form id="customQuoteForm"
-                          action="https://formsubmit.co/info@aurexexecutivetravel.com"
+                          action="https://formsubmit.co/nayyer.zaman@gmail.com"
                           method="POST">
                         <input type="hidden" name="_subject" value="New Custom Quote Request - Aurex Executive Travel">
                         <input type="hidden" name="_next" value="success.html?type=quote">

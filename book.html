@@ -66,28 +66,24 @@
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
             <form id="bookingForm"
-                  action="https://formsubmit.co/info@aurexexecutivetravel.com"
+                  action="https://formsubmit.co/nayyer.zaman@gmail.com"
                   method="POST">
 
                 <!-- FormSubmit Config -->
                 <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
-                <input type="hidden" name="_next" value="book.html?submitted=true">
+                <input type="hidden" name="_next" value="success.html?type=booking">
                 <input type="hidden" name="_captcha" value="false">
 
-                    <h3 class="form-section-title">Personal Details</h3>
+                    <h3 class="form-section-title">Passenger Details</h3>
                     <div class="form-row">
                         <div class="form-group half">
-                            <label for="bookName">Full Name *</label>
+                            <label for="bookName">Passenger Name *</label>
                             <input type="text" id="bookName" name="name" required>
                         </div>
                         <div class="form-group half">
-                            <label for="bookMobile">Mobile Number *</label>
+                            <label for="bookMobile">Contact Number *</label>
                             <input type="tel" id="bookMobile" name="mobile" placeholder="07905 298692" required>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="bookEmail">Email Address *</label>
-                        <input type="email" id="bookEmail" name="email" required>
                     </div>
 
                     <h3 class="form-section-title" style="margin-top: 2.5rem;">Journey Details</h3>
@@ -103,32 +99,7 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group half">
-                            <label for="bookAirport">Airport</label>
-                            <select id="bookAirport" name="airport">
-                                <option value="">Select airport (if applicable)</option>
-                                <option>Heathrow Airport</option>
-                                <option>Gatwick Airport</option>
-                                <option>Stansted Airport</option>
-                                <option>Luton Airport</option>
-                                <option>Birmingham Airport</option>
-                                <option>Manchester Airport</option>
-                                <option>Bristol Airport</option>
-                                <option>Cardiff Airport</option>
-                                <option>Edinburgh Airport</option>
-                                <option>Glasgow Airport</option>
-                                <option>Liverpool Airport</option>
-                                <option>London City Airport</option>
-                                <option>Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group half">
-                            <label for="bookFlight">Flight Number</label>
-                            <input type="text" id="bookFlight" name="flight" placeholder="e.g. BA 245">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label for="bookDate">Pickup Date *</label>
+                            <label for="bookDate">Date of Travel *</label>
                             <input type="date" id="bookDate" name="date" required>
                         </div>
                         <div class="form-group half">
@@ -136,67 +107,19 @@
                             <input type="time" id="bookTime" name="time" required>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label for="bookReturn">Return Journey Required?</label>
-                            <select id="bookReturn" name="return">
-                                <option value="no">No — one way only</option>
-                                <option value="yes">Yes — I need a return journey</option>
-                            </select>
-                        </div>
-                        <div class="form-group half">
-                            <label for="bookPassengers">Number of Passengers *</label>
-                            <select id="bookPassengers" name="passengers" required>
-                                <option value="" disabled selected>Select</option>
-                                <option>1</option>
-                                <option>2</option>
-                                <option>3</option>
-                                <option>4</option>
-                                <option>5</option>
-                                <option>6</option>
-                                <option>7</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label for="bookSuitcases">Number of Suitcases</label>
-                            <select id="bookSuitcases" name="suitcases">
-                                <option value="0">0</option>
-                                <option>1</option>
-                                <option>2</option>
-                                <option>3</option>
-                                <option>4</option>
-                                <option>5</option>
-                                <option>6+</option>
-                            </select>
-                        </div>
-                        <div class="form-group half">
-                            <label for="bookVehicle">Vehicle Choice *</label>
-                            <select id="bookVehicle" name="vehicle" required>
-                                <option value="" disabled selected>Select vehicle</option>
-                                <option value="e-class">Mercedes E-Class (up to 4)</option>
-                                <option value="s-class">Mercedes S-Class (up to 4)</option>
-                                <option value="v-class">Mercedes V-Class (up to 7)</option>
-                                <option value="tesla">Tesla Model Y (up to 4)</option>
-                                <option value="any">Any Available Vehicle</option>
-                            </select>
-                        </div>
-                    </div>
                     <div class="form-group">
-                        <label for="bookAmount">Journey Price (£) *</label>
-                        <input type="number" id="bookAmount" name="amount" placeholder="Check prices page or enter your agreed price" min="1" required>
-                        <span style="font-size:0.8rem; color:var(--text-muted); display:block; margin-top:0.4rem;">
-                            Not sure? <a href="prices.html" target="_blank" style="color:var(--accent);">View fixed prices</a> or <a href="quote.html" target="_blank" style="color:var(--accent);">get a quote</a> first.
-                        </span>
+                        <label for="bookFlight">Flight Number (for airport pickups, if applicable)</label>
+                        <input type="text" id="bookFlight" name="flight" placeholder="e.g. BA 245">
                     </div>
-                    <div class="form-group">
-                        <label for="bookNotes">Additional Notes</label>
-                        <textarea id="bookNotes" name="notes" rows="4" placeholder="Child seats, accessibility needs, meet &amp; greet instructions, return journey date/time..."></textarea>
+                    <input type="hidden" id="bookDistance" name="distance_miles">
+                    <input type="hidden" id="bookAmount" name="amount">
+                    <div id="bookFareSummary" class="quote-result" style="display:none; margin-top:1.5rem;">
+                        <h3>Estimated Fare: <span id="bookEstimatedPrice">£0</span></h3>
+                        <p>Based on <span id="bookEstimatedDistance">0</span> miles at £2 per mile.</p>
                     </div>
 
                     <button type="submit" class="btn-primary full-width" style="margin-top: 1.5rem;">
-                        <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Send Booking Request & Proceed to Payment
+                        <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking
                     </button>
                 </form>
             </div>
@@ -306,6 +229,35 @@
         const formSection  = document.getElementById('bookingFormSection');
         const payPanel     = document.getElementById('paymentPanel');
         const editBtn      = document.getElementById('editBookingBtn');
+        const bookingForm  = document.getElementById('bookingForm');
+        const pickupField  = document.getElementById('bookPickup');
+        const dropoffField = document.getElementById('bookDropoff');
+        const amountField  = document.getElementById('bookAmount');
+        const distanceField = document.getElementById('bookDistance');
+        const fareSummary  = document.getElementById('bookFareSummary');
+        const farePrice    = document.getElementById('bookEstimatedPrice');
+        const fareDistance = document.getElementById('bookEstimatedDistance');
+        let fareReadyToSubmit = false;
+
+        function setBookingFare(distance, amount) {
+            if (!distance || !amount) return;
+            distanceField.value = distance;
+            amountField.value = Number(amount).toFixed(2);
+            fareDistance.textContent = distance;
+            farePrice.textContent = `£${Number(amount).toFixed(2)}`;
+            fareSummary.style.display = 'block';
+            fareReadyToSubmit = true;
+        }
+
+        async function calculateBookingFare() {
+            const pickup = pickupField.value.trim();
+            const dropoff = dropoffField.value.trim();
+            if (!pickup || !dropoff) return false;
+
+            const estimate = await calculateRouteEstimate(pickup, dropoff);
+            setBookingFare(estimate.miles, estimate.price);
+            return true;
+        }
 
         // ── Check if redirected back from FormSubmit after submission ──
         const params = new URLSearchParams(window.location.search);
@@ -333,11 +285,46 @@
             });
         }
 
-        // Pre-fill from URL params (from prices page Book Now buttons)
-        const dropoffField = document.getElementById('bookDropoff');
-        const vehicleField = document.getElementById('bookVehicle');
-        if (params.get('route')   && dropoffField) dropoffField.value = params.get('route').replace(/\+/g, ' ');
-        if (params.get('vehicle') && vehicleField) vehicleField.value = params.get('vehicle');
+        if (params.get('pickup') && pickupField) pickupField.value = params.get('pickup');
+        if (params.get('dropoff') && dropoffField) dropoffField.value = params.get('dropoff');
+        if (params.get('distance') && params.get('amount')) {
+            setBookingFare(params.get('distance'), params.get('amount'));
+        }
+        if (params.get('route') && dropoffField) dropoffField.value = params.get('route').replace(/\+/g, ' ');
+
+        [pickupField, dropoffField].forEach((field) => {
+            if (!field) return;
+            field.addEventListener('change', () => {
+                fareReadyToSubmit = false;
+                calculateBookingFare().catch(() => {});
+            });
+        });
+
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', async function(e) {
+                if (fareReadyToSubmit && amountField.value) return;
+                e.preventDefault();
+                if (!bookingForm.reportValidity()) return;
+
+                const submitBtn = bookingForm.querySelector('button[type="submit"]');
+                try {
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Calculating fare...';
+                        submitBtn.disabled = true;
+                    }
+                    await calculateBookingFare();
+                    fareReadyToSubmit = true;
+                    bookingForm.requestSubmit();
+                } catch (error) {
+                    alert('Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.');
+                } finally {
+                    if (submitBtn && !fareReadyToSubmit) {
+                        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking';
+                        submitBtn.disabled = false;
+                    }
+                }
+            });
+        }
     </script>
 </body>
 

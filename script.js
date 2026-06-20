@@ -85,10 +85,73 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
     }
 
+    const PRICE_PER_MILE = 2;
+    const AIRPORT_COORDS = {
+        heathrow: { lat: 51.4700, lon: -0.4543 },
+        gatwick: { lat: 51.1537, lon: -0.1821 },
+        stansted: { lat: 51.8860, lon: 0.2389 },
+        luton: { lat: 51.8747, lon: -0.3683 },
+        bristol: { lat: 51.3827, lon: -2.7191 },
+        cardiff: { lat: 51.3967, lon: -3.3433 },
+        birmingham: { lat: 52.4539, lon: -1.7480 },
+        manchester: { lat: 53.3650, lon: -2.2722 },
+        'london city': { lat: 51.5053, lon: 0.0553 }
+    };
+
+    function knownAirport(location) {
+        const value = location.toLowerCase();
+        return Object.keys(AIRPORT_COORDS).find(key => value.includes(key));
+    }
+
+    async function geocodeLocation(location) {
+        const airportKey = knownAirport(location);
+        if (airportKey) return AIRPORT_COORDS[airportKey];
+
+        const query = location.toLowerCase().includes('uk') ? location : `${location}, UK`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=gb&q=${encodeURIComponent(query)}`;
+        const response = await fetch(url);
+        const results = await response.json();
+        if (!results.length) throw new Error(`Location not found: ${location}`);
+        return {
+            lat: parseFloat(results[0].lat),
+            lon: parseFloat(results[0].lon)
+        };
+    }
+
+    async function calculateRouteEstimate(pickup, dropoff) {
+        const [from, to] = await Promise.all([
+            geocodeLocation(pickup),
+            geocodeLocation(dropoff)
+        ]);
+        const routeUrl = `https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=false`;
+        const response = await fetch(routeUrl);
+        const data = await response.json();
+        if (!data.routes || !data.routes.length) throw new Error('Route not found');
+
+        const miles = Math.ceil(data.routes[0].distance / 1609.344);
+        return {
+            miles,
+            price: miles * PRICE_PER_MILE
+        };
+    }
+
+    function buildBookingUrl(pickup, dropoff, estimate) {
+        const params = new URLSearchParams({
+            pickup,
+            dropoff,
+            distance: estimate.miles,
+            amount: estimate.price.toFixed(2)
+        });
+        return `book.html?${params.toString()}`;
+    }
+
+    window.calculateRouteEstimate = calculateRouteEstimate;
+
     // --- Homepage Instant Quote Calculator ---
     const quoteForm = document.getElementById('quoteForm');
     if (quoteForm) {
         quoteForm.addEventListener('submit', (e) => {
+            return;
             e.preventDefault();
             const miles = parseFloat(document.getElementById('quoteMiles').value);
             if (!isNaN(miles) && miles > 0) {
@@ -98,6 +161,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = document.getElementById('quoteResult');
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+
+        quoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pickup = document.getElementById('quoteFrom').value.trim();
+            const dropoff = document.getElementById('quoteTo').value.trim();
+            const btn = quoteForm.querySelector('button[type="submit"]');
+            if (!pickup || !dropoff) return;
+
+            try {
+                if (btn) {
+                    btn.textContent = 'Calculating...';
+                    btn.disabled = true;
+                }
+                const estimate = await calculateRouteEstimate(pickup, dropoff);
+                document.getElementById('estimatedDistance').textContent = estimate.miles;
+                document.getElementById('estimatedPrice').textContent = `£${estimate.price.toFixed(2)}`;
+                const bookNow = document.getElementById('quoteBookNow');
+                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, estimate);
+                const result = document.getElementById('quoteResult');
+                result.style.display = 'block';
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (error) {
+                alert('Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.');
+            } finally {
+                if (btn) {
+                    btn.textContent = 'Calculate Quote';
+                    btn.disabled = false;
+                }
             }
         });
     }
@@ -119,6 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const instantForm = document.getElementById('instantQuoteForm');
     if (instantForm) {
         instantForm.addEventListener('submit', (e) => {
+            return;
             e.preventDefault();
             const miles = parseFloat(document.getElementById('iMiles').value);
             if (!isNaN(miles) && miles > 0) {
@@ -128,6 +222,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = document.getElementById('instantResult');
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+
+        instantForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pickup = document.getElementById('iFrom').value.trim();
+            const dropoff = document.getElementById('iTo').value.trim();
+            const btn = instantForm.querySelector('button[type="submit"]');
+            if (!pickup || !dropoff) return;
+
+            try {
+                if (btn) {
+                    btn.textContent = 'Calculating...';
+                    btn.disabled = true;
+                }
+                const estimate = await calculateRouteEstimate(pickup, dropoff);
+                document.getElementById('calcMiles').textContent = estimate.miles;
+                document.getElementById('calcPrice').textContent = `£${estimate.price.toFixed(2)}`;
+                const bookNow = document.getElementById('instantBookNow');
+                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, estimate);
+                const result = document.getElementById('instantResult');
+                result.style.display = 'block';
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (error) {
+                alert('Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.');
+            } finally {
+                if (btn) {
+                    btn.textContent = 'Calculate Estimate';
+                    btn.disabled = false;
+                }
             }
         });
     }
@@ -323,12 +447,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('book.html')) {
         const params = new URLSearchParams(window.location.search);
         const dropoffField = document.getElementById('bookDropoff');
-        const vehicleField = document.getElementById('bookVehicle');
         if (params.get('route') && dropoffField) {
             dropoffField.value = params.get('route').replace(/\+/g, ' ');
-        }
-        if (params.get('vehicle') && vehicleField) {
-            vehicleField.value = params.get('vehicle');
         }
     }
 });
