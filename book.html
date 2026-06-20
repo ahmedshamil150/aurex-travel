@@ -134,6 +134,9 @@
                     <button type="submit" class="btn-primary full-width" style="margin-top: 1.5rem;">
                         <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking
                     </button>
+                    <button type="button" class="btn-secondary full-width" style="margin-top: 1rem;" id="submitBookingWhatsApp">
+                        <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Submit via WhatsApp (Urgent Response)
+                    </button>
                 </form>
             </div>
 
@@ -237,6 +240,7 @@
     <script src="script.js"></script>
     <script>
         const PAYPAL_EMAIL  = 'nayyer75@yahoo.com';
+        const WA_NUMBER = '447905298692'; // Aurex WhatsApp number
 
         const formSection   = document.getElementById('bookingFormSection');
         const payPanel      = document.getElementById('paymentPanel');
@@ -251,6 +255,7 @@
         const fareDistance  = document.getElementById('bookEstimatedDistance');
         const vehicleSelect = document.getElementById('bookVehicle');
         const bookNextField = document.getElementById('bookNext');
+        const submitBookingWhatsAppBtn = document.getElementById('submitBookingWhatsApp');
         let fareReadyToSubmit = false;
 
         function setBookingFare(distance, amount) {
@@ -358,6 +363,61 @@
                     // Set _next to come back to this page
                     bookNextField.value = window.location.origin + window.location.pathname;
                 }
+            });
+        }
+
+        // Handle WhatsApp submission
+        if (submitBookingWhatsAppBtn) {
+            submitBookingWhatsAppBtn.addEventListener('click', async function() {
+                // Validate form first
+                if (!bookingForm.reportValidity()) return;
+
+                // Calculate fare if not already done
+                if (!fareReadyToSubmit) {
+                    try {
+                        await calculateBookingFare();
+                    } catch (error) {
+                        alert('Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.');
+                        return;
+                    }
+                }
+
+                // Build WhatsApp message
+                const name = document.getElementById('bookName').value;
+                const mobile = document.getElementById('bookMobile').value;
+                const email = document.getElementById('bookEmail').value;
+                const pickup = pickupField.value;
+                const dropoff = dropoffField.value;
+                const date = document.getElementById('bookDate').value;
+                const time = document.getElementById('bookTime').value;
+                const vehicle = vehicleSelect.value;
+                const flight = document.getElementById('bookFlight').value || 'N/A';
+                const amount = amountField.value;
+
+                const message = `*Booking Request – Aurex Executive Travel (URGENT)*
+
+*Name:* ${name}
+*Mobile:* ${mobile}
+*Email:* ${email}
+
+*Pickup:* ${pickup}
+*Drop-off:* ${dropoff}
+*Date:* ${date}
+*Time:* ${time}
+*Flight Number:* ${flight}
+*Vehicle:* ${vehicle}
+*Estimated Fare:* £${amount}
+
+Please confirm availability and payment details as soon as possible!`;
+
+                // Send to WhatsApp
+                const whatsappUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+                window.location.href = whatsappUrl;
+
+                // Wait a second and redirect to success page
+                setTimeout(() => {
+                    window.location.href = 'success.html?type=booking-whatsapp';
+                }, 1000);
             });
         }
     </script>

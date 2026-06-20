@@ -159,6 +159,7 @@
         const params = new URLSearchParams(window.location.search);
         const type = params.get('type');
         const titleEl = document.getElementById('successTitle');
+        const messageEl = document.getElementById('successMessage');
         if (type === 'vehicle') {
             titleEl.textContent = 'Vehicle Registered';
         } else if (type === 'booking') {
@@ -169,6 +170,9 @@
             titleEl.textContent = 'Message Sent';
         } else if (type === 'corporate') {
             titleEl.textContent = 'Corporate Enquiry Sent';
+        } else if (type === 'booking-whatsapp') {
+            titleEl.textContent = 'Booking Request Sent via WhatsApp';
+            messageEl.textContent = 'Your booking details have been sent to our WhatsApp for urgent response. We will get back to you shortly!';
         }
 
         // Countdown redirect
