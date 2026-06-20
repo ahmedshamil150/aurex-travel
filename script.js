@@ -453,13 +453,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Ensure Formsubmit forms always POST ---
-    document.querySelectorAll('form[action^="https://formsubmit.co"]').forEach(form => {
-        if (!form.method || form.method.toLowerCase() !== 'post') {
+    const formsubmitForms = document.querySelectorAll('form[action^="https://formsubmit.co"]');
+    formsubmitForms.forEach(form => {
+        form.setAttribute('method', 'POST');
+        form.method = 'POST';
+
+        form.addEventListener('submit', (e) => {
+            form.setAttribute('method', 'POST');
             form.method = 'POST';
-        }
-        form.addEventListener('submit', () => {
-            if (form.action.startsWith('https://formsubmit.co') && form.method.toLowerCase() !== 'post') {
-                form.method = 'POST';
+
+            const action = form.getAttribute('action');
+            if (!action || !action.startsWith('https://formsubmit.co/')) {
+                e.preventDefault();
+                console.error('Blocked form submit: invalid Formsubmit action', action, form);
+                alert('Form submission blocked because the Formsubmit action is invalid. Please contact support.');
             }
         });
     });
