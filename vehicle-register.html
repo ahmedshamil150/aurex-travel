@@ -134,14 +134,15 @@
             </div>
 
             <form id="vehicleRegistrationForm"
-                  action="https://forminit.com/f/VEHICLE_FORM_ID"
+                  action="https://formsubmit.co/info@aurexexecutivetravel.com"
                   method="POST"
                   enctype="multipart/form-data"
                   class="driver-form">
 
-                <!-- Forminit config -->
+                <!-- FormSubmit Config -->
                 <input type="hidden" name="_subject" value="New Vehicle Registration — Aurex Executive Travel">
-                <input type="hidden" name="_redirect" value="success.html?type=vehicle">
+                <input type="hidden" name="_next" value="success.html?type=vehicle">
+                <input type="hidden" name="_captcha" value="false">
 
                 <!-- Driver Info -->
                 <h3 class="form-section-title">Your Details (Registered Driver)</h3>
@@ -316,15 +317,15 @@
                 <!-- Declaration -->
                 <div class="declaration-box">
                     <label class="checkbox-label">
-                        <input type="checkbox" name="declaration" required>
-                        <span>I confirm that all vehicle details and documents provided are accurate and belong to this vehicle. I confirm the vehicle is properly insured for private hire use. *</span>
+                        <input type="checkbox" name="declaration" value="yes" required>
+                <span>I confirm that all vehicle details and documents provided are accurate and belong to this vehicle. I confirm the vehicle is properly insured for private hire use. *</span>
                     </label>
                     <label class="checkbox-label" style="margin-top:0.75rem;">
-                        <input type="checkbox" name="privacy_consent" required>
+                        <input type="checkbox" name="privacy_consent" value="yes" required>
                         <span>I consent to Aurex Executive Travel processing this information for fleet registration purposes. See our <a href="privacy.html" target="_blank">Privacy Policy</a>. *</span>
                     </label>
                     <label class="checkbox-label" style="margin-top:0.75rem;">
-                        <input type="checkbox" name="whatsapp_consent">
+                        <input type="checkbox" name="whatsapp_consent" value="yes">
                         <span>I also consent to vehicle details being shared via WhatsApp with the Aurex admin team for faster review.</span>
                     </label>
                 </div>

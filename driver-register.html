@@ -184,8 +184,16 @@
             </div>
 
             <form id="driverApplicationForm"
+                  action="https://formsubmit.co/info@aurexexecutivetravel.com"
+                  method="POST"
                   enctype="multipart/form-data"
                   class="driver-form">
+                  
+                <!-- FormSubmit Config -->
+                <input type="hidden" name="_subject" value="New Driver Registration — Aurex Executive Travel">
+                <input type="hidden" name="_next" value="success.html?type=driver">
+                <input type="hidden" name="_captcha" value="false">
+
 
                 <!-- Personal Details -->
                 <h3 class="form-section-title">Personal Details</h3>
@@ -389,21 +397,18 @@
                 <!-- Declaration -->
                 <div class="declaration-box">
                     <label class="checkbox-label">
-                        <input type="checkbox" id="drvDeclaration" required>
+                        <input type="checkbox" id="drvDeclaration" name="declaration_confirmed" value="yes" required>
                         <span>I confirm that all information and documents provided are genuine, accurate, and belong to me. I understand that providing false information will result in my application being rejected and may be reported to the relevant authorities. *</span>
                     </label>
                     <label class="checkbox-label" style="margin-top:0.75rem;">
-                        <input type="checkbox" id="drvPrivacy" required>
+                        <input type="checkbox" id="drvPrivacy" name="privacy_consent" value="yes" required>
                         <span>I consent to Aurex Executive Travel storing and processing my personal data and documents for the purpose of this driver application, in accordance with the <a href="privacy.html" target="_blank">Privacy Policy</a>. *</span>
                     </label>
                     <label class="checkbox-label" style="margin-top:0.75rem;">
-                        <input type="checkbox" id="drvWhatsapp">
+                        <input type="checkbox" id="drvWhatsapp" name="whatsapp_consent" value="yes">
                         <span>I also consent to my application details being shared on the company WhatsApp for faster processing by the team.</span>
                     </label>
                 </div>
-
-                <!-- Status message -->
-                <div id="driverFormStatus" style="display:none; margin-top:1.5rem; padding:1rem 1.5rem; border-left:4px solid var(--accent); background:rgba(212,175,55,0.06); font-size:0.9rem;"></div>
 
                 <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:2rem;">
                     <button type="submit" class="btn-primary" id="submitDriverForm">Submit Application</button>
@@ -454,50 +459,5 @@
     </footer>
 
     <script src="script.js"></script>
-    <script src="https://forminit.com/sdk/v1/forminit.js"></script>
-    <script>
-        const forminit = new Forminit();
-        const driverForm = document.getElementById('driverApplicationForm');
-        const driverStatus = document.getElementById('driverFormStatus');
-        const driverSubmitBtn = document.getElementById('submitDriverForm');
-
-        if (driverForm) {
-            driverForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                // Check declarations manually (not named fields)
-                if (!document.getElementById('drvDeclaration').checked) {
-                    driverStatus.style.display = 'block';
-                    driverStatus.style.borderColor = '#e55';
-                    driverStatus.textContent = 'Please confirm the declaration before submitting.';
-                    return;
-                }
-                if (!document.getElementById('drvPrivacy').checked) {
-                    driverStatus.style.display = 'block';
-                    driverStatus.style.borderColor = '#e55';
-                    driverStatus.textContent = 'Please accept the privacy consent before submitting.';
-                    return;
-                }
-
-                driverSubmitBtn.textContent = 'Submitting...';
-                driverSubmitBtn.disabled = true;
-                driverStatus.style.display = 'none';
-
-                const { data, error } = await forminit.submit('xik1462b4tw', new FormData(driverForm));
-
-                if (error) {
-                    driverStatus.style.display = 'block';
-                    driverStatus.style.borderColor = '#e55';
-                    driverStatus.textContent = 'Error: ' + error.message + '. Please try again or contact us directly.';
-                    driverSubmitBtn.textContent = 'Submit Application';
-                    driverSubmitBtn.disabled = false;
-                    return;
-                }
-
-                // Success — redirect to success page
-                window.location.href = 'success.html?type=driver';
-            });
-        }
-    </script>
 </body>
 </html>
