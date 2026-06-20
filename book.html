@@ -71,7 +71,7 @@
 
                     <!-- FormSubmit Config -->
                     <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
-                    <input type="hidden" name="_next" value="https://aurexexecutivetravel.com/book.html?submitted=true">
+                    <input type="hidden" name="_next" value="success.html?type=booking">
                     <input type="hidden" name="_captcha" value="false">
 
                     <h3 class="form-section-title">Passenger Details</h3>
@@ -80,6 +80,12 @@
                             <label for="bookName">Passenger Name *</label>
                             <input type="text" id="bookName" name="name" required>
                         </div>
+                        <div class="form-group half">
+                            <label for="bookEmail">Email Address *</label>
+                            <input type="email" id="bookEmail" name="_replyto" placeholder="you@example.com" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group half">
                             <label for="bookMobile">Contact Number *</label>
                             <input type="tel" id="bookMobile" name="mobile" placeholder="07905 298692" required>

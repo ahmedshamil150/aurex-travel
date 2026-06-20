@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const WA_NUMBER = '447905298692';
-    const COMPANY_EMAIL = 'info@aurexexecutivetravel.com';
+    const COMPANY_EMAIL = 'nayyer.zaman@gmail.com';
 
     // --- Navbar Scroll Effect ---
     const navbar = document.querySelector('.navbar');
