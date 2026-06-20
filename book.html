@@ -410,14 +410,12 @@
 
 Please confirm availability and payment details as soon as possible!`;
 
-                // Send to WhatsApp
+                // Send to WhatsApp - open in new tab to avoid canceling
                 const whatsappUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
-                window.location.href = whatsappUrl;
+                window.open(whatsappUrl, '_blank');
 
-                // Wait a second and redirect to success page
-                setTimeout(() => {
-                    window.location.href = 'success.html?type=booking-whatsapp';
-                }, 1000);
+                // Redirect to success page immediately
+                window.location.href = 'success.html?type=booking-whatsapp';
             });
         }
     </script>
