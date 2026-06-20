@@ -97,7 +97,12 @@
             <div class="quote-tab-content" id="tab-custom">
                 <div class="quote-calculator">
                     <p style="margin-bottom: 2rem; color: var(--text-muted);">Fill in your journey details and your offered price. We'll review and get back to you — we can accept, adjust, or send you a confirmed fixed price.</p>
-                    <form id="customQuoteForm">
+                    <form id="customQuoteForm"
+                          action="https://formsubmit.co/info@aurexexecutivetravel.com"
+                          method="POST">
+                        <input type="hidden" name="_subject" value="New Custom Quote Request - Aurex Executive Travel">
+                        <input type="hidden" name="_next" value="success.html?type=quote">
+                        <input type="hidden" name="_captcha" value="false">
                         <div class="form-row">
                             <div class="form-group half">
                                 <label for="cName">Full Name *</label>
@@ -156,7 +161,7 @@
                             <label for="cNotes">Additional Notes</label>
                             <textarea id="cNotes" name="notes" rows="3" placeholder="Flight number, return journey, special requirements..."></textarea>
                         </div>
-                        <button type="submit" class="btn-primary">Send Quote Request via WhatsApp</button>
+                        <button type="submit" class="btn-primary">Send Quote Request</button>
                     </form>
                 </div>
             </div>

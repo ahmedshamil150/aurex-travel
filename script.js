@@ -136,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const customQuoteForm = document.getElementById('customQuoteForm');
     if (customQuoteForm) {
         customQuoteForm.addEventListener('submit', (e) => {
+            return;
             e.preventDefault();
             const f = customQuoteForm;
             const message =
@@ -159,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookingForm = document.getElementById('bookingForm');
     if (bookingForm) {
         bookingForm.addEventListener('submit', (e) => {
+            return;
             e.preventDefault();
             const f = bookingForm;
             const message =
@@ -187,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const corporateForm = document.getElementById('corporateForm');
     if (corporateForm) {
         corporateForm.addEventListener('submit', (e) => {
+            return;
             e.preventDefault();
             const f = corporateForm;
             const message =

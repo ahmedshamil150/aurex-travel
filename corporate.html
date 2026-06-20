@@ -96,7 +96,12 @@
             <!-- Corporate Enquiry Form -->
             <h2 class="section-title">Open a Corporate Account</h2>
             <div class="quote-calculator" style="max-width: 760px;">
-                <form id="corporateForm">
+                <form id="corporateForm"
+                      action="https://formsubmit.co/info@aurexexecutivetravel.com"
+                      method="POST">
+                    <input type="hidden" name="_subject" value="New Corporate Account Enquiry - Aurex Executive Travel">
+                    <input type="hidden" name="_next" value="success.html?type=corporate">
+                    <input type="hidden" name="_captcha" value="false">
                     <div class="form-row">
                         <div class="form-group half">
                             <label for="corpName">Your Name *</label>
@@ -131,7 +136,7 @@
                         <label for="corpMessage">Tell us about your requirements</label>
                         <textarea id="corpMessage" name="message" rows="4" placeholder="Typical routes, team size, any specific requirements..."></textarea>
                     </div>
-                    <button type="submit" class="btn-primary full-width">Send Corporate Enquiry via WhatsApp</button>
+                    <button type="submit" class="btn-primary full-width">Send Corporate Enquiry</button>
                 </form>
             </div>
 
