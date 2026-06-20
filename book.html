@@ -179,7 +179,7 @@
                         <i class="fa-brands fa-paypal"></i> Pay with PayPal
                     </a>
                     <p style="font-size:0.78rem; color:var(--text-muted); margin-top:1rem; text-align:center;">
-                        You will be taken to PayPal's secure payment page. After paying, return here or check your email for confirmation.
+                        You will be taken to PayPal's secure payment page. After paying, return here to confirm.
                     </p>
                 </div>
 
@@ -188,7 +188,10 @@
                     <p>Your booking is not confirmed until payment is received. Once paid, our team will send a booking confirmation to your email within 30 minutes.</p>
                 </div>
 
-                <div style="margin-top:2rem; text-align:center;">
+                <div style="margin-top:2rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                    <button id="confirmPaymentBtn" class="btn-primary" style="width:auto;">
+                        <i class="fa-solid fa-check" style="margin-right:6px;"></i>I've Sent Payment
+                    </button>
                     <button id="editBookingBtn" class="btn-secondary" style="width:auto;">
                         <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>Edit Booking Details
                     </button>
@@ -256,6 +259,7 @@
         const vehicleSelect = document.getElementById('bookVehicle');
         const bookNextField = document.getElementById('bookNext');
         const submitBookingWhatsAppBtn = document.getElementById('submitBookingWhatsApp');
+        const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
         let fareReadyToSubmit = false;
 
         function setBookingFare(distance, amount) {
@@ -308,6 +312,15 @@
                 formSection.style.display = 'block';
                 localStorage.removeItem('aurexBooking');
                 formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        }
+
+        if (confirmPaymentBtn) {
+            confirmPaymentBtn.addEventListener('click', function() {
+                // Clear localStorage
+                localStorage.removeItem('aurexBooking');
+                // Redirect to success page
+                window.location.href = 'success.html?type=booking-payment';
             });
         }
 

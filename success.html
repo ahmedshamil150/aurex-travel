@@ -173,6 +173,9 @@
         } else if (type === 'booking-whatsapp') {
             titleEl.textContent = 'Booking Request Sent via WhatsApp';
             messageEl.textContent = 'Your booking details have been sent to our WhatsApp for urgent response. We will get back to you shortly!';
+        } else if (type === 'booking-payment') {
+            titleEl.textContent = 'Payment Confirmation Received';
+            messageEl.textContent = 'Thank you for confirming your payment! Our team will verify and send you a booking confirmation shortly.';
         }
 
         // Countdown redirect
