@@ -65,12 +65,12 @@
 
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
-                <form id="bookingForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST" onsubmit="this.method='POST';">
+                <form id="bookingForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST">
 
                     <!-- FormSubmit Config -->
                     <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
-                    <input type="hidden" name="_next" value="success.html?type=booking">
                     <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" id="bookNext" name="_next" value="">
 
                     <h3 class="form-section-title">Passenger Details</h3>
                     <div class="form-row">
@@ -250,6 +250,7 @@
         const farePrice     = document.getElementById('bookEstimatedPrice');
         const fareDistance  = document.getElementById('bookEstimatedDistance');
         const vehicleSelect = document.getElementById('bookVehicle');
+        const bookNextField = document.getElementById('bookNext');
         let fareReadyToSubmit = false;
 
         function setBookingFare(distance, amount) {
@@ -279,15 +280,17 @@
             vehicleSelect.value = vehicleMap[vehicleParam] || vehicleParam;
         }
 
-        // Check if redirected back from FormSubmit after submission
-        if (params.get('submitted') === 'true') {
-            document.getElementById('payFromTo').textContent  = `${params.get('pickup') || '—'} → ${params.get('dropoff') || '—'}`;
-            document.getElementById('payDateTime').textContent = `${params.get('date') || '—'} at ${params.get('time') || '—'}`;
-            document.getElementById('payVehicle').textContent  = params.get('vehicle') || '—';
-            document.getElementById('payTotal').textContent    = `£${params.get('amount') || '—'}`;
+        // Check localStorage for saved booking
+        const savedBooking = localStorage.getItem('aurexBooking');
+        if (savedBooking) {
+            const booking = JSON.parse(savedBooking);
+            document.getElementById('payFromTo').textContent  = `${booking.pickup} → ${booking.dropoff}`;
+            document.getElementById('payDateTime').textContent = `${booking.date} at ${booking.time}`;
+            document.getElementById('payVehicle').textContent  = booking.vehicle;
+            document.getElementById('payTotal').textContent    = `£${booking.amount}`;
 
-            const paypalNote = encodeURIComponent(`Aurex Executive Travel – ${params.get('pickup') || ''} to ${params.get('dropoff') || ''} on ${params.get('date') || ''}`);
-            const paypalUrl  = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(PAYPAL_EMAIL)}&amount=${params.get('amount') || '0'}&currency_code=GBP&item_name=${paypalNote}&no_shipping=1`;
+            const paypalNote = encodeURIComponent(`Aurex Executive Travel – ${booking.pickup} to ${booking.dropoff} on ${booking.date}`);
+            const paypalUrl  = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(PAYPAL_EMAIL)}&amount=${booking.amount}&currency_code=GBP&item_name=${paypalNote}&no_shipping=1`;
             document.getElementById('paypalPayBtn').href = paypalUrl;
 
             formSection.style.display = 'none';
@@ -298,6 +301,7 @@
             editBtn.addEventListener('click', function() {
                 payPanel.style.display    = 'none';
                 formSection.style.display = 'block';
+                localStorage.removeItem('aurexBooking');
                 formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         }
@@ -318,26 +322,41 @@
 
         if (bookingForm) {
             bookingForm.addEventListener('submit', async function(e) {
-                if (fareReadyToSubmit && amountField.value) return;
-                e.preventDefault();
-                if (!bookingForm.reportValidity()) return;
+                if (!fareReadyToSubmit || !amountField.value) {
+                    e.preventDefault();
+                    if (!bookingForm.reportValidity()) return;
 
-                const submitBtn = bookingForm.querySelector('button[type="submit"]');
-                try {
-                    if (submitBtn) {
-                        submitBtn.textContent = 'Calculating fare...';
-                        submitBtn.disabled = true;
+                    const submitBtn = bookingForm.querySelector('button[type="submit"]');
+                    try {
+                        if (submitBtn) {
+                            submitBtn.textContent = 'Calculating fare...';
+                            submitBtn.disabled = true;
+                        }
+                        await calculateBookingFare();
+                        fareReadyToSubmit = true;
+                        bookingForm.requestSubmit();
+                    } catch (error) {
+                        alert('Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.');
+                    } finally {
+                        if (submitBtn && !fareReadyToSubmit) {
+                            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking';
+                            submitBtn.disabled = false;
+                        }
                     }
-                    await calculateBookingFare();
-                    fareReadyToSubmit = true;
-                    bookingForm.requestSubmit();
-                } catch (error) {
-                    alert('Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.');
-                } finally {
-                    if (submitBtn && !fareReadyToSubmit) {
-                        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking';
-                        submitBtn.disabled = false;
-                    }
+                } else {
+                    // Save booking details to localStorage
+                    const bookingDetails = {
+                        pickup: pickupField.value,
+                        dropoff: dropoffField.value,
+                        date: document.getElementById('bookDate').value,
+                        time: document.getElementById('bookTime').value,
+                        vehicle: vehicleSelect.value,
+                        amount: amountField.value
+                    };
+                    localStorage.setItem('aurexBooking', JSON.stringify(bookingDetails));
+                    
+                    // Set _next to come back to this page
+                    bookNextField.value = window.location.origin + window.location.pathname;
                 }
             });
         }

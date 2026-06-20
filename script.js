@@ -150,20 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Homepage Instant Quote Calculator ---
     const quoteForm = document.getElementById('quoteForm');
     if (quoteForm) {
-        quoteForm.addEventListener('submit', (e) => {
-            return;
-            e.preventDefault();
-            const miles = parseFloat(document.getElementById('quoteMiles').value);
-            if (!isNaN(miles) && miles > 0) {
-                const price = miles * 2;
-                document.getElementById('estimatedDistance').textContent = miles;
-                document.getElementById('estimatedPrice').textContent = `£${price.toFixed(2)}`;
-                const result = document.getElementById('quoteResult');
-                result.style.display = 'block';
-                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-        });
-
         quoteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const pickup = document.getElementById('quoteFrom').value.trim();
@@ -193,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
     }
 
     // --- Quote Page: Tab Switching ---
@@ -211,20 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Quote Page: Instant Calculator ---
     const instantForm = document.getElementById('instantQuoteForm');
     if (instantForm) {
-        instantForm.addEventListener('submit', (e) => {
-            return;
-            e.preventDefault();
-            const miles = parseFloat(document.getElementById('iMiles').value);
-            if (!isNaN(miles) && miles > 0) {
-                const price = miles * 2;
-                document.getElementById('calcMiles').textContent = miles;
-                document.getElementById('calcPrice').textContent = `£${price.toFixed(2)}`;
-                const result = document.getElementById('instantResult');
-                result.style.display = 'block';
-                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-        });
-
         instantForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const pickup = document.getElementById('iFrom').value.trim();
@@ -256,78 +229,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Quote Page: Custom Quote Form → WhatsApp ---
-    const customQuoteForm = document.getElementById('customQuoteForm');
-    if (customQuoteForm) {
-        customQuoteForm.addEventListener('submit', (e) => {
-            return;
-            e.preventDefault();
-            const f = customQuoteForm;
-            const message =
-                `*Quote Request – Aurex Executive Travel*\n\n` +
-                `*Name:* ${f.name.value}\n` +
-                `*Mobile:* ${f.mobile.value}\n\n` +
-                `*Pickup:* ${f.pickup.value}\n` +
-                `*Drop-off:* ${f.dropoff.value}\n` +
-                `*Date:* ${f.date.value}\n` +
-                `*Time:* ${f.time.value}\n` +
-                `*Passengers:* ${f.passengers.value}\n` +
-                `*Vehicle:* ${f.vehicle.value}\n` +
-                (f.offeredPrice.value ? `*Offered Price:* £${f.offeredPrice.value}\n` : '') +
-                (f.notes.value ? `*Notes:* ${f.notes.value}\n` : '') +
-                `\nPlease confirm availability and provide a fixed price.`;
-            sendToWhatsApp(message);
-        });
-    }
+    // --- Quote Page: Custom Quote Form → We use FormSubmit (email) + redirect to success ---
 
-    // --- Book Online Form → WhatsApp ---
-    const bookingForm = document.getElementById('bookingForm');
-    if (bookingForm) {
-        bookingForm.addEventListener('submit', (e) => {
-            return;
-            e.preventDefault();
-            const f = bookingForm;
-            const message =
-                `*Booking Request – Aurex Executive Travel*\n\n` +
-                `*Name:* ${f.name.value}\n` +
-                `*Mobile:* ${f.mobile.value}\n` +
-                `*Email:* ${f.email.value}\n\n` +
-                `*Pickup:* ${f.pickup.value}\n` +
-                `*Drop-off:* ${f.dropoff.value}\n` +
-                `*Airport:* ${f.airport.value || 'N/A'}\n` +
-                `*Flight Number:* ${f.flight.value || 'N/A'}\n` +
-                `*Date:* ${f.date.value}\n` +
-                `*Time:* ${f.time.value}\n` +
-                `*Return Journey:* ${f.return.value}\n` +
-                `*Passengers:* ${f.passengers.value}\n` +
-                `*Suitcases:* ${f.suitcases.value}\n` +
-                `*Vehicle:* ${f.vehicle.value}\n` +
-                (f.offeredPrice.value ? `*Offered Price:* £${f.offeredPrice.value}\n` : '') +
-                (f.notes.value ? `*Notes:* ${f.notes.value}\n` : '') +
-                `\nPlease confirm this booking and send a payment link.`;
-            sendToWhatsApp(message);
-        });
-    }
+    // --- Book Online Form: We use FormSubmit (email) + localStorage to show PayPal panel ---
 
-    // --- Corporate Enquiry Form → WhatsApp ---
-    const corporateForm = document.getElementById('corporateForm');
-    if (corporateForm) {
-        corporateForm.addEventListener('submit', (e) => {
-            return;
-            e.preventDefault();
-            const f = corporateForm;
-            const message =
-                `*Corporate Account Enquiry – Aurex Executive Travel*\n\n` +
-                `*Name:* ${f.name.value}\n` +
-                `*Company:* ${f.company.value}\n` +
-                `*Email:* ${f.email.value}\n` +
-                `*Phone:* ${f.phone.value}\n` +
-                `*Journeys/Month:* ${f.journeys.value || 'Not specified'}\n` +
-                (f.message.value ? `*Requirements:* ${f.message.value}\n` : '') +
-                `\nPlease get in touch to discuss a corporate account.`;
-            sendToWhatsApp(message);
-        });
-    }
+    // --- Corporate Enquiry Form → Let's set it up to use FormSubmit + redirect to success ---
 
     // --- Driver Application: WhatsApp summary button ---
     const driverWABtn = document.getElementById('submitDriverWhatsApp');
