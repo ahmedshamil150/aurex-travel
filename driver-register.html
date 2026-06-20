@@ -187,7 +187,7 @@
                   
                 <!-- FormSubmit Config -->
                 <input type="hidden" name="_subject" value="New Driver Registration — Aurex Executive Travel">
-                <input type="hidden" name="_next" value="success.html?type=driver">
+                <input type="hidden" name="_next" id="driverNext" value="">
                 <input type="hidden" name="_captcha" value="false">
 
 
@@ -455,5 +455,12 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Set absolute URL for FormSubmit _next parameter
+        const driverNext = document.getElementById('driverNext');
+        if (driverNext) {
+            driverNext.value = window.location.origin + '/success.html?type=driver';
+        }
+    </script>
 </body>
 </html>

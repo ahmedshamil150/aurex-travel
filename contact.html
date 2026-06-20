@@ -81,6 +81,7 @@
                 <div class="contact-form-container">
                     <form id="contactForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST">
                         <input type="hidden" name="_subject" value="New Contact Message - Aurex Executive Travel">
+                        <input type="hidden" name="_next" id="contactNext" value="">
                         <input type="hidden" name="_captcha" value="false">
                         <div class="form-row">
                             <div class="form-group half">
@@ -160,6 +161,13 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Set absolute URL for FormSubmit _next parameter
+        const contactNext = document.getElementById('contactNext');
+        if (contactNext) {
+            contactNext.value = window.location.origin + '/success.html?type=contact';
+        }
+    </script>
 </body>
 
 </html>

@@ -94,7 +94,7 @@
                     <p style="margin-bottom: 2rem; color: var(--text-muted);">Fill in your journey details and your offered price. We'll review and get back to you — we can accept, adjust, or send you a confirmed fixed price.</p>
                     <form id="customQuoteForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST">
                         <input type="hidden" name="_subject" value="New Custom Quote Request - Aurex Executive Travel">
-                        <input type="hidden" name="_next" value="success.html?type=quote">
+                        <input type="hidden" name="_next" id="quoteNext" value="">
                         <input type="hidden" name="_captcha" value="false">
                         <div class="form-row">
                             <div class="form-group half">
@@ -224,6 +224,13 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Set absolute URL for FormSubmit _next parameter
+        const quoteNext = document.getElementById('quoteNext');
+        if (quoteNext) {
+            quoteNext.value = window.location.origin + '/success.html?type=quote';
+        }
+    </script>
 </body>
 
 </html>

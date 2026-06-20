@@ -137,7 +137,7 @@
 
                 <!-- FormSubmit Config -->
                 <input type="hidden" name="_subject" value="New Vehicle Registration — Aurex Executive Travel">
-                <input type="hidden" name="_next" value="success.html?type=vehicle">
+                <input type="hidden" name="_next" id="vehicleNext" value="">
                 <input type="hidden" name="_captcha" value="false">
 
                 <!-- Driver Info -->
@@ -375,5 +375,12 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Set absolute URL for FormSubmit _next parameter
+        const vehicleNext = document.getElementById('vehicleNext');
+        if (vehicleNext) {
+            vehicleNext.value = window.location.origin + '/success.html?type=vehicle';
+        }
+    </script>
 </body>
 </html>
