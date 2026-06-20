@@ -451,4 +451,16 @@ document.addEventListener('DOMContentLoaded', () => {
             dropoffField.value = params.get('route').replace(/\+/g, ' ');
         }
     }
+
+    // --- Ensure Formsubmit forms always POST ---
+    document.querySelectorAll('form[action^="https://formsubmit.co"]').forEach(form => {
+        if (!form.method || form.method.toLowerCase() !== 'post') {
+            form.method = 'POST';
+        }
+        form.addEventListener('submit', () => {
+            if (form.action.startsWith('https://formsubmit.co') && form.method.toLowerCase() !== 'post') {
+                form.method = 'POST';
+            }
+        });
+    });
 });
