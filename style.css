@@ -653,24 +653,77 @@ input:focus, select:focus, textarea:focus {
 
 /* ========================
    RESPONSIVE
+   Comprehensive mobile & tablet breakpoints
 ======================== */
-@media (max-width: 1024px) {
+
+/* --- TABLET (768px - 1024px) --- */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container { padding: 0 24px; }
+    
     .badge-grid { grid-template-columns: repeat(2, 1fr); }
+    .price-snapshot-grid { grid-template-columns: 1fr 1fr; }
+    
+    .fleet-detail-card {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    .fleet-detail-card:nth-child(even) .fleet-detail-image { order: 0; }
+    .fleet-detail-card:nth-child(even) .fleet-detail-info { order: 0; }
+    
+    .services-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    
+    .included-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem;
+    }
+    
+    .payment-panel { padding: 2rem; }
+    
+    .price-table { font-size: 0.88rem; }
+    .price-table th,
+    .price-table td { padding: 0.85rem 1rem; }
+    
+    .section-title { font-size: 1.7rem; }
+    .service-detail-content h2 { font-size: 1.4rem; }
+    
+    .values-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .page-header { padding: 10rem 24px 5rem 24px; }
+    .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
 }
 
-@media (max-width: 900px) {
+/* --- MOBILE (max-width: 767px) --- */
+@media (max-width: 767px) {
+    .container { padding: 0 16px; }
+    
+    /* ========================
+       NAVBAR - Mobile
+    ======================== */
+    .nav-container { padding: 0.9rem 16px; }
+    .logo { font-size: 1.1rem; letter-spacing: 4px; }
+    
     .nav-links {
         display: none;
         flex-direction: column;
         align-items: flex-start;
         position: absolute;
-        top: 60px;
+        top: 58px;
         left: 0;
         width: 100%;
         background-color: var(--nav-bg);
         padding: 1rem 0 1.5rem 0;
         border-bottom: 1px solid rgba(255,255,255,0.08);
         gap: 0;
+        max-height: calc(100vh - 58px);
+        overflow-y: auto;
     }
     .nav-links.active { display: flex; }
     .hamburger { display: flex; }
@@ -705,38 +758,504 @@ input:focus, select:focus, textarea:focus {
         flex: 1;
         text-align: center;
         padding: 0.6rem 0.5rem;
+        font-size: 0.68rem;
     }
 
-    .page-header { padding: 8rem 20px 4rem 20px; }
-    .hero-buttons { flex-direction: column; width: 100%; }
-    button, .btn-primary, .btn-secondary, .btn-outline { width: 100%; text-align: center; }
+    /* Mobile dropdown */
+    .nav-dropdown::after { display: none; }
+    .nav-dropdown-menu {
+        position: static;
+        border: none;
+        border-left: 2px solid var(--accent);
+        box-shadow: none;
+        margin: 0.25rem 0 0.25rem 0.5rem;
+        background: rgba(255,255,255,0.03);
+        min-width: unset;
+    }
+    .nav-dropdown-menu li a {
+        padding: 0.7rem 1rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    /* ========================
+       HERO - Mobile
+    ======================== */
+    .hero {
+        min-height: 85vh;
+        padding: 0 16px;
+    }
+    .hero h1 {
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
+        letter-spacing: 0;
+        margin-bottom: 1rem;
+    }
+    .hero p {
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+    .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+    .hero-buttons .btn-primary,
+    .hero-buttons .btn-outline {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* ========================
+       PAGE HEADER - Mobile
+    ======================== */
+    .page-header {
+        padding: 7rem 16px 3.5rem 16px;
+    }
+    .page-header h1 {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+    }
+    .page-header p {
+        font-size: 0.95rem;
+    }
+
+    /* ========================
+       SECTION TITLES & TYPOGRAPHY
+    ======================== */
+    .section-title {
+        font-size: 1.4rem;
+        margin-bottom: 2rem;
+        padding-bottom: 0.75rem;
+    }
+    
+    h1, h2, h3 { word-break: break-word; }
+    
+    .content-section { padding: 4rem 0; }
+    .included-section { padding: 4rem 0; }
+    .services-section { padding: 4rem 0; }
+    .fleet-section { padding: 4rem 0; }
+    .airports-section { padding: 4rem 0; }
+    .quote-section { padding: 4rem 0; }
+    .prices-snapshot { padding: 4rem 0; }
+
+    /* ========================
+       BUTTONS - Mobile
+    ======================== */
+    button, .btn-primary, .btn-secondary, .btn-outline {
+        width: 100%;
+        text-align: center;
+        padding: 12px 24px;
+        font-size: 0.78rem;
+    }
+
+    /* ========================
+       GRID LAYOUTS - Mobile
+    ======================== */
+    .badge-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .badge { min-height: 120px; padding: 1.5rem 1rem; }
+    .badge strong { font-size: clamp(1.8rem, 8vw, 2.5rem); }
+    
+    .fleet-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .fleet-detail-card {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding-bottom: 3rem;
+    }
+    .fleet-detail-card:nth-child(even) .fleet-detail-image { order: 0; }
+    .fleet-detail-card:nth-child(even) .fleet-detail-info { order: 0; }
+    .fleet-detail-info h2 { font-size: 1.4rem; }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    .service-item { padding: 1rem 1.2rem; font-size: 0.88rem; }
+    
+    .included-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .included-item { padding: 1.5rem 1.25rem; }
+    
+    .services-desc {
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+    
+    .price-snapshot-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .price-snap-card { padding: 1.5rem 1.25rem; }
+    
+    .values-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .value-card { padding: 2rem 1.5rem; }
+    
+    .airports-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* ========================
+       PRICE TABLES - Mobile
+    ======================== */
+    .price-table-block {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 0;
+    }
+    .price-table-block table { min-width: 400px; }
+    .price-table th,
+    .price-table td {
+        padding: 0.75rem 0.85rem;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+    .price-cell { font-size: 1rem !important; }
+    .price-table-header { padding: 1.25rem 1.25rem; }
+    .btn-table {
+        padding: 6px 14px;
+        font-size: 0.72rem;
+        white-space: nowrap;
+    }
+    .vehicle-badge { font-size: 0.75rem; padding: 0.3rem 0.75rem; }
+    .price-table-vehicles { gap: 0.5rem; }
+
+    /* ========================
+       BOOKING FORM - Mobile
+    ======================== */
+    .booking-intro {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+    }
+    .booking-step-arrow { transform: rotate(90deg); }
+    .booking-step { gap: 0.75rem; }
+    .booking-step span {
+        width: 34px;
+        height: 34px;
+        font-size: 0.95rem;
+    }
+    .booking-step p { font-size: 0.82rem; }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    .form-section-title { font-size: 0.9rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    
+    .quote-calculator {
+        padding: 1.5rem;
+    }
+
+    /* ========================
+       PAYMENT PANEL - Mobile
+    ======================== */
+    .payment-panel {
+        padding: 1.5rem;
+    }
+    .payment-panel-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .payment-panel-header h3 { font-size: 1.15rem; }
+    .payment-panel-icon {
+        width: 40px;
+        height: 40px;
+    }
+    .payment-panel-icon i { font-size: 1rem; }
+    .payment-panel-header p { font-size: 0.85rem; }
+    
+    .payment-summary-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+    .payment-summary-total {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    .payment-summary-total strong { font-size: 1.3rem; }
+    
+    .payment-methods {
+        padding: 1.5rem;
+    }
+    .payment-methods h4 { font-size: 1rem; }
+    
+    .paypal-pay-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.85rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    .paypal-pay-btn i { font-size: 1.2rem; }
+    
+    .payment-panel-note {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        font-size: 0.85rem;
+    }
+    
+    .payment-icons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    /* ========================
+       QUOTE PAGE - Mobile
+    ======================== */
+    .quote-tabs {
+        flex-direction: column;
+        border-bottom: none;
+        gap: 0.5rem;
+    }
+    .quote-tab {
+        border: 1px solid var(--border-color);
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 0;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+    .quote-tab.active { border-color: var(--accent); border-bottom: 1px solid var(--accent); }
+
+    /* ========================
+       CONTACT PAGE - Mobile
+    ======================== */
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+    }
+    .contact-info div { margin-bottom: 1.75rem; }
+    .contact-info h3 { font-size: 0.95rem; }
+
+    /* ========================
+       SERVICE DETAIL BLOCKS - Mobile
+    ======================== */
+    .service-detail-block {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin-bottom: 3rem;
+        padding-bottom: 3rem;
+    }
+    .service-detail-icon {
+        font-size: 1.6rem;
+    }
+    .service-detail-content h2 {
+        font-size: 1.3rem;
+    }
+    .service-detail-content p { font-size: 0.9rem; }
+    .service-features li { font-size: 0.85rem; }
+
+    .pricing-note {
+        padding: 1.75rem;
+    }
+    .pricing-note h3 { font-size: 1.2rem; }
+
+    /* ========================
+       TRUST STRIP - Mobile
+    ======================== */
+    .trust-strip {
+        flex-direction: column;
+        gap: 0;
+    }
+    .trust-item {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
+        justify-content: center;
+        padding: 1rem 1.5rem;
+        font-size: 0.82rem;
+    }
+    .trust-item:last-child { border-bottom: none; }
+
+    /* ========================
+       FOOTER - Mobile
+    ======================== */
+    .footer { padding: 4rem 0 2rem 0; }
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        margin-bottom: 2.5rem;
+    }
+    .footer-logo { font-size: 1.2rem; letter-spacing: 3px; }
+    .footer-col h4 { font-size: 0.78rem; margin-bottom: 1rem; }
+    .footer-col ul li { margin-bottom: 0.7rem; }
+    .footer-col ul li a { font-size: 0.85rem; }
+    .footer-bottom {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+        font-size: 0.78rem;
+    }
+
+    /* ========================
+       DRIVER / VEHICLE REGISTER - Mobile
+    ======================== */
+    .driver-form {
+        padding: 1.5rem;
+    }
+    .driver-form-note {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.25rem 1.5rem;
+    }
+    .driver-form-note ul li { font-size: 0.82rem; }
+    .upload-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .upload-item { padding: 1.25rem 1rem; }
+    .upload-item label { font-size: 0.78rem; }
+    .requirements-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .req-card { padding: 1.5rem 1.25rem; }
+    .req-number { font-size: 2rem; }
+    .uber-help-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .uber-help-card { padding: 1.5rem 1.25rem; }
+    .uber-note {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* ========================
+       DECLARATION BOX - Mobile
+    ======================== */
+    .declaration-box { padding: 1.5rem; }
+    .checkbox-label { font-size: 0.85rem; }
+    .checkbox-label input[type="checkbox"] { width: 16px; height: 16px; }
+
+    /* ========================
+       CONTENT BLOCKS - Mobile
+    ======================== */
+    .content-block { margin-bottom: 1.75rem; }
+    .content-block h3 { font-size: 1.25rem; }
+    .content-block p { font-size: 0.9rem; }
+
+    /* ========================
+       LEGAL PAGES - Mobile
+    ======================== */
+    .legal-content h3 { font-size: 1rem; margin-top: 2rem; }
+    .legal-content p { font-size: 0.9rem; }
+    .legal-updated { font-size: 0.82rem; margin-bottom: 2rem; }
+
+    /* ========================
+       PAYMENT OPTIONS INFO - Mobile
+    ======================== */
+    .payment-options-info { padding: 1.25rem; }
+    .payment-options-info h4 { font-size: 0.9rem; }
+    .payment-options-info p { font-size: 0.85rem; }
+
+    /* ========================
+       QUOTE RESULT - Mobile
+    ======================== */
+    .quote-result h3 { font-size: 1.5rem; }
+    .quote-result p { font-size: 0.88rem; }
+    .quote-result a { width: 100%; text-align: center; }
+    
+    /* ========================
+       MISC FIXES - Mobile
+    ======================== */
+    .fleet-note { font-size: 0.85rem; padding: 0.75rem; }
+    .prices-intro { font-size: 0.92rem; }
+    label { font-size: 0.78rem; }
+    input, select, textarea { font-size: 0.9rem; }
+    
+    .hero .btn-primary { width: 100%; }
+    
+    /* Inline flex containers */
+    [style*="display: flex"] {
+        flex-wrap: wrap !important;
+    }
+    
+    /* Fix inline button groups on mobile */
+    .pricing-note [style*="display: flex"],
+    .fleet-detail-info [style*="display: flex"] {
+        flex-direction: column;
+        gap: 0.75rem !important;
+    }
+    .pricing-note [style*="display: flex"] a,
+    .fleet-detail-info [style*="display: flex"] a {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .hero-buttons [style*="display: flex"] { flex-direction: column; }
+    
+    /* Disable hover effects on touch devices for better UX */
+    .fleet-card:hover { transform: none; }
+    .fleet-card:hover img { filter: grayscale(100%); }
+    .included-item:hover { transform: none; }
+    .badge:hover { transform: none; }
+    .price-snap-card:hover { transform: none; }
+    .service-item:hover { transform: none; }
+}
+
+/* --- SMALL PHONE (max-width: 400px) --- */
+@media (max-width: 400px) {
+    .container { padding: 0 12px; }
+    .nav-container { padding: 0.8rem 12px; }
+    .logo { font-size: 1rem; letter-spacing: 3px; }
+    
+    .hero h1 { font-size: 1.4rem; }
+    .hero p { font-size: 0.88rem; }
+    .hero { min-height: 80vh; }
+    
+    .page-header { padding: 6rem 12px 3rem 12px; }
+    .page-header h1 { font-size: 1.3rem; }
+    .page-header p { font-size: 0.88rem; }
+    
+    .section-title { font-size: 1.2rem; }
+    .badge strong { font-size: 2rem; }
+    
+    .fleet-detail-info h2 { font-size: 1.2rem; }
+    .service-detail-content h2 { font-size: 1.1rem; }
+    
+    .price-snap-route { font-size: 0.9rem; }
+    .price-snap-vehicles strong { font-size: 1.1rem; }
+    
+    .payment-summary-total strong { font-size: 1.1rem; }
+    
+    .booking-step span {
+        width: 30px;
+        height: 30px;
+        font-size: 0.85rem;
+    }
+    
+    .footer-grid { gap: 2rem; }
+}
+
+/* --- SMALL TABLET (768px - 900px) - bridge between mobile & tablet --- */
+@media (min-width: 768px) and (max-width: 900px) {
     .form-row { flex-direction: column; gap: 0; }
     .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
     .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
-    .badge-grid { grid-template-columns: 1fr 1fr; }
-    .quote-calculator { padding: 1.75rem; }
     .service-detail-block { grid-template-columns: 1fr; gap: 1rem; }
     .service-detail-icon { font-size: 1.8rem; }
-    .trust-strip { flex-direction: column; gap: 0; }
-    .trust-item  { border-right: none; border-bottom: 1px solid var(--border-color); justify-content: center; }
-    .trust-item:last-child { border-bottom: none; }
     .price-table th, .price-table td { padding: 0.85rem 0.9rem; }
     .booking-intro { flex-direction: column; align-items: flex-start; gap: 1rem; }
     .booking-step-arrow { transform: rotate(90deg); }
-    .quote-tabs { border-bottom: none; }
-    .quote-tab { border: 1px solid var(--border-color); padding: 0.75rem 1.25rem; }
-    .quote-tab.active { border-color: var(--accent); }
-    .price-snapshot-grid { grid-template-columns: 1fr 1fr; }
+    .price-table-block { overflow-x: auto; }
+    .price-table-block table { min-width: 500px; }
     .driver-form { padding: 1.75rem; }
     .driver-form-note { flex-direction: column; gap: 0.75rem; }
     .upload-grid { grid-template-columns: 1fr; }
     .requirements-grid { grid-template-columns: 1fr; }
     .uber-help-grid { grid-template-columns: 1fr; }
     .uber-note { flex-direction: column; gap: 0.5rem; }
-}
-
-@media (max-width: 480px) {
-    .badge-grid { grid-template-columns: 1fr; }
 }
 
 /* ========================
