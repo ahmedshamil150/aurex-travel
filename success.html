@@ -179,8 +179,11 @@
             titleEl.textContent = 'Payment Confirmation Received';
             messageEl.textContent = 'Thank you for confirming your payment! Our team will verify and send you a booking confirmation shortly.';
         } else if (type === 'booking-cash') {
-            titleEl.textContent = 'Booking Confirmed (Cash/Bank Transfer)';
-            messageEl.textContent = 'Thank you for choosing to pay via cash or bank transfer! Our team will be in touch shortly to confirm your booking and arrange payment details.';
+            titleEl.textContent = 'Booking Confirmed (Cash Payment)';
+            messageEl.textContent = 'Thank you for choosing to pay cash! Our team will be in touch shortly to confirm your booking and details.';
+        } else if (type === 'booking-bank') {
+            titleEl.textContent = 'Booking Confirmed (Bank Transfer)';
+            messageEl.textContent = 'Thank you for choosing to pay via bank transfer! Our team will verify your payment and send you a confirmation shortly.';
         }
 
         // Countdown redirect

@@ -49,7 +49,7 @@
     <!-- Page Header -->
     <header class="page-header">
         <h1>Book Online</h1>
-        <p>Fill in your journey details, send your request, then pay securely via PayPal to confirm your booking.</p>
+        <p>Fill in your journey details, send your request, then choose your preferred payment method to confirm your booking.</p>
     </header>
 
     <!-- Booking Form -->
@@ -62,14 +62,14 @@
                 <div class="booking-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
                 <div class="booking-step"><span>2</span><p>Your request is emailed to our team</p></div>
                 <div class="booking-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-                <div class="booking-step"><span>3</span><p>Pay via PayPal to confirm</p></div>
+                <div class="booking-step"><span>3</span><p>Choose your payment method to confirm</p></div>
             </div>
 
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
-                <!-- Cash Payment Form (hidden, submits after original form) -->
+                <!-- Cash Payment Form (hidden) -->
                 <form id="cashPaymentForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST" style="display:none;">
-                    <input type="hidden" name="_subject" value="New Booking Request (Cash/Bank Transfer) — Aurex Executive Travel">
+                    <input type="hidden" name="_subject" value="New Booking Request (Cash Payment) — Aurex Executive Travel">
                     <input type="hidden" name="_captcha" value="false">
                     <input type="hidden" id="cashNext" name="_next" value="">
                     <input type="hidden" id="cashName" name="name">
@@ -83,7 +83,26 @@
                     <input type="hidden" id="cashVehicle" name="vehicle">
                     <input type="hidden" id="cashDistance" name="distance_miles">
                     <input type="hidden" id="cashAmount" name="amount">
-                    <input type="hidden" id="cashPaymentMethod" name="payment_method" value="Cash / Bank Transfer">
+                    <input type="hidden" name="payment_method" value="Cash">
+                </form>
+
+                <!-- Bank Transfer Form (hidden) -->
+                <form id="bankTransferForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST" style="display:none;">
+                    <input type="hidden" name="_subject" value="New Booking Request (Bank Transfer) — Aurex Executive Travel">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" id="bankNext" name="_next" value="">
+                    <input type="hidden" id="bankName" name="name">
+                    <input type="hidden" id="bankMobile" name="mobile">
+                    <input type="hidden" id="bankEmail" name="_replyto">
+                    <input type="hidden" id="bankPickup" name="pickup">
+                    <input type="hidden" id="bankDropoff" name="dropoff">
+                    <input type="hidden" id="bankDate" name="date">
+                    <input type="hidden" id="bankTime" name="time">
+                    <input type="hidden" id="bankFlight" name="flight">
+                    <input type="hidden" id="bankVehicle" name="vehicle">
+                    <input type="hidden" id="bankDistance" name="distance_miles">
+                    <input type="hidden" id="bankAmount" name="amount">
+                    <input type="hidden" name="payment_method" value="Bank Transfer">
                 </form>
 
                 <form id="bookingForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST">
@@ -204,11 +223,11 @@
                     </p>
                 </div>
 
-                <!-- Cash/Bank Transfer Option -->
+                <!-- Bank Transfer Option -->
                 <div class="payment-methods" style="margin-top:2rem; border-left-color:#1a5068;">
-                    <h4>Pay via Bank Transfer / Cash</h4>
+                    <h4>Pay via Bank Transfer</h4>
                     <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.5rem;">
-                        Choose to pay via direct bank transfer, or cash to the chauffeur at the time of travel.
+                        Transfer the payment using the bank details below. After sending, click "Send Proof via WhatsApp" to share the payment confirmation.
                     </p>
 
                     <!-- Bank Details -->
@@ -245,14 +264,24 @@
                         </div>
                     </div>
 
-                    <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
-                        <button type="button" id="cashPaymentBtn" class="btn-primary" style="background:#1a5068;">
-                            <i class="fa-solid fa-money-bill-wave" style="margin-right:8px;"></i>Confirm Cash/Bank Transfer
-                        </button>
-                        <a id="sendProofWhatsAppBtn" href="#" target="_blank" class="btn-secondary">
-                            <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send Proof via WhatsApp
-                        </a>
-                    </div>
+                    <button type="button" id="confirmBankTransferBtn" class="btn-primary" style="background:#1a5068; width:100%;">
+                        <i class="fa-solid fa-university" style="margin-right:8px;"></i>Confirm Bank Transfer Payment
+                    </button>
+                    <a id="sendProofWhatsAppBtn" href="#" target="_blank" class="btn-secondary" style="width:100%; text-align:center; margin-top:1rem;">
+                        <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send Proof via WhatsApp
+                    </a>
+                </div>
+
+                <!-- Cash Payment Option -->
+                <div class="payment-methods" style="margin-top:2rem; border-left-color:#4a9d7f;">
+                    <h4>Pay via Cash</h4>
+                    <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.5rem;">
+                        Choose to pay cash to the chauffeur at the time of travel. Click below to confirm this payment method.
+                    </p>
+
+                    <button type="button" id="cashPaymentBtn" class="btn-primary" style="background:#4a9d7f;">
+                        <i class="fa-solid fa-money-bill-wave" style="margin-right:8px;"></i>Confirm Cash Payment
+                    </button>
                 </div>
 
                 <div class="payment-panel-note">
@@ -326,6 +355,7 @@
         const editBtn       = document.getElementById('editBookingBtn');
         const bookingForm   = document.getElementById('bookingForm');
         const cashPaymentForm = document.getElementById('cashPaymentForm');
+        const bankTransferForm = document.getElementById('bankTransferForm');
         const pickupField   = document.getElementById('bookPickup');
         const dropoffField  = document.getElementById('bookDropoff');
         const amountField   = document.getElementById('bookAmount');
@@ -336,9 +366,11 @@
         const vehicleSelect = document.getElementById('bookVehicle');
         const bookNextField = document.getElementById('bookNext');
         const cashNextField = document.getElementById('cashNext');
+        const bankNextField = document.getElementById('bankNext');
         const submitBookingWhatsAppBtn = document.getElementById('submitBookingWhatsApp');
         const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
         const cashPaymentBtn = document.getElementById('cashPaymentBtn');
+        const confirmBankTransferBtn = document.getElementById('confirmBankTransferBtn');
         const sendProofWhatsAppBtn = document.getElementById('sendProofWhatsAppBtn');
         const copySortCodeBtn = document.getElementById('copySortCode');
         const copyAccountNoBtn = document.getElementById('copyAccountNo');
@@ -575,6 +607,35 @@ Please confirm availability and payment details as soon as possible!`;
                     cashNextField.value = window.location.origin + '/success.html?type=booking-cash';
                     // Submit the form
                     cashPaymentForm.submit();
+                    // Clear localStorage
+                    localStorage.removeItem('aurexBooking');
+                }
+            });
+        }
+
+        // Handle Bank Transfer Payment
+        if (confirmBankTransferBtn) {
+            confirmBankTransferBtn.addEventListener('click', function() {
+                // Get saved booking from localStorage
+                const savedBooking = localStorage.getItem('aurexBooking');
+                if (savedBooking) {
+                    const booking = JSON.parse(savedBooking);
+                    // Fill the bank transfer form
+                    document.getElementById('bankName').value = booking.name || booking.pickup.split(' ')[0]; // fallback
+                    document.getElementById('bankMobile').value = booking.mobile || 'N/A';
+                    document.getElementById('bankEmail').value = booking.email || 'N/A';
+                    document.getElementById('bankPickup').value = booking.pickup;
+                    document.getElementById('bankDropoff').value = booking.dropoff;
+                    document.getElementById('bankDate').value = booking.date;
+                    document.getElementById('bankTime').value = booking.time;
+                    document.getElementById('bankFlight').value = booking.flight || 'N/A';
+                    document.getElementById('bankVehicle').value = booking.vehicle;
+                    document.getElementById('bankDistance').value = booking.distance || 'N/A';
+                    document.getElementById('bankAmount').value = booking.amount;
+                    // Set next URL to success page
+                    bankNextField.value = window.location.origin + '/success.html?type=booking-bank';
+                    // Submit the form
+                    bankTransferForm.submit();
                     // Clear localStorage
                     localStorage.removeItem('aurexBooking');
                 }
