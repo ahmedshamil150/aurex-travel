@@ -100,6 +100,13 @@ h1, h2, h3, h4 { font-weight: 400; line-height: 1.15; color: var(--text-main); }
 }
 
 .nav-links > li > a:hover { color: var(--dark-text); }
+.nav-links > li > a.active,
+.nav-links > li > .nav-btn-outline.active,
+.nav-links > li > .nav-btn-solid.active,
+.nav-links > li > .nav-dropdown-toggle.active {
+    color: var(--accent);
+    font-weight: 500;
+}
 
 /* "Book Online" highlight */
 .nav-links > li > a.btn-nav {

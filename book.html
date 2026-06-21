@@ -19,8 +19,10 @@
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="airport-transfers.html">Airport Transfers</a></li>
+                <li><a href="services.html">Services</a></li>
                 <li><a href="fleet.html">Fleet</a></li>
                 <li><a href="prices.html">Prices</a></li>
+                <li><a href="about.html">About</a></li>
                 <li class="nav-dropdown">
                     <a href="#" class="nav-dropdown-toggle">Drive With Us <i class="fa-solid fa-chevron-down"></i></a>
                     <ul class="nav-dropdown-menu">
@@ -33,7 +35,7 @@
                 <li><a href="contact.html">Contact</a></li>
                 <li class="nav-cta-group">
                     <a href="quote.html" class="nav-btn-outline">Get a Quote</a>
-                    <a href="book.html" class="nav-btn-solid">Book Now</a>
+                    <a href="book.html" class="nav-btn-solid active">Book Now</a>
                 </li>
             </ul>
             <div class="hamburger">
@@ -65,6 +67,25 @@
 
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
+                <!-- Cash Payment Form (hidden, submits after original form) -->
+                <form id="cashPaymentForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST" style="display:none;">
+                    <input type="hidden" name="_subject" value="New Booking Request (Cash/Bank Transfer) — Aurex Executive Travel">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" id="cashNext" name="_next" value="">
+                    <input type="hidden" id="cashName" name="name">
+                    <input type="hidden" id="cashMobile" name="mobile">
+                    <input type="hidden" id="cashEmail" name="_replyto">
+                    <input type="hidden" id="cashPickup" name="pickup">
+                    <input type="hidden" id="cashDropoff" name="dropoff">
+                    <input type="hidden" id="cashDate" name="date">
+                    <input type="hidden" id="cashTime" name="time">
+                    <input type="hidden" id="cashFlight" name="flight">
+                    <input type="hidden" id="cashVehicle" name="vehicle">
+                    <input type="hidden" id="cashDistance" name="distance_miles">
+                    <input type="hidden" id="cashAmount" name="amount">
+                    <input type="hidden" id="cashPaymentMethod" name="payment_method" value="Cash / Bank Transfer">
+                </form>
+
                 <form id="bookingForm" action="https://formsubmit.co/nayyer.zaman@gmail.com" method="POST">
 
                     <!-- FormSubmit Config -->
@@ -183,6 +204,57 @@
                     </p>
                 </div>
 
+                <!-- Cash/Bank Transfer Option -->
+                <div class="payment-methods" style="margin-top:2rem; border-left-color:#1a5068;">
+                    <h4>Pay via Bank Transfer / Cash</h4>
+                    <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.5rem;">
+                        Choose to pay via direct bank transfer, or cash to the chauffeur at the time of travel.
+                    </p>
+
+                    <!-- Bank Details -->
+                    <div style="background:#f8f9fa; padding:1.25rem; border-radius:0.5rem; margin-bottom:1.5rem;">
+                        <h5 style="margin-bottom:1rem; color:#1a5068;">Bank Transfer Details</h5>
+                        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #e9ecef;">
+                                <span style="font-size:0.85rem; color:#6c757d;">Sort Code</span>
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <span style="font-weight:600;">11-01-41</span>
+                                    <button type="button" id="copySortCode" class="btn-secondary" style="padding:0.35rem 0.75rem; font-size:0.75rem;">
+                                        <i class="fa-solid fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #e9ecef;">
+                                <span style="font-size:0.85rem; color:#6c757d;">Account Number</span>
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <span style="font-weight:600;">11700062</span>
+                                    <button type="button" id="copyAccountNo" class="btn-secondary" style="padding:0.35rem 0.75rem; font-size:0.75rem;">
+                                        <i class="fa-solid fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0;">
+                                <span style="font-size:0.85rem; color:#6c757d;">Account Name</span>
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <span style="font-weight:600;">Mr Nayyer Zaman</span>
+                                    <button type="button" id="copyAccountName" class="btn-secondary" style="padding:0.35rem 0.75rem; font-size:0.75rem;">
+                                        <i class="fa-solid fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+                        <button type="button" id="cashPaymentBtn" class="btn-primary" style="background:#1a5068;">
+                            <i class="fa-solid fa-money-bill-wave" style="margin-right:8px;"></i>Confirm Cash/Bank Transfer
+                        </button>
+                        <a id="sendProofWhatsAppBtn" href="#" target="_blank" class="btn-secondary">
+                            <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send Proof via WhatsApp
+                        </a>
+                    </div>
+                </div>
+
                 <div class="payment-panel-note">
                     <i class="fa-solid fa-circle-info"></i>
                     <p>Your booking is not confirmed until payment is received. Once paid, our team will send a booking confirmation to your email within 30 minutes.</p>
@@ -214,8 +286,12 @@
                 <ul>
                     <li><a href="index.html">Home</a></li>
                     <li><a href="airport-transfers.html">Airport Transfers</a></li>
+                    <li><a href="services.html">Services</a></li>
                     <li><a href="fleet.html">Fleet</a></li>
                     <li><a href="prices.html">Prices</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="book.html">Book Online</a></li>
+                    <li><a href="corporate.html">Corporate Accounts</a></li>
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
             </div>
@@ -249,6 +325,7 @@
         const payPanel      = document.getElementById('paymentPanel');
         const editBtn       = document.getElementById('editBookingBtn');
         const bookingForm   = document.getElementById('bookingForm');
+        const cashPaymentForm = document.getElementById('cashPaymentForm');
         const pickupField   = document.getElementById('bookPickup');
         const dropoffField  = document.getElementById('bookDropoff');
         const amountField   = document.getElementById('bookAmount');
@@ -258,8 +335,14 @@
         const fareDistance  = document.getElementById('bookEstimatedDistance');
         const vehicleSelect = document.getElementById('bookVehicle');
         const bookNextField = document.getElementById('bookNext');
+        const cashNextField = document.getElementById('cashNext');
         const submitBookingWhatsAppBtn = document.getElementById('submitBookingWhatsApp');
         const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+        const cashPaymentBtn = document.getElementById('cashPaymentBtn');
+        const sendProofWhatsAppBtn = document.getElementById('sendProofWhatsAppBtn');
+        const copySortCodeBtn = document.getElementById('copySortCode');
+        const copyAccountNoBtn = document.getElementById('copyAccountNo');
+        const copyAccountNameBtn = document.getElementById('copyAccountName');
         let fareReadyToSubmit = false;
 
         function setBookingFare(distance, amount) {
@@ -364,11 +447,16 @@
                 } else {
                     // Save booking details to localStorage
                     const bookingDetails = {
+                        name: document.getElementById('bookName').value,
+                        mobile: document.getElementById('bookMobile').value,
+                        email: document.getElementById('bookEmail').value,
                         pickup: pickupField.value,
                         dropoff: dropoffField.value,
                         date: document.getElementById('bookDate').value,
                         time: document.getElementById('bookTime').value,
+                        flight: document.getElementById('bookFlight').value,
                         vehicle: vehicleSelect.value,
+                        distance: distanceField.value,
                         amount: amountField.value
                     };
                     localStorage.setItem('aurexBooking', JSON.stringify(bookingDetails));
@@ -429,6 +517,95 @@ Please confirm availability and payment details as soon as possible!`;
 
                 // Redirect to success page immediately
                 window.location.href = 'success.html?type=booking-whatsapp';
+            });
+        }
+
+        // Copy to clipboard functions
+        function copyToClipboard(text, btnElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = btnElement.innerHTML;
+                btnElement.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                setTimeout(() => {
+                    btnElement.innerHTML = originalHTML;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy. Please copy manually.');
+            });
+        }
+
+        if (copySortCodeBtn) {
+            copySortCodeBtn.addEventListener('click', function() {
+                copyToClipboard('11-01-41', copySortCodeBtn);
+            });
+        }
+
+        if (copyAccountNoBtn) {
+            copyAccountNoBtn.addEventListener('click', function() {
+                copyToClipboard('11700062', copyAccountNoBtn);
+            });
+        }
+
+        if (copyAccountNameBtn) {
+            copyAccountNameBtn.addEventListener('click', function() {
+                copyToClipboard('Mr Nayyer Zaman', copyAccountNameBtn);
+            });
+        }
+
+        // Handle Cash Payment
+        if (cashPaymentBtn) {
+            cashPaymentBtn.addEventListener('click', function() {
+                // Get saved booking from localStorage
+                const savedBooking = localStorage.getItem('aurexBooking');
+                if (savedBooking) {
+                    const booking = JSON.parse(savedBooking);
+                    // Fill the cash payment form
+                    document.getElementById('cashName').value = booking.name || booking.pickup.split(' ')[0]; // fallback
+                    document.getElementById('cashMobile').value = booking.mobile || 'N/A';
+                    document.getElementById('cashEmail').value = booking.email || 'N/A';
+                    document.getElementById('cashPickup').value = booking.pickup;
+                    document.getElementById('cashDropoff').value = booking.dropoff;
+                    document.getElementById('cashDate').value = booking.date;
+                    document.getElementById('cashTime').value = booking.time;
+                    document.getElementById('cashFlight').value = booking.flight || 'N/A';
+                    document.getElementById('cashVehicle').value = booking.vehicle;
+                    document.getElementById('cashDistance').value = booking.distance || 'N/A';
+                    document.getElementById('cashAmount').value = booking.amount;
+                    // Set next URL to success page
+                    cashNextField.value = window.location.origin + '/success.html?type=booking-cash';
+                    // Submit the form
+                    cashPaymentForm.submit();
+                    // Clear localStorage
+                    localStorage.removeItem('aurexBooking');
+                }
+            });
+        }
+
+        // Handle Send Proof via WhatsApp
+        if (sendProofWhatsAppBtn) {
+            sendProofWhatsAppBtn.addEventListener('click', function() {
+                // Get saved booking from localStorage
+                const savedBooking = localStorage.getItem('aurexBooking');
+                let message = `*Payment Proof – Aurex Executive Travel*
+
+Please find attached the proof of payment for my booking.`;
+
+                if (savedBooking) {
+                    const booking = JSON.parse(savedBooking);
+                    message = `*Payment Proof – Aurex Executive Travel*
+
+*Pickup:* ${booking.pickup}
+*Drop-off:* ${booking.dropoff}
+*Date:* ${booking.date}
+*Time:* ${booking.time}
+*Vehicle:* ${booking.vehicle}
+*Amount:* £${booking.amount}
+
+Please find attached the proof of payment.`;
+                }
+
+                const whatsappUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
             });
         }
     </script>
