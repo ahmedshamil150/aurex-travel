@@ -231,30 +231,30 @@
                     </p>
 
                     <!-- Bank Details -->
-                    <div style="background:#f8f9fa; padding:1.25rem; border-radius:0.5rem; margin-bottom:1.5rem;">
+                    <div style="background:#f8f9fa; padding:1.25rem; border-radius:0.5rem; margin-bottom:1.5rem; overflow:hidden;">
                         <h5 style="margin-bottom:1rem; color:#1a5068;">Bank Transfer Details</h5>
                         <div style="display:flex; flex-direction:column; gap:0.75rem;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #e9ecef;">
+                            <div class="bank-detail-row" style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #e9ecef; flex-wrap:wrap; gap:0.5rem;">
                                 <span style="font-size:0.85rem; color:#6c757d;">Sort Code</span>
-                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
                                     <span style="font-weight:600;">11-01-41</span>
                                     <button type="button" id="copySortCode" class="btn-secondary" style="padding:0.35rem 0.75rem; font-size:0.75rem;">
                                         <i class="fa-solid fa-copy"></i> Copy
                                     </button>
                                 </div>
                             </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #e9ecef;">
+                            <div class="bank-detail-row" style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #e9ecef; flex-wrap:wrap; gap:0.5rem;">
                                 <span style="font-size:0.85rem; color:#6c757d;">Account Number</span>
-                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
                                     <span style="font-weight:600;">11700062</span>
                                     <button type="button" id="copyAccountNo" class="btn-secondary" style="padding:0.35rem 0.75rem; font-size:0.75rem;">
                                         <i class="fa-solid fa-copy"></i> Copy
                                     </button>
                                 </div>
                             </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0;">
+                            <div class="bank-detail-row" style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; flex-wrap:wrap; gap:0.5rem;">
                                 <span style="font-size:0.85rem; color:#6c757d;">Account Name</span>
-                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
                                     <span style="font-weight:600;">Mr Nayyer Zaman</span>
                                     <button type="button" id="copyAccountName" class="btn-secondary" style="padding:0.35rem 0.75rem; font-size:0.75rem;">
                                         <i class="fa-solid fa-copy"></i> Copy
