@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Wire up location buttons for each page ---
-    // Quote page
+    // Quote page — Instant Calculator
     const iFromInput  = document.getElementById('iFrom');
     const iToInput    = document.getElementById('iTo');
     const iFromError  = document.getElementById('iFromError');
@@ -276,6 +276,14 @@ document.addEventListener('DOMContentLoaded', () => {
     attachLocationBtn('iFromLocBtn', iFromInput, iFromError);
     attachPostcodeAutofill(iFromInput, iFromError);
     attachPostcodeAutofill(iToInput, iToError);
+
+    // Quote page — Custom Quote
+    const cFromInput = document.getElementById('cFrom');
+    const cToInput   = document.getElementById('cTo');
+    const cFromError = document.getElementById('cFromError');
+    const cToError   = document.getElementById('cToError');
+    attachPostcodeAutofill(cFromInput, cFromError);
+    attachPostcodeAutofill(cToInput, cToError);
 
     // Homepage quote
     const quoteFromInput = document.getElementById('quoteFrom');
