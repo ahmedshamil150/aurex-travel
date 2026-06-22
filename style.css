@@ -2153,40 +2153,70 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     position: relative;
     border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.location-input-wrap:focus-within {
+    border-bottom-color: var(--accent);
 }
 
 .location-input-wrap input {
-    border-bottom: none; /* remove default bottom border */
+    border-bottom: none !important;
     flex-grow: 1;
+    min-width: 0;
 }
 
 .use-location-btn {
-    background: none;
-    border: none;
+    background: rgba(26, 80, 104, 0.05); /* Light teal background */
+    border: 1px solid rgba(26, 80, 104, 0.15);
     color: var(--teal);
+    border-radius: 24px;
+    padding: 6px 14px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    margin-left: 8px;
     cursor: pointer;
-    padding: 0 10px;
-    font-size: 1.1rem;
-    transition: color 0.3s;
+    transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.use-location-btn i {
+    margin-right: 6px;
+    font-size: 0.85rem;
+}
+
 .use-location-btn:hover {
-    color: var(--accent);
+    background: var(--teal);
+    color: #ffffff;
+    border-color: var(--teal);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(26, 80, 104, 0.15);
+}
+
+.use-location-btn:active {
+    transform: translateY(0);
 }
 
 .use-location-btn:disabled {
+    background: #f5f5f5;
     color: var(--text-muted);
+    border-color: #e0e0e0;
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
 }
 
 .location-error {
     display: block;
-    color: #e74c3c; /* Red color for error */
-    font-size: 0.8rem;
-    margin-top: 4px;
-    min-height: 1.2rem; /* Reserve space even when empty */
+    color: #d32f2f;
+    font-size: 0.78rem;
+    margin-top: 6px;
+    font-weight: 400;
+    min-height: 1.2rem;
 }
