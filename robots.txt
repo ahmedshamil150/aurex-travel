@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.aurexexecutivetravel.co.uk/sitemap.xml
