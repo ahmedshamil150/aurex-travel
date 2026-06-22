@@ -209,6 +209,30 @@
                     <input type="hidden" id="bookAmount" name="amount">
                     <div id="bookFareSummary" class="quote-result" style="display:none; margin-top:1.5rem;">
                         <h2>Estimated Fare: <span id="bookEstimatedPrice">£0</span></h2>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">
+                            <span id="bookEstimatedDistance"></span> miles &bull; £2.00 per mile
+                        </p>
+                    </div>
+
+                    <!-- Fare calculation fallback (shown when API fails) -->
+                    <div id="bookFareFallback" style="display:none; margin-top:1.5rem; padding:1.25rem; background:#fff3cd; border:1px solid #ffc107; border-radius:0.5rem;">
+                        <p style="margin-bottom:0.75rem; font-weight:600; color:#664d03;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Fare calculation unavailable
+                        </p>
+                        <p style="margin-bottom:0.75rem; font-size:0.9rem; color:#664d03;">
+                            We could not automatically calculate the fare. You can enter the approximate distance below, or submit without a fare and our team will provide a quote.
+                        </p>
+                        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                            <input type="number" id="bookManualDistance" placeholder="Approx. distance in miles" style="flex:1; min-width:180px; padding:0.6rem; border:1px solid #ccc; border-radius:0.3rem; font-size:0.9rem;">
+                            <button type="button" id="bookApplyManualDistance" class="btn-primary" style="padding:0.6rem 1rem; font-size:0.85rem; white-space:nowrap;">Apply</button>
+                            <button type="button" id="bookRetryFare" class="btn-secondary" style="padding:0.6rem 1rem; font-size:0.85rem; white-space:nowrap;">
+                                <i class="fa-solid fa-rotate"></i> Retry
+                            </button>
+                            <button type="button" id="bookSkipFare" class="btn-secondary" style="padding:0.6rem 1rem; font-size:0.85rem; white-space:nowrap;">Skip Fare</button>
+                        </div>
+                        <p style="margin-top:0.5rem; font-size:0.8rem; color:#664d03;">
+                            The fare will be calculated at £2.00 per mile.
+                        </p>
                     </div>
 
                     <button type="submit" class="btn-primary full-width" style="margin-top: 1.5rem;">
@@ -416,7 +440,24 @@
         const copySortCodeBtn = document.getElementById('copySortCode');
         const copyAccountNoBtn = document.getElementById('copyAccountNo');
         const copyAccountNameBtn = document.getElementById('copyAccountName');
+        const fareFallbackDiv = document.getElementById('bookFareFallback');
+        const manualDistanceInput = document.getElementById('bookManualDistance');
+        const applyManualBtn = document.getElementById('bookApplyManualDistance');
+        const retryFareBtn = document.getElementById('bookRetryFare');
+        const skipFareBtn = document.getElementById('bookSkipFare');
         let fareReadyToSubmit = false;
+        let isCalculating = false; // guards against multiple simultaneous calculations
+
+        function hideFareFallback() {
+            if (fareFallbackDiv) fareFallbackDiv.style.display = 'none';
+        }
+
+        function showFareFallback() {
+            if (fareFallbackDiv) {
+                fareFallbackDiv.style.display = 'block';
+                fareFallbackDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
 
         function setBookingFare(distance, amount) {
             if (!distance || !amount) return;
@@ -426,12 +467,14 @@
             farePrice.textContent = `£${Number(amount).toFixed(2)}`;
             fareSummary.style.display = 'block';
             fareReadyToSubmit = true;
+            hideFareFallback();
         }
 
         async function calculateBookingFare() {
             const pickup  = pickupField.value.trim();
             const dropoff = dropoffField.value.trim();
             if (!pickup || !dropoff) return false;
+            hideFareFallback();
             const estimate = await calculateRouteEstimate(pickup, dropoff);
             setBookingFare(estimate.miles, estimate.price);
             return true;
@@ -490,6 +533,7 @@
             if (!field) return;
             field.addEventListener('change', () => {
                 fareReadyToSubmit = false;
+                hideFareFallback();
                 calculateBookingFare().catch(() => {});
             });
         });
@@ -499,6 +543,8 @@
                 if (!fareReadyToSubmit || !amountField.value) {
                     e.preventDefault();
                     if (!bookingForm.reportValidity()) return;
+                    if (isCalculating) return; // prevent double-trigger
+                    isCalculating = true;
 
                     const submitBtn = bookingForm.querySelector('button[type="submit"]');
                     try {
@@ -508,9 +554,13 @@
                         }
                         await calculateBookingFare();
                         fareReadyToSubmit = true;
+                        isCalculating = false;
                         bookingForm.requestSubmit();
                     } catch (error) {
-                        alert('Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.');
+                        // Instead of alert, show the fallback UI
+                        showFareFallback();
+                        fareReadyToSubmit = false;
+                        isCalculating = false;
                     } finally {
                         if (submitBtn && !fareReadyToSubmit) {
                             submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking';
@@ -551,7 +601,8 @@
                     try {
                         await calculateBookingFare();
                     } catch (error) {
-                        alert('Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.');
+                        // Show fallback instead of blocking alert
+                        showFareFallback();
                         return;
                     }
                 }
@@ -680,6 +731,56 @@ Please confirm availability and payment details as soon as possible!`;
                     // Clear localStorage
                     localStorage.removeItem('aurexBooking');
                 }
+            });
+        }
+
+        // --- Fare Fallback Handlers ---
+
+        // Apply manual distance
+        if (applyManualBtn && manualDistanceInput) {
+            applyManualBtn.addEventListener('click', function() {
+                const miles = parseFloat(manualDistanceInput.value);
+                if (!miles || miles <= 0) {
+                    alert('Please enter a valid distance in miles.');
+                    return;
+                }
+                const price = miles * 2; // PRICE_PER_MILE = 2
+                setBookingFare(miles, price);
+            });
+            // Also apply on Enter key
+            manualDistanceInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyManualBtn.click();
+                }
+            });
+        }
+
+        // Retry fare calculation
+        if (retryFareBtn) {
+            retryFareBtn.addEventListener('click', async function() {
+                hideFareFallback();
+                try {
+                    await calculateBookingFare();
+                } catch (error) {
+                    showFareFallback();
+                }
+            });
+        }
+
+        // Skip fare — allow submit without a calculated fare (team will provide quote)
+        if (skipFareBtn) {
+            skipFareBtn.addEventListener('click', function() {
+                // Set a placeholder value so form submission proceeds
+                distanceField.value = '0';
+                amountField.value = '0.00';
+                farePrice.textContent = 'TBC';
+                fareDistance.textContent = 'N/A';
+                fareSummary.style.display = 'block';
+                fareReadyToSubmit = true;
+                hideFareFallback();
+                // Auto-submit the booking form
+                bookingForm.requestSubmit();
             });
         }
 
