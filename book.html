@@ -495,10 +495,7 @@
                         fareReadyToSubmit = true;
                         bookingForm.requestSubmit();
                     } catch (error) {
-                        const msg = error.message === 'outside_uk'
-                            ? 'One or more locations could not be found in the UK. Please enter a valid UK address or postcode.'
-                            : 'Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.';
-                        alert(msg);
+                        alert('Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.');
                     } finally {
                         if (submitBtn && !fareReadyToSubmit) {
                             submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking';
@@ -539,10 +536,7 @@
                     try {
                         await calculateBookingFare();
                     } catch (error) {
-                        const msg = error.message === 'outside_uk'
-                            ? 'One or more locations could not be found in the UK. Please enter a valid UK address or postcode.'
-                            : 'Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.';
-                        alert(msg);
+                        alert('Sorry, we could not calculate the fare for that route. Please check the pickup and drop-off locations and try again.');
                         return;
                     }
                 }

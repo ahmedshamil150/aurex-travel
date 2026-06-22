@@ -125,28 +125,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return Object.keys(AIRPORT_COORDS).find(key => value.includes(key));
     }
 
-    // Reverse geocode lat/lon → UK address string via Nominatim
-    async function reverseGeocodeUK(lat, lon) {
+    // Reverse geocode lat/lon → Address string via Nominatim
+    async function reverseGeocode(lat, lon) {
         const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`;
         const res = await fetch(url);
         const data = await res.json();
         if (!data || !data.address) throw new Error('Could not get address');
         const addr = data.address;
-        // Validate it's in UK
-        if (addr.country_code !== 'gb') throw new Error('outside_uk');
+        
         // Build a readable address
         const parts = [
             addr.road || addr.pedestrian || addr.path,
             addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district,
-            addr.city || addr.town || addr.county,
-            addr.postcode
+            addr.city || addr.town || addr.county || addr.state,
+            addr.postcode,
+            addr.country
         ].filter(Boolean);
-        return parts.join(', ');
-    }
-
-    // Validate that a geocoded result is within UK bounding box
-    function isWithinUK(lat, lon) {
-        return lat >= 49.8 && lat <= 60.9 && lon >= -8.7 && lon <= 1.8;
+        // De-duplicate parts (sometimes city and county are the same)
+        return [...new Set(parts)].join(', ');
     }
 
     async function geocodeLocation(location) {
@@ -162,15 +158,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return { lat: result.lat, lon: result.lon };
         }
 
-        // 3. Otherwise use Nominatim restricted to GB
-        const query = trimmed.toLowerCase().includes('uk') ? trimmed : `${trimmed}, UK`;
-        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=gb&q=${encodeURIComponent(query)}`;
+        // 3. Otherwise use Nominatim
+        const query = trimmed;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
         const response = await fetch(url);
         const results = await response.json();
-        if (!results.length) throw new Error('outside_uk');
+        if (!results.length) throw new Error('not_found');
         const lat = parseFloat(results[0].lat);
         const lon = parseFloat(results[0].lon);
-        if (!isWithinUK(lat, lon)) throw new Error('outside_uk');
         return { lat, lon };
     }
 
@@ -229,21 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 async (position) => {
                     try {
                         const { latitude, longitude } = position.coords;
-                        if (!isWithinUK(latitude, longitude)) {
-                            setLocationError(errorEl, '⚠ Your current location appears to be outside the UK. Please enter a UK address manually.');
-                            btn.innerHTML = originalHtml;
-                            btn.disabled = false;
-                            return;
-                        }
-                        const address = await reverseGeocodeUK(latitude, longitude);
+                        const address = await reverseGeocode(latitude, longitude);
                         inputEl.value = address;
                         setLocationError(errorEl, '');
                     } catch (err) {
-                        if (err.message === 'outside_uk') {
-                            setLocationError(errorEl, '⚠ Your current location appears to be outside the UK. Please enter a UK address manually.');
-                        } else {
-                            setLocationError(errorEl, '⚠ Could not determine your address. Please enter it manually.');
-                        }
+                        setLocationError(errorEl, '⚠ Could not determine your address. Please enter it manually.');
                     } finally {
                         btn.innerHTML = originalHtml;
                         btn.disabled = false;
@@ -334,10 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (error) {
-                const msg = error.message === 'outside_uk'
-                    ? 'One or more locations could not be found in the UK. Please enter a valid UK address or postcode.'
-                    : 'Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.';
-                alert(msg);
+                alert('Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.');
             } finally {
                 if (btn) {
                     btn.textContent = 'Calculate Quote';
@@ -384,10 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (error) {
-                const msg = error.message === 'outside_uk'
-                    ? 'One or more locations could not be found in the UK. Please enter a valid UK address or postcode.'
-                    : 'Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.';
-                alert(msg);
+                alert('Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.');
             } finally {
                 if (btn) {
                     btn.textContent = 'Calculate Estimate';
