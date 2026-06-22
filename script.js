@@ -98,24 +98,80 @@ document.addEventListener('DOMContentLoaded', () => {
         'london city': { lat: 51.5053, lon: 0.0553 }
     };
 
+    // --- UK Postcode regex ---
+    const UK_POSTCODE_REGEX = /^([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}|[A-Z]{1,2}\d{1,2}\s*\d[A-Z]{2})$/i;
+
+    function isUKPostcode(str) {
+        return UK_POSTCODE_REGEX.test(str.trim());
+    }
+
+    // Lookup a UK postcode → { lat, lon, address } via postcodes.io
+    async function lookupPostcode(postcode) {
+        const clean = postcode.trim().toUpperCase().replace(/\s+/g, '');
+        const url = `https://api.postcodes.io/postcodes/${encodeURIComponent(clean)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.status !== 200) throw new Error('Invalid UK postcode');
+        const r = data.result;
+        return {
+            lat: r.latitude,
+            lon: r.longitude,
+            address: `${r.parish !== r.admin_district ? r.parish + ', ' : ''}${r.admin_district}, ${r.admin_county || r.region}, UK`
+        };
+    }
+
     function knownAirport(location) {
         const value = location.toLowerCase();
         return Object.keys(AIRPORT_COORDS).find(key => value.includes(key));
     }
 
+    // Reverse geocode lat/lon → UK address string via Nominatim
+    async function reverseGeocodeUK(lat, lon) {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data || !data.address) throw new Error('Could not get address');
+        const addr = data.address;
+        // Validate it's in UK
+        if (addr.country_code !== 'gb') throw new Error('outside_uk');
+        // Build a readable address
+        const parts = [
+            addr.road || addr.pedestrian || addr.path,
+            addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district,
+            addr.city || addr.town || addr.county,
+            addr.postcode
+        ].filter(Boolean);
+        return parts.join(', ');
+    }
+
+    // Validate that a geocoded result is within UK bounding box
+    function isWithinUK(lat, lon) {
+        return lat >= 49.8 && lat <= 60.9 && lon >= -8.7 && lon <= 1.8;
+    }
+
     async function geocodeLocation(location) {
-        const airportKey = knownAirport(location);
+        const trimmed = location.trim();
+
+        // 1. Check known airports first
+        const airportKey = knownAirport(trimmed);
         if (airportKey) return AIRPORT_COORDS[airportKey];
 
-        const query = location.toLowerCase().includes('uk') ? location : `${location}, UK`;
+        // 2. If it looks like a UK postcode, use postcodes.io
+        if (isUKPostcode(trimmed)) {
+            const result = await lookupPostcode(trimmed);
+            return { lat: result.lat, lon: result.lon };
+        }
+
+        // 3. Otherwise use Nominatim restricted to GB
+        const query = trimmed.toLowerCase().includes('uk') ? trimmed : `${trimmed}, UK`;
         const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=gb&q=${encodeURIComponent(query)}`;
         const response = await fetch(url);
         const results = await response.json();
-        if (!results.length) throw new Error(`Location not found: ${location}`);
-        return {
-            lat: parseFloat(results[0].lat),
-            lon: parseFloat(results[0].lon)
-        };
+        if (!results.length) throw new Error('outside_uk');
+        const lat = parseFloat(results[0].lat);
+        const lon = parseFloat(results[0].lon);
+        if (!isWithinUK(lat, lon)) throw new Error('outside_uk');
+        return { lat, lon };
     }
 
     async function calculateRouteEstimate(pickup, dropoff) {
@@ -147,6 +203,113 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.calculateRouteEstimate = calculateRouteEstimate;
 
+    // --- Helper: show/clear location error ---
+    function setLocationError(errorEl, msg) {
+        if (!errorEl) return;
+        errorEl.textContent = msg || '';
+        errorEl.style.display = msg ? 'block' : 'none';
+    }
+
+    // --- "Use Current Location" button handler ---
+    function attachLocationBtn(btnId, inputEl, errorEl) {
+        const btn = document.getElementById(btnId);
+        if (!btn || !inputEl) return;
+
+        btn.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                setLocationError(errorEl, 'Geolocation is not supported by your browser.');
+                return;
+            }
+
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    try {
+                        const { latitude, longitude } = position.coords;
+                        if (!isWithinUK(latitude, longitude)) {
+                            setLocationError(errorEl, '⚠ Your current location appears to be outside the UK. Please enter a UK address manually.');
+                            btn.innerHTML = originalHtml;
+                            btn.disabled = false;
+                            return;
+                        }
+                        const address = await reverseGeocodeUK(latitude, longitude);
+                        inputEl.value = address;
+                        setLocationError(errorEl, '');
+                    } catch (err) {
+                        if (err.message === 'outside_uk') {
+                            setLocationError(errorEl, '⚠ Your current location appears to be outside the UK. Please enter a UK address manually.');
+                        } else {
+                            setLocationError(errorEl, '⚠ Could not determine your address. Please enter it manually.');
+                        }
+                    } finally {
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                },
+                (err) => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    if (err.code === err.PERMISSION_DENIED) {
+                        setLocationError(errorEl, '⚠ Location access denied. Please allow location access in your browser and try again.');
+                    } else {
+                        setLocationError(errorEl, '⚠ Unable to detect your location. Please enter your address manually.');
+                    }
+                },
+                { timeout: 10000, enableHighAccuracy: true }
+            );
+        });
+    }
+
+    // --- Postcode detection on input blur ---
+    function attachPostcodeAutofill(inputEl, errorEl) {
+        if (!inputEl) return;
+        inputEl.addEventListener('blur', async () => {
+            const val = inputEl.value.trim();
+            if (!val || !isUKPostcode(val)) return;
+            try {
+                const result = await lookupPostcode(val);
+                // Only update if the user hasn't changed the field
+                if (inputEl.value.trim().toUpperCase().replace(/\s+/g, '') === val.toUpperCase().replace(/\s+/g, '')) {
+                    inputEl.value = result.address;
+                    setLocationError(errorEl, '');
+                }
+            } catch (e) {
+                setLocationError(errorEl, '⚠ Invalid UK postcode. Please check and try again.');
+            }
+        });
+    }
+
+    // --- Wire up location buttons for each page ---
+    // Quote page
+    const iFromInput  = document.getElementById('iFrom');
+    const iToInput    = document.getElementById('iTo');
+    const iFromError  = document.getElementById('iFromError');
+    const iToError    = document.getElementById('iToError');
+    attachLocationBtn('iFromLocBtn', iFromInput, iFromError);
+    attachPostcodeAutofill(iFromInput, iFromError);
+    attachPostcodeAutofill(iToInput, iToError);
+
+    // Homepage quote
+    const quoteFromInput = document.getElementById('quoteFrom');
+    const quoteToInput   = document.getElementById('quoteTo');
+    const quoteFromError = document.getElementById('quoteFromError');
+    const quoteToError   = document.getElementById('quoteToError');
+    attachLocationBtn('quoteFromLocBtn', quoteFromInput, quoteFromError);
+    attachPostcodeAutofill(quoteFromInput, quoteFromError);
+    attachPostcodeAutofill(quoteToInput, quoteToError);
+
+    // Book page
+    const bookPickupInput  = document.getElementById('bookPickup');
+    const bookDropoffInput = document.getElementById('bookDropoff');
+    const bookPickupError  = document.getElementById('bookPickupError');
+    const bookDropoffError = document.getElementById('bookDropoffError');
+    attachLocationBtn('bookPickupLocBtn', bookPickupInput, bookPickupError);
+    attachPostcodeAutofill(bookPickupInput, bookPickupError);
+    attachPostcodeAutofill(bookDropoffInput, bookDropoffError);
+
     // --- Homepage Instant Quote Calculator ---
     const quoteForm = document.getElementById('quoteForm');
     if (quoteForm) {
@@ -171,7 +334,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (error) {
-                alert('Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.');
+                const msg = error.message === 'outside_uk'
+                    ? 'One or more locations could not be found in the UK. Please enter a valid UK address or postcode.'
+                    : 'Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.';
+                alert(msg);
             } finally {
                 if (btn) {
                     btn.textContent = 'Calculate Quote';
@@ -211,7 +377,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.disabled = true;
                 }
                 const estimate = await calculateRouteEstimate(pickup, dropoff);
-                document.getElementById('calcMiles').textContent = estimate.miles;
                 document.getElementById('calcPrice').textContent = `£${estimate.price.toFixed(2)}`;
                 const bookNow = document.getElementById('instantBookNow');
                 if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, estimate);
@@ -219,7 +384,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (error) {
-                alert('Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.');
+                const msg = error.message === 'outside_uk'
+                    ? 'One or more locations could not be found in the UK. Please enter a valid UK address or postcode.'
+                    : 'Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.';
+                alert(msg);
             } finally {
                 if (btn) {
                     btn.textContent = 'Calculate Estimate';

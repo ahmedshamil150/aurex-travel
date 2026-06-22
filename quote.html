@@ -6,24 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get a Quote | Aurex Executive Travel</title>
     <meta name="description" content="Get an instant or custom price quote for your airport transfer or executive travel with Aurex. Fixed prices from Cardiff to all major UK airports.">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="aurex-logo.png">
-    <link rel="apple-touch-icon" type="image/png" href="aurex-logo.png">
-    
-    <!-- Open Graph / Social Sharing -->
-    <meta property="og:title" content="Get a Quote | Aurex Executive Travel">
-    <meta property="og:description" content="Get an instant or custom price quote for your airport transfer or executive travel with Aurex. Fixed prices from Cardiff to all major UK airports.">
-    <meta property="og:image" content="aurex-logo.png">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://aurexexecutivetravel.com/">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Get a Quote | Aurex Executive Travel">
-    <meta name="twitter:description" content="Get an instant or custom price quote for your airport transfer or executive travel with Aurex. Fixed prices from Cardiff to all major UK airports.">
-    <meta name="twitter:image" content="aurex-logo.png">
-    
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -88,18 +70,26 @@
                         <div class="form-row">
                             <div class="form-group half">
                                 <label for="iFrom">Pickup Location</label>
-                                <input type="text" id="iFrom" placeholder="e.g. Cardiff City Centre" required>
+                                <div class="location-input-wrap">
+                                    <input type="text" id="iFrom" placeholder="e.g. Cardiff City Centre or postcode" required>
+                                    <button type="button" class="use-location-btn" id="iFromLocBtn" title="Use my current location">
+                                        <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
+                                    </button>
+                                </div>
+                                <span class="location-error" id="iFromError"></span>
                             </div>
                             <div class="form-group half">
                                 <label for="iTo">Destination / Airport</label>
-                                <input type="text" id="iTo" placeholder="e.g. Heathrow Airport" required>
+                                <div class="location-input-wrap">
+                                    <input type="text" id="iTo" placeholder="e.g. Heathrow Airport or postcode" required>
+                                    <span class="location-error" id="iToError"></span>
+                                </div>
                             </div>
                         </div>
                         <button type="submit" class="btn-primary">Calculate Estimate</button>
                     </form>
                     <div id="instantResult" class="quote-result" style="display:none;">
                         <h3>Estimated Price: <span id="calcPrice">£0</span></h3>
-                        <p>Based on <span id="calcMiles">0</span> miles at £2 per mile.</p>
                         <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">This is an estimate. For a confirmed booking, continue to the booking form.</p>
                         <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
                             <a href="book.html" class="btn-primary" id="instantBookNow">Book Now</a>

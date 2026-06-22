@@ -2144,3 +2144,49 @@ input:focus, select:focus, textarea:focus {
     .payment-summary-row { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
     .payment-summary-total { flex-direction: row !important; align-items: center !important; }
 }
+
+/* ========================
+   LOCATION SERVICES
+======================== */
+.location-input-wrap {
+    display: flex;
+    align-items: center;
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.location-input-wrap input {
+    border-bottom: none; /* remove default bottom border */
+    flex-grow: 1;
+}
+
+.use-location-btn {
+    background: none;
+    border: none;
+    color: var(--teal);
+    cursor: pointer;
+    padding: 0 10px;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.use-location-btn:hover {
+    color: var(--accent);
+}
+
+.use-location-btn:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.location-error {
+    display: block;
+    color: #e74c3c; /* Red color for error */
+    font-size: 0.8rem;
+    margin-top: 4px;
+    min-height: 1.2rem; /* Reserve space even when empty */
+}

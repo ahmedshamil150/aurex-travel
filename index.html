@@ -219,18 +219,26 @@
                     <div class="form-row">
                         <div class="form-group half">
                             <label for="quoteFrom">From</label>
-                            <input type="text" id="quoteFrom" placeholder="e.g. Cardiff City Centre" required>
+                            <div class="location-input-wrap">
+                                <input type="text" id="quoteFrom" placeholder="e.g. Cardiff City Centre or postcode" required>
+                                <button type="button" class="use-location-btn" id="quoteFromLocBtn" title="Use my current location">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
+                                </button>
+                            </div>
+                            <span class="location-error" id="quoteFromError"></span>
                         </div>
                         <div class="form-group half">
                             <label for="quoteTo">To</label>
-                            <input type="text" id="quoteTo" placeholder="e.g. Heathrow Airport" required>
+                            <div class="location-input-wrap">
+                                <input type="text" id="quoteTo" placeholder="e.g. Heathrow Airport or postcode" required>
+                                <span class="location-error" id="quoteToError"></span>
+                            </div>
                         </div>
                     </div>
                     <button type="submit" class="btn-primary">Calculate Quote</button>
                 </form>
                 <div id="quoteResult" class="quote-result" style="display: none;">
                     <h3>Estimated Price: <span id="estimatedPrice">£0</span></h3>
-                    <p>Based on <span id="estimatedDistance">0</span> miles at £2 per mile.</p>
                     <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">This is an estimate. For a confirmed booking, continue to the booking form.</p>
                     <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
                         <a href="book.html" class="btn-primary" id="quoteBookNow">Book Now</a>
