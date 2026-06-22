@@ -24,6 +24,8 @@
     <meta name="twitter:description" content="Get an instant or custom price quote for your airport transfer or executive travel with Aurex. Fixed prices from Cardiff to all major UK airports.">
     <meta name="twitter:image" content="https://www.aurexexecutivetravel.co.uk/aurex-logo.png">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -116,7 +118,7 @@
                         <button type="submit" class="btn-primary">Calculate Estimate</button>
                     </form>
                     <div id="instantResult" class="quote-result" style="display:none;">
-                        <h3>Estimated Price: <span id="calcPrice">£0</span></h3>
+                        <h2>Estimated Price: <span id="calcPrice">£0</span></h2>
                         <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">This is an estimate. For a confirmed booking, continue to the booking form.</p>
                         <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
                             <a href="book.html" class="btn-primary" id="instantBookNow">Book Now</a>
@@ -199,7 +201,7 @@
             <!-- Fixed Prices redirect -->
             <div class="quote-tab-content" id="tab-fixed">
                 <div class="pricing-note" style="margin-top: 0;">
-                    <h3>Fixed Airport Transfer Prices</h3>
+                    <h2>Fixed Airport Transfer Prices</h2>
                     <p style="margin-top: 0.75rem;">We publish fixed prices for our most popular routes from Cardiff. All prices include meet &amp; greet, flight monitoring, and a professional chauffeur.</p>
                     <a href="prices.html" class="btn-primary" style="margin-top: 1.5rem; display: inline-block;">View Full Price List</a>
                 </div>
@@ -207,6 +209,7 @@
 
         </div>
     </section>
+    </main>
 
         <!-- Footer -->
     <footer class="footer">

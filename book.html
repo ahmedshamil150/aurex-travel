@@ -26,6 +26,8 @@
     <meta name="twitter:image" content="https://www.aurexexecutivetravel.co.uk/aurex-logo.png">
     
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -81,6 +83,7 @@
         <p>Fill in your journey details, send your request, then choose your preferred payment method to confirm your booking.</p>
     </header>
 
+    <main id="main-content">
     <!-- Booking Form -->
     <section class="content-section">
         <div class="container">
@@ -141,7 +144,7 @@
                     <input type="hidden" name="_captcha" value="false">
                     <input type="hidden" id="bookNext" name="_next" value="">
 
-                    <h3 class="form-section-title">Passenger Details</h3>
+                    <h3 class="form-section-title">Passenger Details</h2>
                     <div class="form-row">
                         <div class="form-group half">
                             <label for="bookName">Passenger Name *</label>
@@ -168,7 +171,7 @@
                         </select>
                     </div>
 
-                    <h3 class="form-section-title" style="margin-top: 2.5rem;">Journey Details</h3>
+                    <h3 class="form-section-title" style="margin-top: 2.5rem;">Journey Details</h2>
                     <div class="form-row">
                         <div class="form-group half">
                             <label for="bookPickup">Pickup Address *</label>
@@ -205,7 +208,7 @@
                     <input type="hidden" id="bookDistance" name="distance_miles">
                     <input type="hidden" id="bookAmount" name="amount">
                     <div id="bookFareSummary" class="quote-result" style="display:none; margin-top:1.5rem;">
-                        <h3>Estimated Fare: <span id="bookEstimatedPrice">£0</span></h3>
+                        <h2>Estimated Fare: <span id="bookEstimatedPrice">£0</span></h2>
                     </div>
 
                     <button type="submit" class="btn-primary full-width" style="margin-top: 1.5rem;">
@@ -223,7 +226,7 @@
                 <div class="payment-panel-header">
                     <div class="payment-panel-icon"><i class="fa-solid fa-check"></i></div>
                     <div>
-                        <h3>Booking Request Sent!</h3>
+                        <h2>Booking Request Sent!</h2>
                         <p>Your details have been emailed to our team. Now pay via PayPal to confirm your booking.</p>
                     </div>
                 </div>
@@ -339,6 +342,7 @@
 
         </div>
     </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">

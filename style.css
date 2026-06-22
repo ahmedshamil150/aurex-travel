@@ -189,7 +189,7 @@ h1, h2, h3, h4 { font-weight: 400; line-height: 1.15; color: var(--text-main); }
     padding: 0 20px;
     background:
         linear-gradient(135deg, rgba(18, 58, 77, 0.82) 0%, rgba(26, 80, 104, 0.70) 40%, rgba(3, 3, 3, 0.72) 100%),
-        url('hero_bg.png');
+        url('hero_bg.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -236,7 +236,7 @@ h1, h2, h3, h4 { font-weight: 400; line-height: 1.15; color: var(--text-main); }
     content: '';
     position: absolute;
     inset: 0;
-    background: url('hero_bg.png') center/cover no-repeat;
+    background: url('hero_bg.webp') center/cover no-repeat;
     opacity: 0.07;
     pointer-events: none;
 }
