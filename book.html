@@ -482,16 +482,21 @@
         const bookTripTypeHidden = document.getElementById('bookTripTypeHidden');
         const bookReturnBreakdown = document.getElementById('bookReturnBreakdown');
         const bookFareHeading = document.getElementById('bookFareHeading');
+        let lastBookingBasePrice = null;
+        let lastBookingRouteKey = null;
 
         function getTripType() {
             return bookTripReturn && bookTripReturn.checked ? 'return' : 'one-way';
         }
 
-        function setBookingFare(distance, amount) {
+        function setBookingFare(distance, amount, options = {}) {
             if (!distance || !amount) return;
             const tripType = getTripType();
             const oneWayPrice = Number(amount);
             const totalPrice = tripType === 'return' ? Math.round(oneWayPrice * 1.7) : oneWayPrice;
+
+            lastBookingBasePrice = oneWayPrice;
+            if (options.routeKey) lastBookingRouteKey = options.routeKey;
 
             distanceField.value = distance;
             amountField.value = totalPrice.toFixed(2);
@@ -516,13 +521,22 @@
             hideFareFallback();
         }
 
+        function recalculateBookingFareFromBase() {
+            if (!distanceField.value) return;
+            const miles = parseFloat(distanceField.value);
+            if (!miles || isNaN(miles)) return;
+            const basePrice = lastBookingBasePrice !== null ? lastBookingBasePrice : (miles * 2);
+            setBookingFare(miles, basePrice, { routeKey: lastBookingRouteKey });
+        }
+
         async function calculateBookingFare() {
             const pickup  = pickupField.value.trim();
             const dropoff = dropoffField.value.trim();
             if (!pickup || !dropoff) return false;
             hideFareFallback();
-            const estimate = await calculateRouteEstimate(pickup, dropoff);
-            setBookingFare(estimate.miles, estimate.price);
+            const vehicleType = getVehicleTypeKey(vehicleSelect?.value);
+            const estimate = await calculateRouteEstimate(pickup, dropoff, vehicleType);
+            setBookingFare(estimate.miles, estimate.price, { routeKey: estimate.routeKey });
             return true;
         }
 
@@ -530,20 +544,12 @@
         if (bookTripOneWay && bookTripReturn) {
             bookTripOneWay.addEventListener('change', function() {
                 if (this.checked && fareReadyToSubmit && distanceField.value) {
-                    const miles = parseFloat(distanceField.value);
-                    if (miles > 0) {
-                        const oneWayPrice = miles * 2;
-                        setBookingFare(miles, oneWayPrice);
-                    }
+                    recalculateBookingFareFromBase();
                 }
             });
             bookTripReturn.addEventListener('change', function() {
                 if (this.checked && fareReadyToSubmit && distanceField.value) {
-                    const miles = parseFloat(distanceField.value);
-                    if (miles > 0) {
-                        const oneWayPrice = miles * 2;
-                        setBookingFare(miles, oneWayPrice);
-                    }
+                    recalculateBookingFareFromBase();
                 }
             });
         }

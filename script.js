@@ -98,6 +98,93 @@ document.addEventListener('DOMContentLoaded', () => {
         'london city': { lat: 51.5053, lon: 0.0553 }
     };
 
+    const FIXED_ROUTE_PRICES = {
+        'cardiff->heathrow': { saloon: 230, vclass: 250 },
+        'cardiff->bristol': { saloon: 135, vclass: 155 },
+        'cardiff->cardiff airport': { saloon: 60, vclass: 80 },
+        'cardiff->gatwick': { saloon: 320, vclass: 340 }
+    };
+
+    function normalizeRouteLocation(text) {
+        if (!text || typeof text !== 'string') return null;
+        const value = text.trim().toLowerCase();
+        if (value.includes('cardiff airport') || value.includes('cardiff airpor') || value.includes('cwl')) return 'cardiff airport';
+        if (value.includes('cardiff')) return 'cardiff';
+        if (value.includes('heathrow')) return 'heathrow';
+        if (value.includes('gatwick')) return 'gatwick';
+        if (value.includes('stansted')) return 'stansted';
+        if (value.includes('luton')) return 'luton';
+        if (value.includes('bristol')) return 'bristol';
+        if (value.includes('birmingham')) return 'birmingham';
+        if (value.includes('manchester')) return 'manchester';
+        return null;
+    }
+
+    function getVehicleTypeKey(vehicleName) {
+        if (!vehicleName || typeof vehicleName !== 'string') return null;
+        const normalized = vehicleName.toLowerCase();
+        if (normalized.includes('v-class') || normalized.includes('v class')) return 'vclass';
+        return 'saloon';
+    }
+
+    function getFixedRoutePrice(pickup, dropoff, vehicleType) {
+        const from = normalizeRouteLocation(pickup);
+        const to = normalizeRouteLocation(dropoff);
+        if (!from || !to || from === to) return null;
+
+        let routeKey = `${from}->${to}`;
+        let pricing = FIXED_ROUTE_PRICES[routeKey];
+        if (!pricing) {
+            routeKey = `${to}->${from}`;
+            pricing = FIXED_ROUTE_PRICES[routeKey];
+        }
+        if (!pricing) return null;
+
+        if (vehicleType) {
+            const price = pricing[vehicleType];
+            if (price !== undefined) return { price, routeKey };
+        }
+
+        const prices = Object.values(pricing).filter(p => typeof p === 'number');
+        if (!prices.length) return null;
+        return { price: Math.min(...prices), routeKey };
+    }
+
+    async function calculateRouteDistance(pickup, dropoff) {
+        const [from, to] = await Promise.all([
+            geocodeLocation(pickup),
+            geocodeLocation(dropoff)
+        ]);
+        const routeUrl = `https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=false`;
+        const response = await fetch(routeUrl);
+        const data = await response.json();
+        if (!data.routes || !data.routes.length) throw new Error('Route not found');
+
+        const miles = Math.ceil(data.routes[0].distance / 1609.344);
+        return { miles };
+    }
+
+    async function calculateRouteEstimate(pickup, dropoff, vehicleType) {
+        const fixedRoute = getFixedRoutePrice(pickup, dropoff, vehicleType);
+        const distanceResult = await calculateRouteDistance(pickup, dropoff);
+        const miles = distanceResult.miles;
+
+        if (fixedRoute) {
+            return {
+                miles,
+                price: fixedRoute.price,
+                fixed: true,
+                routeKey: fixedRoute.routeKey
+            };
+        }
+
+        return {
+            miles,
+            price: miles * PRICE_PER_MILE,
+            fixed: false
+        };
+    }
+
     // --- UK Postcode regex ---
     const UK_POSTCODE_REGEX = /^([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}|[A-Z]{1,2}\d{1,2}\s*\d[A-Z]{2})$/i;
 
@@ -167,23 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const lat = parseFloat(results[0].lat);
         const lon = parseFloat(results[0].lon);
         return { lat, lon };
-    }
-
-    async function calculateRouteEstimate(pickup, dropoff) {
-        const [from, to] = await Promise.all([
-            geocodeLocation(pickup),
-            geocodeLocation(dropoff)
-        ]);
-        const routeUrl = `https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=false`;
-        const response = await fetch(routeUrl);
-        const data = await response.json();
-        if (!data.routes || !data.routes.length) throw new Error('Route not found');
-
-        const miles = Math.ceil(data.routes[0].distance / 1609.344);
-        return {
-            miles,
-            price: miles * PRICE_PER_MILE
-        };
     }
 
     function buildBookingUrl(pickup, dropoff, estimate) {
