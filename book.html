@@ -115,6 +115,7 @@
                     <input type="hidden" id="cashVehicle" name="vehicle">
                     <input type="hidden" id="cashDistance" name="distance_miles">
                     <input type="hidden" id="cashAmount" name="amount">
+                    <input type="hidden" id="cashTripType" name="trip_type">
                     <input type="hidden" name="payment_method" value="Cash">
                 </form>
 
@@ -134,6 +135,7 @@
                     <input type="hidden" id="bankVehicle" name="vehicle">
                     <input type="hidden" id="bankDistance" name="distance_miles">
                     <input type="hidden" id="bankAmount" name="amount">
+                    <input type="hidden" id="bankTripType" name="trip_type">
                     <input type="hidden" name="payment_method" value="Bank Transfer">
                 </form>
 
@@ -165,8 +167,7 @@
                         <label for="bookVehicle">Select Vehicle *</label>
                         <select id="bookVehicle" name="vehicle" required>
                             <option value="" disabled selected>Choose your vehicle</option>
-                            <option value="Tesla Model Y">Tesla Model Y &mdash; Executive Electric (up to 4 passengers)</option>
-                            <option value="Mercedes E-Class">Mercedes E-Class &mdash; Luxury Executive Saloon (up to 4 passengers)</option>
+                            <option value="Executive Saloon">Executive Saloon (up to 4 passengers)</option>
                             <option value="Mercedes V-Class">Mercedes V-Class &mdash; Luxury 7-Seater MPV (up to 7 passengers)</option>
                         </select>
                     </div>
@@ -205,13 +206,30 @@
                         <label for="bookFlight">Flight Number (for airport pickups, if applicable)</label>
                         <input type="text" id="bookFlight" name="flight" placeholder="e.g. BA 245">
                     </div>
+                    <div class="form-group">
+                        <label for="bookTripType">Journey Type *</label>
+                        <div style="display:flex; gap:1.5rem; padding-top:0.5rem;">
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:400; font-size:0.95rem;">
+                                <input type="radio" name="trip_type" id="bookTripOneWay" value="one-way" checked style="width:auto; border-bottom:none; accent-color:var(--accent);">
+                                One Way
+                            </label>
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:400; font-size:0.95rem;">
+                                <input type="radio" name="trip_type" id="bookTripReturn" value="return" style="width:auto; border-bottom:none; accent-color:var(--accent);">
+                                Return
+                            </label>
+                        </div>
+                    </div>
                     <input type="hidden" id="bookDistance" name="distance_miles">
                     <input type="hidden" id="bookAmount" name="amount">
+                    <input type="hidden" id="bookTripTypeHidden" name="trip_type" value="one-way">
                     <div id="bookFareSummary" class="quote-result" style="display:none; margin-top:1.5rem;">
-                        <h2>Estimated Fare: <span id="bookEstimatedPrice">£0</span></h2>
+                        <h2 id="bookFareHeading">Estimated Fare: <span id="bookEstimatedPrice">£0</span></h2>
                         <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">
-                            <span id="bookEstimatedDistance"></span> miles &bull; £2.00 per mile
+                            <span id="bookEstimatedDistance"></span> miles
                         </p>
+                        <div id="bookReturnBreakdown" style="display:none; font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem; padding:0.5rem; background:#f0f8f0; border-radius:0.3rem;">
+                            Return journey pricing applied
+                        </div>
                     </div>
 
                     <!-- Fare calculation fallback (shown when API fails) -->
@@ -231,7 +249,7 @@
                             <button type="button" id="bookSkipFare" class="btn-secondary" style="padding:0.6rem 1rem; font-size:0.85rem; white-space:nowrap;">Skip Fare</button>
                         </div>
                         <p style="margin-top:0.5rem; font-size:0.8rem; color:#664d03;">
-                            The fare will be calculated at £2.00 per mile.
+                            Our team will provide the confirmed fare.
                         </p>
                     </div>
 
@@ -355,7 +373,7 @@
 
                 <div style="margin-top:2rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
                     <button id="confirmPaymentBtn" class="btn-primary" style="width:auto;">
-                        <i class="fa-solid fa-check" style="margin-right:6px;"></i>I've Sent Payment
+                        <i class="fa-solid fa-check" style="margin-right:6px;"></i>Payment Sent for Verification
                     </button>
                     <button id="editBookingBtn" class="btn-secondary" style="width:auto;">
                         <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>Edit Booking Details
@@ -459,12 +477,40 @@
             }
         }
 
+        const bookTripOneWay = document.getElementById('bookTripOneWay');
+        const bookTripReturn = document.getElementById('bookTripReturn');
+        const bookTripTypeHidden = document.getElementById('bookTripTypeHidden');
+        const bookReturnBreakdown = document.getElementById('bookReturnBreakdown');
+        const bookFareHeading = document.getElementById('bookFareHeading');
+
+        function getTripType() {
+            return bookTripReturn && bookTripReturn.checked ? 'return' : 'one-way';
+        }
+
         function setBookingFare(distance, amount) {
             if (!distance || !amount) return;
+            const tripType = getTripType();
+            const oneWayPrice = Number(amount);
+            const totalPrice = tripType === 'return' ? Math.round(oneWayPrice * 1.7) : oneWayPrice;
+
             distanceField.value = distance;
-            amountField.value = Number(amount).toFixed(2);
+            amountField.value = totalPrice.toFixed(2);
+            bookTripTypeHidden.value = tripType;
             fareDistance.textContent = distance;
-            farePrice.textContent = `£${Number(amount).toFixed(2)}`;
+
+            if (tripType === 'return') {
+                farePrice.textContent = `£${totalPrice.toFixed(2)}`;
+                bookFareHeading.innerHTML = `Estimated Fare (Return): <span id="bookEstimatedPrice">£${totalPrice.toFixed(2)}</span>`;
+                bookReturnBreakdown.style.display = 'block';
+                bookReturnBreakdown.innerHTML = `
+                    One way: £${oneWayPrice.toFixed(2)} &bull; Return leg (70%): £${(oneWayPrice * 0.7).toFixed(2)}
+                `;
+            } else {
+                farePrice.textContent = `£${oneWayPrice.toFixed(2)}`;
+                bookFareHeading.innerHTML = `Estimated Fare: <span id="bookEstimatedPrice">£${oneWayPrice.toFixed(2)}</span>`;
+                bookReturnBreakdown.style.display = 'none';
+            }
+
             fareSummary.style.display = 'block';
             fareReadyToSubmit = true;
             hideFareFallback();
@@ -480,9 +526,31 @@
             return true;
         }
 
+        // Recalculate when trip type changes
+        if (bookTripOneWay && bookTripReturn) {
+            bookTripOneWay.addEventListener('change', function() {
+                if (this.checked && fareReadyToSubmit && distanceField.value) {
+                    const miles = parseFloat(distanceField.value);
+                    if (miles > 0) {
+                        const oneWayPrice = miles * 2;
+                        setBookingFare(miles, oneWayPrice);
+                    }
+                }
+            });
+            bookTripReturn.addEventListener('change', function() {
+                if (this.checked && fareReadyToSubmit && distanceField.value) {
+                    const miles = parseFloat(distanceField.value);
+                    if (miles > 0) {
+                        const oneWayPrice = miles * 2;
+                        setBookingFare(miles, oneWayPrice);
+                    }
+                }
+            });
+        }
+
         // Pre-select vehicle from URL param (e.g. coming from fleet page)
         const params = new URLSearchParams(window.location.search);
-        const vehicleMap = { 'tesla': 'Tesla Model Y', 'e-class': 'Mercedes E-Class', 'v-class': 'Mercedes V-Class' };
+        const vehicleMap = { 'saloon': 'Executive Saloon', 'v-class': 'Mercedes V-Class' };
         const vehicleParam = params.get('vehicle');
         if (vehicleParam && vehicleSelect) {
             vehicleSelect.value = vehicleMap[vehicleParam] || vehicleParam;
@@ -580,7 +648,8 @@
                         flight: document.getElementById('bookFlight').value,
                         vehicle: vehicleSelect.value,
                         distance: distanceField.value,
-                        amount: amountField.value
+                        amount: amountField.value,
+                        trip_type: getTripType()
                     };
                     localStorage.setItem('aurexBooking', JSON.stringify(bookingDetails));
                     
@@ -695,6 +764,7 @@ Please confirm availability and payment details as soon as possible!`;
                     document.getElementById('cashVehicle').value = booking.vehicle;
                     document.getElementById('cashDistance').value = booking.distance || 'N/A';
                     document.getElementById('cashAmount').value = booking.amount;
+                    document.getElementById('cashTripType').value = booking.trip_type || 'one-way';
                     // Set next URL to success page
                     cashNextField.value = window.location.origin + '/success.html?type=booking-cash';
                     // Submit the form
@@ -724,6 +794,7 @@ Please confirm availability and payment details as soon as possible!`;
                     document.getElementById('bankVehicle').value = booking.vehicle;
                     document.getElementById('bankDistance').value = booking.distance || 'N/A';
                     document.getElementById('bankAmount').value = booking.amount;
+                    document.getElementById('bankTripType').value = booking.trip_type || 'one-way';
                     // Set next URL to success page
                     bankNextField.value = window.location.origin + '/success.html?type=booking-bank';
                     // Submit the form

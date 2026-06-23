@@ -94,32 +94,48 @@
             <!-- Instant Calculator -->
             <div class="quote-tab-content active" id="tab-instant">
                 <div class="quote-calculator">
-                    <p style="margin-bottom: 2rem; color: var(--text-muted);">Enter your pickup and drop-off locations and get an instant estimate at <strong>£2 per mile</strong>.</p>
+                    <p style="margin-bottom: 2rem; color: var(--text-muted);">Enter your pickup and drop-off locations and get an instant estimate.</p>
                     <form id="instantQuoteForm">
-                        <div class="form-row">
-                            <div class="form-group half">
-                                <label for="iFrom">Pickup Location</label>
-                                <div class="location-input-wrap">
-                                    <input type="text" id="iFrom" placeholder="e.g. Cardiff City Centre or postcode" required>
-                                    <button type="button" class="use-location-btn" id="iFromLocBtn" title="Use my current location">
-                                        <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
-                                    </button>
-                                </div>
-                                <span class="location-error" id="iFromError"></span>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="iFrom">Pickup Location</label>
+                            <div class="location-input-wrap">
+                                <input type="text" id="iFrom" placeholder="e.g. Cardiff City Centre or postcode" required>
+                                <button type="button" class="use-location-btn" id="iFromLocBtn" title="Use my current location">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
+                                </button>
                             </div>
-                            <div class="form-group half">
-                                <label for="iTo">Destination / Airport</label>
-                                <div class="location-input-wrap">
-                                    <input type="text" id="iTo" placeholder="e.g. Heathrow Airport or postcode" required>
-                                    <span class="location-error" id="iToError"></span>
-                                </div>
+                            <span class="location-error" id="iFromError"></span>
+                        </div>
+                        <div class="form-group half">
+                            <label for="iTo">Destination / Airport</label>
+                            <div class="location-input-wrap">
+                                <input type="text" id="iTo" placeholder="e.g. Heathrow Airport or postcode" required>
+                                <span class="location-error" id="iToError"></span>
                             </div>
                         </div>
-                        <button type="submit" class="btn-primary">Calculate Estimate</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Journey Type</label>
+                        <div style="display:flex; gap:1.5rem; padding-top:0.5rem;">
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:400; font-size:0.95rem;">
+                                <input type="radio" name="iTripType" id="iTripOneWay" value="one-way" checked style="width:auto; border-bottom:none; accent-color:var(--accent);">
+                                One Way
+                            </label>
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:400; font-size:0.95rem;">
+                                <input type="radio" name="iTripType" id="iTripReturn" value="return" style="width:auto; border-bottom:none; accent-color:var(--accent);">
+                                Return (70% of one-way fare for the return leg)
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Calculate Estimate</button>
                     </form>
                     <div id="instantResult" class="quote-result" style="display:none;">
-                        <h2>Estimated Price: <span id="calcPrice">£0</span></h2>
+                        <h2 id="instantPriceHeading">Estimated Price: <span id="calcPrice">£0</span></h2>
                         <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">This is an estimate. For a confirmed booking, continue to the booking form.</p>
+                        <div id="instantReturnBreakdown" style="display:none; font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem; padding:0.5rem; background:#f0f8f0; border-radius:0.3rem;">
+                            Return journey: 70% of one-way fare applied
+                        </div>
                         <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
                             <a href="book.html" class="btn-primary" id="instantBookNow">Book Now</a>
                         </div>
@@ -184,10 +200,8 @@
                                 <label for="cVehicle">Vehicle Preference</label>
                                 <select id="cVehicle" name="vehicle">
                                     <option value="any">Any Available</option>
-                                    <option value="e-class">Mercedes E-Class</option>
-                                    <option value="s-class">Mercedes S-Class</option>
-                                    <option value="v-class">Mercedes V-Class</option>
-                                    <option value="tesla">Tesla Model Y</option>
+                                    <option value="Executive Saloon">Executive Saloon (up to 4 passengers)</option>
+                                    <option value="Mercedes V-Class">Mercedes V-Class &mdash; Luxury 7-Seater MPV (up to 7 passengers)</option>
                                 </select>
                             </div>
                         </div>

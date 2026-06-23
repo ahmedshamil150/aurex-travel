@@ -267,6 +267,167 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Address Autocomplete (real-time suggestions) ---
+    function attachAutocomplete(inputEl) {
+        if (!inputEl) return;
+
+        // Find the parent location-input-wrap (which has the btn and input)
+        const locationWrap = inputEl.closest('.location-input-wrap');
+        // Use locationWrap as the positioning parent for the dropdown, or fall back to wrapping
+        let wrap;
+        if (locationWrap) {
+            locationWrap.style.position = 'relative';
+            wrap = locationWrap;
+        } else {
+            wrap = inputEl.closest('.autocomplete-wrap');
+            if (!wrap) {
+                wrap = document.createElement('div');
+                wrap.className = 'autocomplete-wrap';
+                wrap.style.position = 'relative';
+                inputEl.parentNode.insertBefore(wrap, inputEl);
+                wrap.appendChild(inputEl);
+            }
+        }
+
+        // Create or reference the dropdown element
+        let dropdown = wrap.querySelector('.autocomplete-dropdown');
+        if (!dropdown) {
+            dropdown = document.createElement('div');
+            dropdown.className = 'autocomplete-dropdown';
+            wrap.appendChild(dropdown);
+        }
+
+        let debounceTimer = null;
+        let selectedIndex = -1;
+        let results = [];
+        let abortController = null;
+
+        function hideDropdown() {
+            dropdown.classList.remove('open');
+            selectedIndex = -1;
+            results = [];
+        }
+
+        function renderDropdown() {
+            if (!results.length) {
+                dropdown.innerHTML = '<div class="autocomplete-no-results">No suggestions found</div>';
+                dropdown.classList.add('open');
+                return;
+            }
+
+            let html = '';
+            results.forEach((item, idx) => {
+                const activeClass = idx === selectedIndex ? ' active' : '';
+                const displayName = item.display_name || item.name || '';
+                // Extract a short sub-text (first comma part or region)
+                const parts = displayName.split(',');
+                const main = parts[0] || displayName;
+                const sub = parts.slice(1, 4).join(',').trim();
+                html += `<div class="autocomplete-item${activeClass}" data-index="${idx}">
+                    ${main}
+                    ${sub ? `<span class="autocomplete-sub">${sub}</span>` : ''}
+                </div>`;
+            });
+            dropdown.innerHTML = html;
+            dropdown.classList.add('open');
+
+            // Bind click events to items
+            dropdown.querySelectorAll('.autocomplete-item').forEach((el) => {
+                el.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.index, 10);
+                    if (results[idx]) {
+                        inputEl.value = results[idx].display_name;
+                        // Trigger change event so fare calculation picks it up
+                        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                        hideDropdown();
+                    }
+                });
+            });
+        }
+
+        async function fetchSuggestions(query) {
+            // Cancel any previous request
+            if (abortController) abortController.abort();
+            abortController = new AbortController();
+
+            if (query.length < 3) {
+                hideDropdown();
+                return;
+            }
+
+            dropdown.innerHTML = '<div class="autocomplete-loading"><i class="fa-solid fa-spinner fa-spin"></i> Searching…</div>';
+            dropdown.classList.add('open');
+
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(query)}&addressdetails=1&countrycodes=gb`;
+                const response = await fetch(url, { signal: abortController.signal });
+                const data = await response.json();
+                results = data || [];
+                selectedIndex = -1;
+                renderDropdown();
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                // Silently fail — hide dropdown
+                hideDropdown();
+            }
+        }
+
+        // Input listener with debounce
+        inputEl.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const val = this.value.trim();
+            if (val.length < 3) {
+                hideDropdown();
+                return;
+            }
+            debounceTimer = setTimeout(() => {
+                fetchSuggestions(val);
+            }, 300);
+        });
+
+        // Keyboard navigation
+        inputEl.addEventListener('keydown', function(e) {
+            if (!dropdown.classList.contains('open') || !results.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, results.length - 1);
+                renderDropdown();
+                const activeItem = dropdown.querySelector('.autocomplete-item.active');
+                if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                renderDropdown();
+                const activeItem = dropdown.querySelector('.autocomplete-item.active');
+                if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter' && selectedIndex >= 0 && results[selectedIndex]) {
+                e.preventDefault();
+                inputEl.value = results[selectedIndex].display_name;
+                inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                hideDropdown();
+            } else if (e.key === 'Escape') {
+                hideDropdown();
+            }
+        });
+
+        // Hide on blur (with delay to allow click on dropdown)
+        inputEl.addEventListener('blur', function() {
+            setTimeout(() => {
+                if (!wrap.contains(document.activeElement)) {
+                    hideDropdown();
+                }
+            }, 200);
+        });
+
+        // Hide if clicking outside
+        document.addEventListener('click', function(e) {
+            if (!wrap.contains(e.target)) {
+                hideDropdown();
+            }
+        });
+    }
+
     // --- Wire up location buttons for each page ---
     // Quote page — Instant Calculator
     const iFromInput  = document.getElementById('iFrom');
@@ -276,6 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
     attachLocationBtn('iFromLocBtn', iFromInput, iFromError);
     attachPostcodeAutofill(iFromInput, iFromError);
     attachPostcodeAutofill(iToInput, iToError);
+    attachAutocomplete(iFromInput);
+    attachAutocomplete(iToInput);
 
     // Quote page — Custom Quote
     const cFromInput = document.getElementById('cFrom');
@@ -284,6 +447,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cToError   = document.getElementById('cToError');
     attachPostcodeAutofill(cFromInput, cFromError);
     attachPostcodeAutofill(cToInput, cToError);
+    attachAutocomplete(cFromInput);
+    attachAutocomplete(cToInput);
 
     // Homepage quote
     const quoteFromInput = document.getElementById('quoteFrom');
@@ -293,6 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
     attachLocationBtn('quoteFromLocBtn', quoteFromInput, quoteFromError);
     attachPostcodeAutofill(quoteFromInput, quoteFromError);
     attachPostcodeAutofill(quoteToInput, quoteToError);
+    attachAutocomplete(quoteFromInput);
+    attachAutocomplete(quoteToInput);
 
     // Book page
     const bookPickupInput  = document.getElementById('bookPickup');
@@ -302,6 +469,8 @@ document.addEventListener('DOMContentLoaded', () => {
     attachLocationBtn('bookPickupLocBtn', bookPickupInput, bookPickupError);
     attachPostcodeAutofill(bookPickupInput, bookPickupError);
     attachPostcodeAutofill(bookDropoffInput, bookDropoffError);
+    attachAutocomplete(bookPickupInput);
+    attachAutocomplete(bookDropoffInput);
 
     // --- Homepage Instant Quote Calculator ---
     const quoteForm = document.getElementById('quoteForm');
@@ -367,9 +536,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.disabled = true;
                 }
                 const estimate = await calculateRouteEstimate(pickup, dropoff);
-                document.getElementById('calcPrice').textContent = `£${estimate.price.toFixed(2)}`;
+                
+                // Check trip type
+                const iTripReturn = document.getElementById('iTripReturn');
+                const isReturn = iTripReturn && iTripReturn.checked;
+                const oneWayPrice = estimate.price;
+                const totalPrice = isReturn ? Math.round(oneWayPrice * 1.7) : oneWayPrice;
+
+                document.getElementById('calcPrice').textContent = `£${totalPrice.toFixed(2)}`;
+                
+                const instantPriceHeading = document.getElementById('instantPriceHeading');
+                if (instantPriceHeading) {
+                    instantPriceHeading.textContent = isReturn ? `Estimated Return Price: £${totalPrice.toFixed(2)}` : `Estimated Price: £${totalPrice.toFixed(2)}`;
+                }
+                
+                const instantReturnBreakdown = document.getElementById('instantReturnBreakdown');
+                if (instantReturnBreakdown) {
+                    if (isReturn) {
+                        instantReturnBreakdown.style.display = 'block';
+                        instantReturnBreakdown.innerHTML = `One way: £${oneWayPrice.toFixed(2)} &bull; Return leg (70%): £${(oneWayPrice * 0.7).toFixed(2)}`;
+                    } else {
+                        instantReturnBreakdown.style.display = 'none';
+                    }
+                }
+
                 const bookNow = document.getElementById('instantBookNow');
-                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, estimate);
+                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: estimate.miles, price: totalPrice });
                 const result = document.getElementById('instantResult');
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
