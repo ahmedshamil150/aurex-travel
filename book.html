@@ -85,9 +85,8 @@
                         <label for="bookVehicle">Select Vehicle *</label>
                         <select id="bookVehicle" name="vehicle" required>
                             <option value="" disabled selected>Choose your vehicle</option>
-                            <option value="Tesla Model Y">Tesla Model Y &mdash; Executive Electric (up to 4 passengers)</option>
-                            <option value="Mercedes E-Class">Mercedes E-Class &mdash; Luxury Executive Saloon (up to 4 passengers)</option>
-                            <option value="Mercedes V-Class">Mercedes V-Class &mdash; Luxury 7-Seater MPV (up to 7 passengers)</option>
+                            <option value="Saloon">Saloon &mdash; up to 3 passengers</option>
+                            <option value="MPV">MPV (7-Seater) &mdash; 4 or more passengers</option>
                         </select>
                     </div>
 
@@ -360,7 +359,7 @@
 
         // Pre-select vehicle from URL param
         const params = new URLSearchParams(window.location.search);
-        const vehicleMap = { 'tesla': 'Tesla Model Y', 'e-class': 'Mercedes E-Class', 'v-class': 'Mercedes V-Class' };
+        const vehicleMap = { 'tesla': 'Saloon', 'e-class': 'Saloon', 'v-class': 'MPV' };
         const vehicleParam = params.get('vehicle');
         if (vehicleParam && vehicleSelect) vehicleSelect.value = vehicleMap[vehicleParam] || vehicleParam;
 

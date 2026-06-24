@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let key = `${from}->${to}`;
         let pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[`${to}->${from}`];
         if (!pricing) return null;
-        const type = vehicleType && vehicleType.toLowerCase().includes('v-class') ? 'vclass' : 'saloon';
+        const type = vehicleType && vehicleType.toLowerCase().includes('mpv') ? 'vclass' : 'saloon';
         return pricing[type] !== undefined ? pricing[type] : Math.min(...Object.values(pricing));
     }
 
