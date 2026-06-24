@@ -376,7 +376,7 @@
             document.getElementById('payDateTime').textContent = `${date} at ${time}`;
             document.getElementById('payVehicle').textContent  = vehicle || '—';
             document.getElementById('payTotal').textContent    = `£${Number(amount).toFixed(2)}`;
-            document.getElementById('bankRef').textContent     = `${document.getElementById('bookName').value.trim()} ${date}`;
+            document.getElementById('bankRef').textContent     = `${document.getElementById('bookName')?.value.trim() || pickup} ${date}`;
 
             const paypalNote = encodeURIComponent(`Aurex Executive Travel – ${pickup} to ${dropoff} on ${date}`);
             document.getElementById('paypalPayBtn').href =
@@ -387,22 +387,36 @@
             payPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Pre-select vehicle from URL param
+        // Save booking details to sessionStorage before email form submits
+        // so they survive the FormSubmit redirect back to this page
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function() {
+                if (!fareReadyToSubmit) return;
+                sessionStorage.setItem('aurex_booking', JSON.stringify({
+                    pickup:  pickupField.value.trim(),
+                    dropoff: dropoffField.value.trim(),
+                    date:    document.getElementById('bookDate').value,
+                    time:    document.getElementById('bookTime').value,
+                    vehicle: vehicleSelect ? vehicleSelect.value : '',
+                    amount:  amountField.value,
+                    name:    document.getElementById('bookName').value.trim()
+                }));
+            }, true); // capture phase so it fires before the submit handler checks fareReadyToSubmit
+        }
         const params = new URLSearchParams(window.location.search);
         const vehicleMap = { 'tesla': 'Saloon', 'e-class': 'Saloon', 'v-class': 'MPV' };
         const vehicleParam = params.get('vehicle');
         if (vehicleParam && vehicleSelect) vehicleSelect.value = vehicleMap[vehicleParam] || vehicleParam;
 
-        // Redirected back from FormSubmit
+        // Redirected back from FormSubmit — restore from sessionStorage
         if (params.get('submitted') === 'true') {
-            showPaymentPanel(
-                params.get('pickup')  || '—',
-                params.get('dropoff') || '—',
-                params.get('date')    || '—',
-                params.get('time')    || '—',
-                params.get('vehicle') || '—',
-                params.get('amount')  || '0'
-            );
+            const saved = sessionStorage.getItem('aurex_booking');
+            if (saved) {
+                const b = JSON.parse(saved);
+                sessionStorage.removeItem('aurex_booking');
+                showPaymentPanel(b.pickup, b.dropoff, b.date, b.time, b.vehicle, b.amount);
+                document.getElementById('bankRef').textContent = `${b.name} ${b.date}`;
+            }
         }
 
         if (editBtn) {
@@ -413,10 +427,7 @@
             });
         }
 
-        if (params.get('pickup')   && pickupField)  pickupField.value  = params.get('pickup');
-        if (params.get('dropoff')  && dropoffField) dropoffField.value = params.get('dropoff');
-        if (params.get('distance') && params.get('amount')) setBookingFare(params.get('distance'), params.get('amount'));
-        if (params.get('route')    && dropoffField) dropoffField.value = params.get('route').replace(/\+/g, ' ');
+        if (params.get('route') && dropoffField) dropoffField.value = params.get('route').replace(/\+/g, ' ');
 
         [pickupField, dropoffField].forEach(field => {
             if (!field) return;
