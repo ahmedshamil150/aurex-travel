@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Online | Aurex Executive Travel</title>
     <meta name="description" content="Book your executive airport transfer online with Aurex Executive Travel. Fixed prices, professional chauffeurs, luxury vehicles.">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -44,23 +46,17 @@
         </div>
     </nav>
 
-    <!-- Page Header -->
-    <header class="page-header">
-        <h1>Book Online</h1>
-        <p>Fill in your journey details, send your request, then pay securely via PayPal to confirm your booking.</p>
-    </header>
-
     <!-- Booking Form -->
-    <section class="content-section">
+    <section class="content-section" style="padding-top: 6rem;">
         <div class="container">
 
             <!-- Steps -->
             <div class="booking-intro">
                 <div class="booking-step"><span>1</span><p>Fill in your journey details</p></div>
                 <div class="booking-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-                <div class="booking-step"><span>2</span><p>Your request is emailed to our team</p></div>
+                <div class="booking-step"><span>2</span><p>Submit by email or WhatsApp</p></div>
                 <div class="booking-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-                <div class="booking-step"><span>3</span><p>Pay via PayPal to confirm</p></div>
+                <div class="booking-step"><span>3</span><p>Pay to confirm your booking</p></div>
             </div>
 
             <!-- STEP 1 — Booking Form -->
@@ -71,7 +67,7 @@
 
                     <!-- FormSubmit Config -->
                     <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
-                    <input type="hidden" name="_next" value="https://aurexexecutivetravel.com/book.html?submitted=true">
+                    <input type="hidden" name="_next" value="https://aurexexecutivetravel.co.uk/book.html?submitted=true">
                     <input type="hidden" name="_captcha" value="false">
 
                     <h3 class="form-section-title">Passenger Details</h3>
@@ -136,9 +132,15 @@
                         <p>Based on <span id="bookEstimatedDistance">0</span> miles at £2 per mile.</p>
                     </div>
 
-                    <button type="submit" class="btn-primary full-width" style="margin-top: 1.5rem;">
-                        <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking
-                    </button>
+                    <!-- Submit buttons -->
+                    <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
+                        <button type="submit" class="btn-primary" style="flex:1; min-width:200px;">
+                            <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Submit Booking by Email
+                        </button>
+                        <button type="button" id="bookWhatsAppBtn" class="btn-whatsapp" style="flex:1; min-width:200px;">
+                            <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send via WhatsApp (Instant)
+                        </button>
+                    </div>
                 </form>
             </div>
 
@@ -149,7 +151,7 @@
                     <div class="payment-panel-icon"><i class="fa-solid fa-check"></i></div>
                     <div>
                         <h3>Booking Request Sent!</h3>
-                        <p>Your details have been emailed to our team. Now pay via PayPal to confirm your booking.</p>
+                        <p>Your details have been received. Please choose how you'd like to pay to confirm your booking.</p>
                     </div>
                 </div>
 
@@ -173,21 +175,60 @@
                 </div>
 
                 <div class="payment-methods">
-                    <h4>Pay securely via PayPal</h4>
-                    <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.5rem;">
-                        Click the button below to pay via PayPal. You can use your PayPal balance, any debit or credit card — no PayPal account required.
-                    </p>
-                    <a id="paypalPayBtn" href="#" target="_blank" class="paypal-pay-btn">
-                        <i class="fa-brands fa-paypal"></i> Pay with PayPal
-                    </a>
-                    <p style="font-size:0.78rem; color:var(--text-muted); margin-top:1rem; text-align:center;">
-                        You will be taken to PayPal's secure payment page. After paying, return here or check your email for confirmation.
-                    </p>
+                    <h4>Choose Payment Method</h4>
+
+                    <!-- PayPal -->
+                    <div class="payment-option">
+                        <div class="payment-option-header">
+                            <i class="fa-brands fa-paypal"></i>
+                            <div>
+                                <strong>Pay by PayPal</strong>
+                                <p>Pay securely online — use your PayPal balance, debit or credit card. No PayPal account required.</p>
+                            </div>
+                        </div>
+                        <a id="paypalPayBtn" href="#" target="_blank" class="paypal-pay-btn">
+                            <i class="fa-brands fa-paypal"></i> Pay with PayPal
+                        </a>
+                    </div>
+
+                    <!-- Bank Transfer -->
+                    <div class="payment-option">
+                        <div class="payment-option-header">
+                            <i class="fa-solid fa-building-columns"></i>
+                            <div>
+                                <strong>Pay by Bank Transfer</strong>
+                                <p>Transfer directly to our bank account. Please use your name and travel date as the reference.</p>
+                            </div>
+                        </div>
+                        <div class="bank-details">
+                            <div class="bank-detail-row"><span>Account Name</span><strong>Mr Nayyer Zaman</strong><button type="button" class="copy-btn" data-copy="Mr Nayyer Zaman"><i class="fa-regular fa-copy"></i></button></div>
+                            <div class="bank-detail-row"><span>Sort Code</span><strong>11-01-41</strong><button type="button" class="copy-btn" data-copy="110141"><i class="fa-regular fa-copy"></i></button></div>
+                            <div class="bank-detail-row"><span>Account Number</span><strong>11700062</strong><button type="button" class="copy-btn" data-copy="11700062"><i class="fa-regular fa-copy"></i></button></div>
+                            <div class="bank-detail-row"><span>Reference</span><strong id="bankRef">Your Name + Travel Date</strong><button type="button" class="copy-btn" id="copyRefBtn"><i class="fa-regular fa-copy"></i></button></div>
+                        </div>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.75rem;">Once transferred, please send your payment confirmation to <a href="https://wa.me/447905298692">WhatsApp</a> or <a href="mailto:info@aurexexecutivetravel.com">email</a> so we can confirm your booking promptly.</p>
+                    </div>
+
+                    <!-- Cash -->
+                    <div class="payment-option">
+                        <div class="payment-option-header">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                            <div>
+                                <strong>Pay by Cash</strong>
+                                <p>Pay your driver in cash on the day of travel. Please have the exact amount ready.</p>
+                            </div>
+                        </div>
+                        <p style="font-size:0.8rem; color:var(--text-muted);">To confirm a cash booking, please contact us via <a href="https://wa.me/447905298692">WhatsApp</a> or call <a href="tel:+447905298692">07905 298692</a> so our team can confirm your booking is secured.</p>
+                        <a href="https://wa.me/447905298692" target="_blank" class="btn-whatsapp" style="margin-top:0.75rem; display:inline-flex; align-items:center; gap:8px; width:auto;">
+                            <i class="fa-brands fa-whatsapp"></i> Confirm Cash Booking via WhatsApp
+                        </a>
+                    </div>
+
                 </div>
 
                 <div class="payment-panel-note">
                     <i class="fa-solid fa-circle-info"></i>
-                    <p>Your booking is not confirmed until payment is received. Once paid, our team will send a booking confirmation to your email within 30 minutes.</p>
+                    <p>Your booking is not confirmed until payment is received or acknowledged by our team. Once confirmed, you will receive a booking confirmation within 30 minutes.</p>
                 </div>
 
                 <div style="margin-top:2rem; text-align:center;">
@@ -241,7 +282,8 @@
 
     <script src="script.js"></script>
     <script>
-        const PAYPAL_EMAIL  = 'nayyer75@yahoo.com';
+        const PAYPAL_EMAIL = 'nayyer75@yahoo.com';
+        const WA_NUMBER    = '447905298692';
 
         const formSection   = document.getElementById('bookingFormSection');
         const payPanel      = document.getElementById('paymentPanel');
@@ -277,25 +319,61 @@
             return true;
         }
 
-        // Pre-select vehicle from URL param (e.g. coming from fleet page)
+        function buildWAMessage() {
+            const name     = document.getElementById('bookName').value.trim();
+            const mobile   = document.getElementById('bookMobile').value.trim();
+            const vehicle  = vehicleSelect ? vehicleSelect.value : '';
+            const pickup   = pickupField.value.trim();
+            const dropoff  = dropoffField.value.trim();
+            const date     = document.getElementById('bookDate').value;
+            const time     = document.getElementById('bookTime').value;
+            const flight   = document.getElementById('bookFlight').value.trim();
+            const amount   = amountField.value ? `£${Number(amountField.value).toFixed(2)}` : 'TBC';
+
+            return `*🚗 New Booking Request — Aurex Executive Travel*\n\n` +
+                `*Name:* ${name}\n` +
+                `*Mobile:* ${mobile}\n` +
+                `*Vehicle:* ${vehicle}\n\n` +
+                `*Pickup:* ${pickup}\n` +
+                `*Drop-off:* ${dropoff}\n` +
+                `*Date:* ${date}\n` +
+                `*Time:* ${time}\n` +
+                (flight ? `*Flight:* ${flight}\n` : '') +
+                `*Estimated Fare:* ${amount}`;
+        }
+
+        function showPaymentPanel(pickup, dropoff, date, time, vehicle, amount) {
+            document.getElementById('payFromTo').textContent   = `${pickup} → ${dropoff}`;
+            document.getElementById('payDateTime').textContent = `${date} at ${time}`;
+            document.getElementById('payVehicle').textContent  = vehicle || '—';
+            document.getElementById('payTotal').textContent    = `£${Number(amount).toFixed(2)}`;
+            document.getElementById('bankRef').textContent     = `${document.getElementById('bookName').value.trim()} ${date}`;
+
+            const paypalNote = encodeURIComponent(`Aurex Executive Travel – ${pickup} to ${dropoff} on ${date}`);
+            document.getElementById('paypalPayBtn').href =
+                `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(PAYPAL_EMAIL)}&amount=${Number(amount).toFixed(2)}&currency_code=GBP&item_name=${paypalNote}&no_shipping=1`;
+
+            formSection.style.display = 'none';
+            payPanel.style.display    = 'block';
+            payPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Pre-select vehicle from URL param
         const params = new URLSearchParams(window.location.search);
         const vehicleMap = { 'tesla': 'Tesla Model Y', 'e-class': 'Mercedes E-Class', 'v-class': 'Mercedes V-Class' };
         const vehicleParam = params.get('vehicle');
         if (vehicleParam && vehicleSelect) vehicleSelect.value = vehicleMap[vehicleParam] || vehicleParam;
 
-        // Check if redirected back from FormSubmit
+        // Redirected back from FormSubmit
         if (params.get('submitted') === 'true') {
-            document.getElementById('payFromTo').textContent  = `${params.get('pickup') || '—'} → ${params.get('dropoff') || '—'}`;
-            document.getElementById('payDateTime').textContent = `${params.get('date') || '—'} at ${params.get('time') || '—'}`;
-            document.getElementById('payVehicle').textContent  = params.get('vehicle') || '—';
-            document.getElementById('payTotal').textContent    = `£${params.get('amount') || '—'}`;
-
-            const paypalNote = encodeURIComponent(`Aurex Executive Travel – ${params.get('pickup') || ''} to ${params.get('dropoff') || ''} on ${params.get('date') || ''}`);
-            document.getElementById('paypalPayBtn').href =
-                `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(PAYPAL_EMAIL)}&amount=${params.get('amount') || '0'}&currency_code=GBP&item_name=${paypalNote}&no_shipping=1`;
-
-            formSection.style.display = 'none';
-            payPanel.style.display    = 'block';
+            showPaymentPanel(
+                params.get('pickup')  || '—',
+                params.get('dropoff') || '—',
+                params.get('date')    || '—',
+                params.get('time')    || '—',
+                params.get('vehicle') || '—',
+                params.get('amount')  || '0'
+            );
         }
 
         if (editBtn) {
@@ -306,10 +384,10 @@
             });
         }
 
-        if (params.get('pickup')  && pickupField)  pickupField.value  = params.get('pickup');
-        if (params.get('dropoff') && dropoffField) dropoffField.value = params.get('dropoff');
+        if (params.get('pickup')   && pickupField)  pickupField.value  = params.get('pickup');
+        if (params.get('dropoff')  && dropoffField) dropoffField.value = params.get('dropoff');
         if (params.get('distance') && params.get('amount')) setBookingFare(params.get('distance'), params.get('amount'));
-        if (params.get('route') && dropoffField) dropoffField.value = params.get('route').replace(/\+/g, ' ');
+        if (params.get('route')    && dropoffField) dropoffField.value = params.get('route').replace(/\+/g, ' ');
 
         [pickupField, dropoffField].forEach(field => {
             if (!field) return;
@@ -319,12 +397,12 @@
             });
         });
 
+        // Email submit
         if (bookingForm) {
             bookingForm.addEventListener('submit', async function (e) {
                 if (fareReadyToSubmit && amountField.value) return;
                 e.preventDefault();
                 if (!bookingForm.reportValidity()) return;
-
                 const submitBtn = bookingForm.querySelector('button[type="submit"]');
                 try {
                     if (submitBtn) { submitBtn.textContent = 'Calculating fare...'; submitBtn.disabled = true; }
@@ -335,12 +413,56 @@
                     alert('Sorry, we could not calculate the fare for that route. Please check the addresses and try again.');
                 } finally {
                     if (submitBtn && !fareReadyToSubmit) {
-                        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Confirm Booking';
+                        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Submit Booking by Email';
                         submitBtn.disabled  = false;
                     }
                 }
             });
         }
+
+        // WhatsApp submit
+        const waBtn = document.getElementById('bookWhatsAppBtn');
+        if (waBtn) {
+            waBtn.addEventListener('click', async () => {
+                if (!bookingForm.reportValidity()) return;
+                const orig = waBtn.innerHTML;
+                try {
+                    waBtn.innerHTML  = '<i class="fa-solid fa-spinner fa-spin"></i> Calculating...';
+                    waBtn.disabled   = true;
+                    if (!fareReadyToSubmit || !amountField.value) await calculateBookingFare();
+                    const msg = buildWAMessage();
+                    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+                    // Show payment panel immediately after WhatsApp
+                    showPaymentPanel(
+                        pickupField.value.trim(),
+                        dropoffField.value.trim(),
+                        document.getElementById('bookDate').value,
+                        document.getElementById('bookTime').value,
+                        vehicleSelect ? vehicleSelect.value : '',
+                        amountField.value || '0'
+                    );
+                } catch {
+                    alert('Sorry, we could not calculate the fare. Please check the addresses and try again.');
+                } finally {
+                    waBtn.innerHTML = orig;
+                    waBtn.disabled  = false;
+                }
+            });
+        }
+        // Copy bank details
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const text = btn.id === 'copyRefBtn'
+                    ? document.getElementById('bankRef').textContent
+                    : btn.dataset.copy;
+                navigator.clipboard.writeText(text).then(() => {
+                    const icon = btn.querySelector('i');
+                    icon.className = 'fa-solid fa-check';
+                    btn.style.color = '#25D366';
+                    setTimeout(() => { icon.className = 'fa-regular fa-copy'; btn.style.color = ''; }, 1500);
+                });
+            });
+        });
     </script>
 </body>
 
