@@ -313,10 +313,23 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             if (!navigator.geolocation) { setError(errorEl, 'Geolocation is not supported by your browser.'); return; }
             const orig = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Getting precise location...';
             btn.disabled  = true;
-            navigator.geolocation.getCurrentPosition(
-                async ({ coords: { latitude, longitude } }) => {
+
+            // Use watchPosition to keep refining until we get high accuracy
+            let watchId = null;
+            let bestCoords = null;
+            let bestAccuracy = Infinity;
+            let attempts = 0;
+            const MAX_ATTEMPTS = 12;       // ~12 seconds max
+            const TARGET_ACCURACY = 20;     // metres — within a few houses
+
+            function acceptCoords(latitude, longitude, accuracy) {
+                if (watchId !== null) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
+                (async () => {
                     try {
                         inputEl.value = await reverseGeocode(latitude, longitude);
                         const latField = document.getElementById(inputEl.id + 'Lat');
@@ -326,15 +339,70 @@ document.addEventListener('DOMContentLoaded', () => {
                         setError(errorEl, '');
                         inputEl.dispatchEvent(new Event('change', { bubbles: true }));
                     } catch { setError(errorEl, '⚠ Could not get your address. Please enter it manually.'); }
-                    finally   { btn.innerHTML = orig; btn.disabled = false; }
+                    finally { btn.innerHTML = orig; btn.disabled = false; }
+                })();
+            }
+
+            function fail(err) {
+                if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+                btn.innerHTML = orig; btn.disabled = false;
+                setError(errorEl, err.code === err.PERMISSION_DENIED
+                    ? '⚠ Location access denied. Please allow location access and try again.'
+                    : '⚠ Unable to detect your location. Please enter your address manually.');
+            }
+
+            // Fallback: if we never hit target accuracy but got some fix, use the best one
+            const fallbackTimer = setTimeout(() => {
+                if (watchId !== null) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
+                if (bestCoords) {
+                    acceptCoords(bestCoords.latitude, bestCoords.longitude, bestAccuracy);
+                } else {
+                    fail({ code: 2 }); // timeout-style error
+                }
+            }, 15000);
+
+            watchId = navigator.geolocation.watchPosition(
+                ({ coords: { latitude, longitude, accuracy } }) => {
+                    attempts++;
+
+                    // Keep the best (lowest accuracy number = more precise) fix
+                    if (accuracy < bestAccuracy) {
+                        bestAccuracy = accuracy;
+                        bestCoords = { latitude, longitude };
+                    }
+
+                    // If accuracy is good enough, accept immediately
+                    if (accuracy <= TARGET_ACCURACY) {
+                        clearTimeout(fallbackTimer);
+                        acceptCoords(latitude, longitude, accuracy);
+                        return;
+                    }
+
+                    // If we've tried enough times, accept the best we have
+                    if (attempts >= MAX_ATTEMPTS && bestCoords) {
+                        clearTimeout(fallbackTimer);
+                        acceptCoords(bestCoords.latitude, bestCoords.longitude, bestAccuracy);
+                    }
                 },
                 err => {
-                    btn.innerHTML = orig; btn.disabled = false;
-                    setError(errorEl, err.code === err.PERMISSION_DENIED
-                        ? '⚠ Location access denied. Please allow location access and try again.'
-                        : '⚠ Unable to detect your location. Please enter your address manually.');
+                    // Don't clear watch — let the fallback timer handle final resolution
+                    // The error might be a temporary blip (e.g. GPS timeout on first attempt)
+                    // If we have a good-enough fix already (within ~100m), accept it
+                    if (bestCoords && bestAccuracy <= 100) {
+                        clearTimeout(fallbackTimer);
+                        if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+                        acceptCoords(bestCoords.latitude, bestCoords.longitude, bestAccuracy);
+                    }
+                    // If we have some fix but it's not great, keep the watch going (fallback timer will handle)
+                    // If no fix at all, just log silently — let fallback timer show the error
+                    if (!bestCoords) {
+                        console.warn('Geolocation interim error (still retrying):', err.message || err.code);
+                    }
                 },
-                { timeout: 10000, enableHighAccuracy: true }
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
             );
         });
     }

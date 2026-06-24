@@ -99,13 +99,13 @@
                             <label for="bookPickup">Pickup Address *</label>
                             <div class="location-input-wrap">
                                 <input type="text" id="bookPickup" name="pickup" placeholder="Start typing your address or postcode" required>
-                                <button type="button" class="use-location-btn" id="bookPickupLocBtn" title="Use my current location">
-                                    <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
-                                </button>
                             </div>
                             <input type="hidden" id="bookPickupLat" name="pickupLat">
                             <input type="hidden" id="bookPickupLon" name="pickupLon">
-                            <div style="margin-top:0.5rem;">
+                            <div class="location-actions" style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                <button type="button" class="use-location-btn" id="bookPickupLocBtn" title="Use my current location">
+                                    <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
+                                </button>
                                 <button type="button" class="btn-secondary" id="bookPickupPickMapBtn" style="width:auto; padding:10px 14px; font-size:0.78rem; letter-spacing:1px;">Pick on map</button>
                             </div>
                             <span class="location-error" id="bookPickupError"></span>
@@ -117,7 +117,7 @@
                             </div>
                             <input type="hidden" id="bookDropoffLat" name="dropoffLat">
                             <input type="hidden" id="bookDropoffLon" name="dropoffLon">
-                            <div style="margin-top:0.5rem;">
+                            <div class="location-actions" style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
                                 <button type="button" class="btn-secondary" id="bookDropoffPickMapBtn" style="width:auto; padding:10px 14px; font-size:0.78rem; letter-spacing:1px;">Pick on map</button>
                             </div>
                             <span class="location-error" id="bookDropoffError"></span>
