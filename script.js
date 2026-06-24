@@ -118,15 +118,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Geoapify ───────────────────────────────────────────────────────────────
 
+    const UK_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+    function isUKPostcode(str) { return UK_POSTCODE_RE.test(str.trim()); }
+
     // Autocomplete suggestions — UK only, house-number level
     async function fetchGeoapifySuggestions(query, signal) {
+        // For postcodes: use search endpoint which returns full formatted addresses
+        if (isUKPostcode(query)) {
+            const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(query)}&filter=countrycode:gb&limit=6&apiKey=${GEO_KEY}`;
+            const res  = await fetch(url, { signal });
+            const data = await res.json();
+            return (data.features || []).map(f => ({
+                label: f.properties.formatted,
+                lat:   f.properties.lat,
+                lon:   f.properties.lon
+            }));
+        }
         const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:gb&format=json&limit=6&apiKey=${GEO_KEY}`;
         const res  = await fetch(url, { signal });
         const data = await res.json();
         return (data.results || []).map(r => ({
-            label:  r.formatted,
-            lat:    r.lat,
-            lon:    r.lon
+            label: r.formatted,
+            lat:   r.lat,
+            lon:   r.lon
         }));
     }
 
@@ -272,7 +286,24 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (e.key === 'Escape') hide();
         });
 
-        inputEl.addEventListener('blur', () => setTimeout(() => { if (!wrap.contains(document.activeElement)) hide(); }, 200));
+        inputEl.addEventListener('blur', () => setTimeout(async () => {
+            if (!wrap.contains(document.activeElement)) {
+                hide();
+                // If user typed a bare postcode and didn't pick a suggestion, resolve it
+                const val = inputEl.value.trim();
+                if (isUKPostcode(val)) {
+                    try {
+                        const url  = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(val)}&filter=countrycode:gb&limit=1&apiKey=${GEO_KEY}`;
+                        const res  = await fetch(url);
+                        const data = await res.json();
+                        if (data.features && data.features.length) {
+                            inputEl.value = data.features[0].properties.formatted;
+                            inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    } catch { /* silent */ }
+                }
+            }
+        }, 200));
         document.addEventListener('click', e => { if (!wrap.contains(e.target)) hide(); });
     }
 
