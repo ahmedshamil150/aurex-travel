@@ -99,16 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!text) return null;
         const v = text.trim().toLowerCase();
 
-        // Airports first — only match when 'airport' keyword or IATA code present
+        // Cardiff Airport — must check before generic cardiff
         if (v.includes('cardiff airport') || v.includes('cwl airport') || /\bcwl\b/.test(v)) return 'cardiff airport';
-        if (v.includes('heathrow airport') || /\blhr\b/.test(v)) return 'heathrow';
-        if (v.includes('gatwick airport') || /\blgw\b/.test(v)) return 'gatwick';
-        if (v.includes('stansted airport') || /\bstn\b/.test(v)) return 'stansted';
-        if (v.includes('luton airport') || /\bltn\b/.test(v)) return 'luton';
-        if (v.includes('bristol airport') || /\bbrs\b/.test(v)) return 'bristol';
-        if (v.includes('birmingham airport') || /\bbhx\b/.test(v)) return 'birmingham';
-        if (v.includes('manchester airport') || /\bman airport\b/.test(v)) return 'manchester';
-        if (v.includes('london city airport') || /\blcy\b/.test(v)) return 'london city';
+
+        // Major airports — match name alone OR with terminal/T suffix, IATA code, or 'airport'
+        if (/heathrow|\blhr\b/.test(v)) return 'heathrow';
+        if (/gatwick|\blgw\b/.test(v)) return 'gatwick';
+        if (/stansted|\bstn\b/.test(v)) return 'stansted';
+        if (/luton|\bltn\b/.test(v)) return 'luton';
+        if (/bristol airport|bristol intl|\bbrs\b/.test(v)) return 'bristol';
+        if (/birmingham airport|birmingham intl|\bbhx\b/.test(v)) return 'birmingham';
+        if (/manchester airport|\bman airport\b|manchester t\d|\bman\b.*airport/.test(v)) return 'manchester';
+        if (/london city airport|\blcy\b/.test(v)) return 'london city';
 
         // Cardiff / South Wales area — match by postcode prefix or city/town name
         if (CARDIFF_POSTCODES.test(v)) return 'cardiff';
