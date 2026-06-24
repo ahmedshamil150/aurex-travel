@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const WA_NUMBER     = '447905298692';
     const COMPANY_EMAIL = 'nayyer.zaman@gmail.com';
-    const GEO_KEY       = 'YOUR_GEOAPIFY_API_KEY'; // <-- replace with your free key from geoapify.com
+    const GEO_KEY       = '1681c0e18bb747a8a7317699a0c094f3';
 
     // --- Navbar Scroll Effect ---
     const navbar = document.querySelector('.navbar');
