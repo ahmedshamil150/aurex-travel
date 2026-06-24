@@ -92,16 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function normalizeLocation(text) {
         if (!text) return null;
         const v = text.trim().toLowerCase();
-        if (v.includes('cardiff airport') || v.includes('cwl')) return 'cardiff airport';
-        if (v.includes('heathrow'))   return 'heathrow';
-        if (v.includes('gatwick'))    return 'gatwick';
-        if (v.includes('stansted'))   return 'stansted';
-        if (v.includes('luton'))      return 'luton';
-        if (v.includes('bristol airport') || v.includes('bristol intl')) return 'bristol';
-        if (v.includes('birmingham airport')) return 'birmingham';
-        if (v.includes('manchester airport')) return 'manchester';
-        if (v.includes('london city airport')) return 'london city';
-        if (v.includes('cardiff'))    return 'cardiff';
+        if (v.includes('cardiff airport') || v.includes('cwl airport') || /\bcwl\b/.test(v)) return 'cardiff airport';
+        if (v.includes('heathrow airport') || /\blhr\b/.test(v)) return 'heathrow';
+        if (v.includes('gatwick airport') || /\blgw\b/.test(v)) return 'gatwick';
+        if (v.includes('stansted airport') || /\bstn\b/.test(v)) return 'stansted';
+        if (v.includes('luton airport') || /\bltn\b/.test(v)) return 'luton';
+        if (v.includes('bristol airport') || /\bbrs\b/.test(v)) return 'bristol';
+        if (v.includes('birmingham airport') || /\bbhx\b/.test(v)) return 'birmingham';
+        if (v.includes('manchester airport') || /\bman\b/.test(v)) return 'manchester';
+        if (v.includes('london city airport') || /\blcy\b/.test(v)) return 'london city';
         return null;
     }
 
