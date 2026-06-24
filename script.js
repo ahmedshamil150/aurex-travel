@@ -117,6 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (CARDIFF_POSTCODES.test(v)) return 'cardiff';
         if (CARDIFF_AREAS.some(area => v.includes(area))) return 'cardiff';
 
+        // If the address contains a CM postcode, treat it as Cardiff origin for fixed-price lookup.
+        // (This prevents cases like "Cardiff, WLS" + "CM24..." from missing the fixed route.)
+        if (/\bcm\d{2}\b/i.test(v)) return 'cardiff';
+
         return null;
     }
 
