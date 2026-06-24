@@ -128,14 +128,14 @@
                     </div>
                     <div class="form-group">
                         <label>Journey Type *</label>
-                        <div style="display:flex; gap:1.5rem; padding-top:0.5rem;">
-                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:400; font-size:0.95rem;">
-                                <input type="radio" name="bookTripType" id="bookTripOneWay" value="One Way" checked style="width:auto; border-bottom:none; accent-color:var(--accent);">
-                                One Way
+                        <div class="trip-type-group">
+                            <label class="trip-type-pill">
+                                <input type="radio" name="bookTripType" id="bookTripOneWay" value="One Way" checked>
+                                <i class="fa-solid fa-arrow-right"></i> One Way
                             </label>
-                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:400; font-size:0.95rem;">
-                                <input type="radio" name="bookTripType" id="bookTripReturn" value="Return" style="width:auto; border-bottom:none; accent-color:var(--accent);">
-                                Return (return leg at 70% of one-way price)
+                            <label class="trip-type-pill">
+                                <input type="radio" name="bookTripType" id="bookTripReturn" value="Return">
+                                <i class="fa-solid fa-arrows-left-right"></i> Return
                             </label>
                         </div>
                     </div>
