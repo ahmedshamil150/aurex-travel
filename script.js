@@ -91,9 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
         'london city':   { lat: 51.5053, lon:  0.0553 }
     };
 
+    // Cardiff postcodes and areas that map to fixed 'cardiff' origin
+    const CARDIFF_POSTCODES = /\b(CF\d|NP\d|SA\d)\b/i;
+    const CARDIFF_AREAS = ['cardiff', 'newport', 'swansea', 'bridgend', 'barry', 'penarth', 'caerphilly', 'pontypridd', 'merthyr', 'rhondda', 'neath', 'port talbot', 'aberdare', 'treorchy', 'cwmbran', 'pontypool', 'abergavenny', 'monmouth'];
+
     function normalizeLocation(text) {
         if (!text) return null;
         const v = text.trim().toLowerCase();
+
+        // Airports first — only match when 'airport' keyword or IATA code present
         if (v.includes('cardiff airport') || v.includes('cwl airport') || /\bcwl\b/.test(v)) return 'cardiff airport';
         if (v.includes('heathrow airport') || /\blhr\b/.test(v)) return 'heathrow';
         if (v.includes('gatwick airport') || /\blgw\b/.test(v)) return 'gatwick';
@@ -101,8 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (v.includes('luton airport') || /\bltn\b/.test(v)) return 'luton';
         if (v.includes('bristol airport') || /\bbrs\b/.test(v)) return 'bristol';
         if (v.includes('birmingham airport') || /\bbhx\b/.test(v)) return 'birmingham';
-        if (v.includes('manchester airport') || /\bman\b/.test(v)) return 'manchester';
+        if (v.includes('manchester airport') || /\bman airport\b/.test(v)) return 'manchester';
         if (v.includes('london city airport') || /\blcy\b/.test(v)) return 'london city';
+
+        // Cardiff / South Wales area — match by postcode prefix or city/town name
+        if (CARDIFF_POSTCODES.test(v)) return 'cardiff';
+        if (CARDIFF_AREAS.some(area => v.includes(area))) return 'cardiff';
+
         return null;
     }
 
@@ -110,8 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const from = normalizeLocation(pickup);
         const to   = normalizeLocation(dropoff);
         if (!from || !to || from === to) return null;
-        let key = `${from}->${to}`;
-        let pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[`${to}->${from}`];
+        // Try both directions
+        const key     = `${from}->${to}`;
+        const keyRev  = `${to}->${from}`;
+        const pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[keyRev];
         if (!pricing) return null;
         const type = vehicleType && vehicleType.toLowerCase().includes('mpv') ? 'mpv' : 'saloon';
         return pricing[type] !== undefined ? pricing[type] : Math.min(...Object.values(pricing));
