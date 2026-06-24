@@ -124,11 +124,24 @@
                         <label for="bookFlight">Flight Number (for airport pickups, if applicable)</label>
                         <input type="text" id="bookFlight" name="flight" placeholder="e.g. BA 245">
                     </div>
+                    <div class="form-group">
+                        <label>Journey Type *</label>
+                        <div style="display:flex; gap:1.5rem; padding-top:0.5rem;">
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:400; font-size:0.95rem;">
+                                <input type="radio" name="bookTripType" id="bookTripOneWay" value="One Way" checked style="width:auto; border-bottom:none; accent-color:var(--accent);">
+                                One Way
+                            </label>
+                            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; text-transform:none; letter-spacing:0; font-weight:400; font-size:0.95rem;">
+                                <input type="radio" name="bookTripType" id="bookTripReturn" value="Return" style="width:auto; border-bottom:none; accent-color:var(--accent);">
+                                Return (return leg at 70% of one-way price)
+                            </label>
+                        </div>
+                    </div>
+                    <input type="hidden" id="bookTripTypeHidden" name="trip_type" value="One Way">
                     <input type="hidden" id="bookDistance" name="distance_miles">
                     <input type="hidden" id="bookAmount" name="amount">
                     <div id="bookFareSummary" class="quote-result" style="display:none; margin-top:1.5rem;">
                         <h3>Estimated Fare: <span id="bookEstimatedPrice">£0</span></h3>
-                        <p>Based on <span id="bookEstimatedDistance">0</span> miles at £2 per mile.</p>
                     </div>
 
                     <!-- Submit buttons -->
@@ -295,26 +308,28 @@
         const distanceField = document.getElementById('bookDistance');
         const fareSummary   = document.getElementById('bookFareSummary');
         const farePrice     = document.getElementById('bookEstimatedPrice');
-        const fareDistance  = document.getElementById('bookEstimatedDistance');
         let fareReadyToSubmit = false;
 
         function setBookingFare(distance, amount) {
-            if (!distance || !amount) return;
-            distanceField.value = distance;
+            if (!amount) return;
+            distanceField.value = distance || '';
             amountField.value   = Number(amount).toFixed(2);
-            fareDistance.textContent = distance;
-            farePrice.textContent    = `£${Number(amount).toFixed(2)}`;
+            farePrice.textContent = `£${Number(amount).toFixed(2)}`;
             fareSummary.style.display = 'block';
             fareReadyToSubmit = true;
         }
 
         async function calculateBookingFare() {
-            const pickup  = pickupField.value.trim();
-            const dropoff = dropoffField.value.trim();
+            const pickup   = pickupField.value.trim();
+            const dropoff  = dropoffField.value.trim();
             if (!pickup || !dropoff) return false;
             const vehicle  = vehicleSelect ? vehicleSelect.value : '';
             const estimate = await calculateRouteEstimate(pickup, dropoff, vehicle);
-            setBookingFare(estimate.miles, estimate.price);
+            const isReturn = document.getElementById('bookTripReturn').checked;
+            const oneWay   = estimate.price;
+            const total    = isReturn ? Math.round((oneWay + oneWay * 0.7) * 100) / 100 : oneWay;
+            document.getElementById('bookTripTypeHidden').value = isReturn ? 'Return' : 'One Way';
+            setBookingFare(estimate.miles, total);
             return true;
         }
 
@@ -391,6 +406,13 @@
         [pickupField, dropoffField].forEach(field => {
             if (!field) return;
             field.addEventListener('change', () => {
+                fareReadyToSubmit = false;
+                calculateBookingFare().catch(() => {});
+            });
+        });
+
+        document.querySelectorAll('input[name="bookTripType"]').forEach(r => {
+            r.addEventListener('change', () => {
                 fareReadyToSubmit = false;
                 calculateBookingFare().catch(() => {});
             });

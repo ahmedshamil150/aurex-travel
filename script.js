@@ -71,10 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const PRICE_PER_MILE = 2;
 
     const FIXED_ROUTE_PRICES = {
-        'cardiff->heathrow':        { saloon: 230, vclass: 250 },
-        'cardiff->bristol':         { saloon: 135, vclass: 155 },
-        'cardiff->cardiff airport': { saloon: 60,  vclass: 80  },
-        'cardiff->gatwick':         { saloon: 320, vclass: 340 }
+        'cardiff->heathrow':        { saloon: 230, mpv: 250 },
+        'cardiff->bristol':         { saloon: 135, mpv: 155 },
+        'cardiff->cardiff airport': { saloon: 60,  mpv: 80  },
+        'cardiff->gatwick':         { saloon: 320, mpv: 340 },
+        'cardiff->birmingham':      { saloon: 230, mpv: 260 },
+        'cardiff->manchester':      { saloon: 320, mpv: 350 }
     };
 
     const AIRPORT_COORDS = {
@@ -111,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let key = `${from}->${to}`;
         let pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[`${to}->${from}`];
         if (!pricing) return null;
-        const type = vehicleType && vehicleType.toLowerCase().includes('mpv') ? 'vclass' : 'saloon';
+        const type = vehicleType && vehicleType.toLowerCase().includes('mpv') ? 'mpv' : 'saloon';
         return pricing[type] !== undefined ? pricing[type] : Math.min(...Object.values(pricing));
     }
 
@@ -176,17 +178,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Main fare estimator (called from book.html inline script too) ──────────
     async function calculateRouteEstimate(pickup, dropoff, vehicleType) {
+        // Check fixed price first — if found, no need to geocode or calculate distance
+        const fixed = getFixedPrice(pickup, dropoff, vehicleType);
+        if (fixed !== null) {
+            return { miles: null, price: fixed, fixed: true };
+        }
+        // No fixed price — geocode and calculate by distance
         const [fromCoords, toCoords] = await Promise.all([
             geocodeAddress(pickup),
             geocodeAddress(dropoff)
         ]);
         const miles = await getDrivingMiles(fromCoords, toCoords);
-        const fixed = getFixedPrice(pickup, dropoff, vehicleType);
-        return {
-            miles,
-            price: fixed !== null ? fixed : miles * PRICE_PER_MILE,
-            fixed: fixed !== null
-        };
+        return { miles, price: miles * PRICE_PER_MILE, fixed: false };
     }
     window.calculateRouteEstimate = calculateRouteEstimate;
 
@@ -400,20 +403,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!pickup || !dropoff) return;
             try {
                 if (btn) { btn.textContent = 'Calculating...'; btn.disabled = true; }
-                const est        = await calculateRouteEstimate(pickup, dropoff);
-                const isReturn   = document.getElementById('iTripReturn')?.checked;
-                const total      = isReturn ? Math.round(est.price * 1.7 * 100) / 100 : est.price;
+                const est      = await calculateRouteEstimate(pickup, dropoff);
+                const isReturn = document.getElementById('iTripReturn')?.checked;
+                const oneWay   = est.price;
+                const total    = isReturn ? Math.round((oneWay + oneWay * 0.7) * 100) / 100 : oneWay;
 
                 document.getElementById('calcPrice').textContent = `£${total.toFixed(2)}`;
 
                 const heading = document.getElementById('instantPriceHeading');
-                if (heading) heading.textContent = isReturn ? `Estimated Return Price: £${total.toFixed(2)}` : `Estimated Price: £${total.toFixed(2)}`;
+                if (heading) heading.textContent = isReturn ? 'Estimated Return Price' : 'Estimated Price';
 
                 const breakdown = document.getElementById('instantReturnBreakdown');
                 if (breakdown) {
                     if (isReturn) {
                         breakdown.style.display = 'block';
-                        breakdown.innerHTML = `One way: £${est.price.toFixed(2)} &bull; Return leg (70%): £${(est.price * 0.7).toFixed(2)}`;
+                        breakdown.innerHTML = `One way: £${oneWay.toFixed(2)} &bull; Return leg (70%): £${(oneWay * 0.7).toFixed(2)}`;
                     } else breakdown.style.display = 'none';
                 }
 
