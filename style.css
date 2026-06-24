@@ -2392,3 +2392,64 @@ input:focus, select:focus, textarea:focus {
     color: var(--text-muted);
     text-align: center;
 }
+
+/* ========================
+   UI POLISH
+======================== */
+
+/* Center booking steps */
+.booking-intro { justify-content: center; }
+
+/* Select dropdown arrow */
+select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23666' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+    padding-right: 22px;
+}
+
+/* Placeholder colour */
+::placeholder { color: #c0c0c0; font-weight: 300; }
+
+/* Input focus — gold underline glow */
+input:focus, select:focus, textarea:focus {
+    box-shadow: 0 2px 0 var(--accent);
+    border-color: var(--accent);
+}
+
+/* Textarea resize */
+textarea { resize: vertical; min-height: 110px; }
+
+/* Quote/fare result — always centred */
+.quote-result { text-align: center; }
+.quote-result h2, .quote-result h3 { color: var(--accent); }
+
+/* Booking confirmed panel */
+#bookingConfirmed {
+    border: 1px solid var(--border-strong);
+    border-top: 4px solid var(--accent);
+    background: var(--bg-color);
+    box-shadow: var(--shadow-card);
+    padding: 4rem 3rem;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Payment option buttons full width */
+.payment-option .btn-whatsapp { width: 100%; margin-top: 0.75rem; }
+
+/* Payment option subtle hover */
+.payment-option:hover {
+    border-color: rgba(212,175,55,0.35);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+}
+
+/* Use-location button compact on small screens */
+@media (max-width: 500px) {
+    .use-location-btn { font-size: 0;  padding: 6px 10px; letter-spacing: 0; }
+    .use-location-btn i { margin-right: 0; font-size: 1rem; }
+    #bookingConfirmed { padding: 2.5rem 1.25rem; }
+}
