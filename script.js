@@ -91,40 +91,26 @@ document.addEventListener('DOMContentLoaded', () => {
         'london city':   { lat: 51.5053, lon:  0.0553 }
     };
 
-    // Cardiff postcodes and areas that map to fixed 'cardiff' origin
     const CARDIFF_POSTCODES = /\b(CF\d|NP\d|SA\d)\b/i;
     const CARDIFF_AREAS = ['cardiff', 'newport', 'swansea', 'bridgend', 'barry', 'penarth', 'caerphilly', 'pontypridd', 'merthyr', 'rhondda', 'neath', 'port talbot', 'aberdare', 'treorchy', 'cwmbran', 'pontypool', 'abergavenny', 'monmouth'];
 
     function normalizeLocation(text) {
         if (!text) return null;
         const v = text.trim().toLowerCase();
-
-        // Cardiff Airport — must check before generic cardiff
         if (v.includes('cardiff airport') || v.includes('cwl airport') || /\bcwl\b/.test(v)) return 'cardiff airport';
-
-        // Major airports — match name alone OR with terminal/T suffix, IATA code, or 'airport'
         if (/heathrow|\blhr\b/.test(v)) return 'heathrow';
         if (/gatwick|\blgw\b/.test(v)) return 'gatwick';
-        // Stansted: match by name/abbrev OR by known station postcode prefix (CM24/CM23) OR common local names
         if (/stansted|\bstn\b/.test(v) || /\bcm24\b|\bcm23\b/.test(v) || v.includes('molehill green') || v.includes('terminal road north')) return 'stansted';
         if (/luton|\bltn\b/.test(v)) return 'luton';
         if (/bristol airport|bristol intl|\bbrs\b/.test(v)) return 'bristol';
         if (/birmingham airport|birmingham intl|\bbhx\b/.test(v)) return 'birmingham';
         if (/manchester airport|\bman airport\b|manchester t\d|\bman\b.*airport/.test(v)) return 'manchester';
         if (/london city airport|\blcy\b/.test(v)) return 'london city';
-
-        // Cardiff / South Wales area — match by postcode prefix or city/town name
         if (CARDIFF_POSTCODES.test(v)) return 'cardiff';
         if (CARDIFF_AREAS.some(area => v.includes(area))) return 'cardiff';
-
-        // If the address contains a CM postcode, treat it as Cardiff origin for fixed-price lookup.
-        // (This prevents cases like "Cardiff, WLS" + "CM24..." from missing the fixed route.)
         if (/\bcm\d{2}\b/i.test(v)) return 'cardiff';
-
         return null;
     }
-
-    // ── Geoapify ────────────────────────────────────────────────────────────────
 
     const UK_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
     function isUKPostcode(str) { return UK_POSTCODE_RE.test(str.trim()); }
@@ -181,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return pricing[type] !== undefined ? pricing[type] : Math.min(...Object.values(pricing));
     }
 
-    // Returns both saloon + mpv prices for a fixed route, or null if not fixed
     function getBothFixedPrices(pickup, dropoff) {
         const from = normalizeLocation(pickup);
         const to   = normalizeLocation(dropoff);
@@ -193,11 +178,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function calculateRouteEstimate(pickup, dropoff, vehicleType) {
-        // Normalise both addresses first
         const fromKey = normalizeLocation(pickup);
         const toKey   = normalizeLocation(dropoff);
-
-        // Check fixed price using normalised keys directly (bypasses raw string issues)
         if (fromKey && toKey && fromKey !== toKey) {
             const key     = `${fromKey}->${toKey}`;
             const keyRev  = `${toKey}->${fromKey}`;
@@ -208,21 +190,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return { miles: null, price, fixed: true };
             }
         }
-
-        // No fixed price — geocode pickup (use known airport coords if recognised)
         const fromCoords = (fromKey && AIRPORT_COORDS[fromKey])
             ? AIRPORT_COORDS[fromKey]
             : await geocodeAddress(pickup);
         const toCoords = (toKey && AIRPORT_COORDS[toKey])
             ? AIRPORT_COORDS[toKey]
             : await geocodeAddress(dropoff);
-
         const miles = await getDrivingMiles(fromCoords, toCoords);
         return { miles, price: miles * PRICE_PER_MILE, fixed: false };
     }
     window.calculateRouteEstimate = calculateRouteEstimate;
 
-    // ── UI helpers ─────────────────────────────────────────────────────────────
     function setError(el, msg) {
         if (!el) return;
         el.textContent    = msg || '';
@@ -236,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Autocomplete dropdown ──────────────────────────────────────────────────
     function attachAutocomplete(inputEl) {
         if (!inputEl) return;
-
         const wrap = inputEl.closest('.location-input-wrap') || inputEl.closest('.autocomplete-wrap') || (() => {
             const w = document.createElement('div');
             w.className = 'autocomplete-wrap';
@@ -246,21 +223,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return w;
         })();
         wrap.style.position = 'relative';
-
         let dropdown = wrap.querySelector('.autocomplete-dropdown');
         if (!dropdown) {
             dropdown = document.createElement('div');
             dropdown.className = 'autocomplete-dropdown';
             wrap.appendChild(dropdown);
         }
-
         let debounceTimer  = null;
         let abortCtrl      = null;
         let results        = [];
         let selectedIndex  = -1;
-
         function hide() { dropdown.classList.remove('open'); selectedIndex = -1; results = []; }
-
         function render() {
             if (!results.length) {
                 dropdown.innerHTML = '<div class="autocomplete-no-results">No suggestions found</div>';
@@ -283,7 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             dropdown.classList.add('open');
         }
-
         async function search(q) {
             if (abortCtrl) abortCtrl.abort();
             abortCtrl = new AbortController();
@@ -297,14 +269,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.name !== 'AbortError') hide();
             }
         }
-
         inputEl.addEventListener('input', function () {
             clearTimeout(debounceTimer);
             const v = this.value.trim();
             if (v.length < 3) { hide(); return; }
             debounceTimer = setTimeout(() => search(v), 300);
         });
-
         inputEl.addEventListener('keydown', function (e) {
             if (!dropdown.classList.contains('open') || !results.length) return;
             if (e.key === 'ArrowDown')  { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, results.length - 1); render(); }
@@ -316,11 +286,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 hide();
             } else if (e.key === 'Escape') hide();
         });
-
         inputEl.addEventListener('blur', () => setTimeout(async () => {
             if (!wrap.contains(document.activeElement)) {
                 hide();
-                // If user typed a bare postcode and didn't pick a suggestion, resolve it
                 const val = inputEl.value.trim();
                 if (isUKPostcode(val)) {
                     try {
@@ -351,7 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 async ({ coords: { latitude, longitude } }) => {
                     try {
                         inputEl.value = await reverseGeocode(latitude, longitude);
-                        // If page has hidden lat/lon fields, keep them in sync
                         const latField = document.getElementById(inputEl.id + 'Lat');
                         const lonField = document.getElementById(inputEl.id + 'Lon');
                         if (latField) latField.value = String(latitude);
@@ -372,91 +339,105 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Map Picker (Leaflet + OpenStreetMap) ────────────────────────────
-    // We use a single map modal that gets re-initialised each time it's opened.
+    // ── Map Picker ──────────────────────────────────────────────
     let mapPickerInstance = null;
     let mapPickerMarker   = null;
     let mapPickerLat      = null;
     let mapPickerLon      = null;
+    let mapPickerResolve  = null;
+
+    function getModalId() {
+        return window.location.pathname.includes('book.html') ? 'book' : 'quote';
+    }
 
     function openMapPicker(onConfirm) {
-        const overlay = document.getElementById('bookMapPicker') || document.getElementById('quoteMapPicker');
-        // Determine which overlay is used based on which page we're on
-        const modalId = window.location.pathname.includes('book.html') ? 'book' : 'quote';
-        const overlayId = modalId + 'MapPicker';
-        const overlayEl = document.getElementById(overlayId);
+        const modalId = getModalId();
+        const overlayEl = document.getElementById(modalId + 'MapPicker');
         if (!overlayEl) return;
 
+        mapPickerResolve = onConfirm;
+        mapPickerLat = null;
+        mapPickerLon = null;
+
+        // Clean previous instance
+        if (mapPickerInstance) {
+            mapPickerInstance.remove();
+            mapPickerInstance = null;
+            mapPickerMarker = null;
+        }
+
+        // Show the overlay
+        overlayEl.style.display = 'flex';
         overlayEl.classList.add('open');
         document.body.style.overflow = 'hidden';
 
-        // Initialise Leaflet map in the modal
-        const mapContainer = document.getElementById('mapPickerMap');
-        if (!mapContainer) return;
-
-        // Small delay to let the modal render before initialising the map
+        // Wait for DOM to render the modal, then initialise map after 500ms
         setTimeout(() => {
-            if (mapPickerInstance) {
+            const el = document.getElementById('mapPickerMap');
+            if (!el) return;
+
+            // Give the element explicit pixel height based on its container
+            el.style.width = '100%';
+            el.style.height = '400px';
+            el.style.backgroundColor = '#f0f0f0';
+
+            try {
+                mapPickerInstance = L.map(el, {
+                    center: [51.5074, -0.1278],
+                    zoom: 10,
+                    zoomControl: true
+                });
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(mapPickerInstance);
+
+                mapPickerMarker = L.marker([51.5074, -0.1278], { draggable: true }).addTo(mapPickerInstance);
+
+                mapPickerMarker.on('dragend', async function () {
+                    const pos = this.getLatLng();
+                    mapPickerLat = pos.lat;
+                    mapPickerLon = pos.lng;
+                    await updateMapPickerAddress(pos.lat, pos.lng, modalId);
+                });
+
+                mapPickerInstance.on('click', async function (e) {
+                    const { lat, lng } = e.latlng;
+                    mapPickerMarker.setLatLng([lat, lng]);
+                    mapPickerLat = lat;
+                    mapPickerLon = lng;
+                    await updateMapPickerAddress(lat, lng, modalId);
+                });
+
                 mapPickerInstance.invalidateSize();
-                return;
+            } catch (e) {
+                console.error('Map init error:', e);
+                el.textContent = 'Map could not be loaded. Please try again.';
+                el.style.padding = '2rem';
+                el.style.textAlign = 'center';
+                el.style.color = '#666';
             }
+        }, 500);
 
-            mapPickerInstance = L.map('mapPickerMap', {
-                center: [51.5074, -0.1278], // London
-                zoom: 10,
-                zoomControl: true
-            });
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                maxZoom: 19
-            }).addTo(mapPickerInstance);
-
-            // Default marker at London
-            mapPickerMarker = L.marker([51.5074, -0.1278], { draggable: true }).addTo(mapPickerInstance);
-
-            // Update address on marker drag
-            mapPickerMarker.on('dragend', async function () {
-                const pos = this.getLatLng();
-                mapPickerLat = pos.lat;
-                mapPickerLon = pos.lng;
-                await updateMapPickerAddress(pos.lat, pos.lng, modalId);
-            });
-
-            // Click on map to move marker
-            mapPickerInstance.on('click', async function (e) {
-                const { lat, lng } = e.latlng;
-                mapPickerMarker.setLatLng([lat, lng]);
-                mapPickerLat = lat;
-                mapPickerLon = lng;
-                await updateMapPickerAddress(lat, lng, modalId);
-            });
-
-            mapPickerInstance.invalidateSize();
-        }, 100);
-
-        // Override confirm handler
+        // Set up close/confirm handlers
         const confirmBtn = document.getElementById(modalId + 'MapPickerConfirm');
         const cancelBtn  = document.getElementById(modalId + 'MapPickerCancel');
         const closeBtn   = document.getElementById(modalId + 'MapPickerClose');
 
         function closeMapPicker() {
+            overlayEl.style.display = 'none';
             overlayEl.classList.remove('open');
             document.body.style.overflow = '';
-        }
-
-        function handleConfirm() {
-            if (mapPickerLat !== null && mapPickerLon !== null) {
-                onConfirm(mapPickerLat, mapPickerLon);
+            if (mapPickerInstance) {
+                mapPickerInstance.remove();
+                mapPickerInstance = null;
+                mapPickerMarker = null;
             }
-            closeMapPicker();
+            mapPickerResolve = null;
         }
 
-        function handleCancel() {
-            closeMapPicker();
-        }
-
-        // Remove old listeners by cloning
+        // Clone to remove old listeners
         const newConfirm = confirmBtn.cloneNode(true);
         const newCancel  = cancelBtn.cloneNode(true);
         const newClose   = closeBtn.cloneNode(true);
@@ -464,21 +445,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
         closeBtn.parentNode.replaceChild(newClose, closeBtn);
 
-        newConfirm.addEventListener('click', handleConfirm);
-        newCancel.addEventListener('click', handleCancel);
-        newClose.addEventListener('click', handleCancel);
-
-        // Close on overlay click (but not modal click)
-        overlayEl.addEventListener('click', function overlayClick(e) {
-            if (e.target === overlayEl) {
-                handleCancel();
-                overlayEl.removeEventListener('click', overlayClick);
+        newConfirm.addEventListener('click', () => {
+            if (mapPickerLat !== null && mapPickerLon !== null && mapPickerResolve) {
+                mapPickerResolve(mapPickerLat, mapPickerLon);
             }
+            closeMapPicker();
         });
-
-        // Store refs for cleanup
-        overlayEl._mapConfirmHandler = handleConfirm;
-        overlayEl._mapCancelHandler  = handleCancel;
+        newCancel.addEventListener('click', closeMapPicker);
+        newClose.addEventListener('click', closeMapPicker);
     }
 
     async function updateMapPickerAddress(lat, lon, modalId) {
@@ -489,9 +463,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const address = await reverseGeocode(lat, lon);
             if (addrEl) addrEl.textContent = address;
-            if (addrEl) addrEl.style.fontWeight = '400';
         } catch {
-            if (addrEl) addrEl.textContent = 'Could not retrieve address';
+            if (addrEl) addrEl.textContent = 'Address lookup failed';
         }
     }
 
@@ -500,33 +473,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!btn || !inputEl) return;
 
         btn.addEventListener('click', () => {
-            // Determine which modal ID to use
-            const modalId = window.location.pathname.includes('book.html') ? 'book' : 'quote';
-            const overlayEl = document.getElementById(modalId + 'MapPicker');
-            if (!overlayEl) return;
-
-            // Clean up previous map instance
             if (mapPickerInstance) {
                 mapPickerInstance.remove();
                 mapPickerInstance = null;
                 mapPickerMarker = null;
+                mapPickerLat = null;
+                mapPickerLon = null;
             }
 
             openMapPicker(async (lat, lon) => {
-                // Set the address field
                 try {
                     const address = await reverseGeocode(lat, lon);
                     inputEl.value = address;
                 } catch {
                     inputEl.value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
                 }
-
-                // Set hidden lat/lon fields
                 const latField = document.getElementById(inputEl.id + 'Lat');
                 const lonField = document.getElementById(inputEl.id + 'Lon');
                 if (latField) latField.value = String(lat);
                 if (lonField) lonField.value = String(lon);
-
                 setError(errorEl, '');
                 inputEl.dispatchEvent(new Event('change', { bubbles: true }));
             });
@@ -534,21 +499,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Wire up all address fields ─────────────────────────────────────────────
-    // Homepage quote
     attachLocationBtn('quoteFromLocBtn', document.getElementById('quoteFrom'), document.getElementById('quoteFromError'));
     attachAutocomplete(document.getElementById('quoteFrom'));
     attachAutocomplete(document.getElementById('quoteTo'));
 
-    // Quote page — instant calculator
     attachLocationBtn('iFromLocBtn', document.getElementById('iFrom'), document.getElementById('iFromError'));
     attachAutocomplete(document.getElementById('iFrom'));
     attachAutocomplete(document.getElementById('iTo'));
 
-    // Quote page — custom quote
     attachAutocomplete(document.getElementById('cFrom'));
     attachAutocomplete(document.getElementById('cTo'));
 
-    // Book page
     attachLocationBtn('bookPickupLocBtn', document.getElementById('bookPickup'), document.getElementById('bookPickupError'));
     attachAutocomplete(document.getElementById('bookPickup'));
     attachAutocomplete(document.getElementById('bookDropoff'));
@@ -558,7 +519,6 @@ document.addEventListener('DOMContentLoaded', () => {
     attachMapPickerBtn('iToPickMapBtn', document.getElementById('iTo'), document.getElementById('iToError'));
     attachMapPickerBtn('bookPickupPickMapBtn', document.getElementById('bookPickup'), document.getElementById('bookPickupError'));
     attachMapPickerBtn('bookDropoffPickMapBtn', document.getElementById('bookDropoff'), document.getElementById('bookDropoffError'));
-
 
     // ── Homepage Quote form ────────────────────────────────────────────────────
     const quoteForm = document.getElementById('quoteForm');
@@ -623,7 +583,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const breakdown = document.getElementById('instantReturnBreakdown');
 
                 if (both) {
-                    // Fixed route — show both vehicle prices
                     const saloon = isReturn ? Math.round((both.saloon + both.saloon * 0.7) * 100) / 100 : both.saloon;
                     const mpv    = isReturn ? Math.round((both.mpv   + both.mpv   * 0.7) * 100) / 100 : both.mpv;
                     if (heading) heading.textContent = isReturn ? 'Fixed Return Prices' : 'Fixed Prices';
@@ -636,7 +595,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const bookNow = document.getElementById('instantBookNow');
                     if (bookNow) bookNow.href = `book.html?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`;
                 } else {
-                    // Calculated route — single price
                     const est    = await calculateRouteEstimate(pickup, dropoff);
                     const oneWay = est.price;
                     const total  = isReturn ? Math.round((oneWay + oneWay * 0.7) * 100) / 100 : oneWay;
@@ -650,7 +608,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const bookNow = document.getElementById('instantBookNow');
                     if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: est.miles, price: total });
                 }
-
                 const result = document.getElementById('instantResult');
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
