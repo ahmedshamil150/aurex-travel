@@ -105,7 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Major airports — match name alone OR with terminal/T suffix, IATA code, or 'airport'
         if (/heathrow|\blhr\b/.test(v)) return 'heathrow';
         if (/gatwick|\blgw\b/.test(v)) return 'gatwick';
-        if (/stansted|\bstn\b/.test(v)) return 'stansted';
+        // Stansted: match by name/abbrev OR by known station postcode prefix (CM24/CM23) OR common local names
+        if (/stansted|\bstn\b/.test(v) || /\bcm24\b|\bcm23\b/.test(v) || v.includes('molehill green') || v.includes('terminal road north')) return 'stansted';
         if (/luton|\bltn\b/.test(v)) return 'luton';
         if (/bristol airport|bristol intl|\bbrs\b/.test(v)) return 'bristol';
         if (/birmingham airport|birmingham intl|\bbhx\b/.test(v)) return 'birmingham';
