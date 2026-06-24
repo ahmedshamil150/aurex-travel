@@ -140,11 +140,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function reverseGeocode(lat, lon) {
-        const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${GEO_KEY}`;
+        // Request multiple results and pick the most precise one
+        const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&limit=5&apiKey=${GEO_KEY}`;
         const res  = await fetch(url);
         const data = await res.json();
         if (!data.features || !data.features.length) throw new Error('Reverse geocode failed');
-        return data.features[0].properties.formatted;
+
+        // Sort results: prefer those with housenumber, then street, then anything
+        function score(f) {
+            const p = f.properties;
+            let s = 0;
+            if (p.housenumber && p.street) s += 10;       // exact street address
+            if (p.street && !p.housenumber) s += 5;        // street level
+            if (p.street) s += p.address_line1 ? 3 : 0;    // has address line
+            if (p.postcode) s += 1;
+            if (p.result_type === 'building') s += 2;      // building-level result
+            if (p.result_type === 'street') s += 0;
+            if (p.result_type === 'suburb' || p.result_type === 'city') s -= 2;
+            return s;
+        }
+
+        // Get best feature by score (most detailed)
+        const features = [...data.features].sort((a, b) => score(b) - score(a));
+        const props = features[0].properties;
+
+        // Build precise address: house number + street is ideal
+        const parts = [];
+        if (props.housenumber && props.street) {
+            parts.push(`${props.housenumber} ${props.street}`);
+        } else if (props.street) {
+            parts.push(props.street);
+        } else if (props.address_line1) {
+            parts.push(props.address_line1);
+        } else if (props.name) {
+            parts.push(props.name);
+        }
+
+        if (props.suburb && props.city && props.suburb.toLowerCase() !== props.city.toLowerCase()) {
+            parts.push(props.suburb);
+        }
+        if (props.city && props.city.toLowerCase() !== (props.county || '').toLowerCase()) {
+            parts.push(props.city);
+        }
+        if (props.postcode) parts.push(props.postcode);
+
+        const result = parts.length >= 2 ? parts.join(', ') : (props.formatted || parts.join(', '));
+        return result;
     }
 
     async function getDrivingMiles(from, to) {
@@ -313,37 +354,36 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             if (!navigator.geolocation) { setError(errorEl, 'Geolocation is not supported by your browser.'); return; }
             const orig = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Getting precise location...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Getting location...';
             btn.disabled  = true;
 
-            // Use watchPosition to keep refining until we get high accuracy
             let watchId = null;
-            let bestCoords = null;
-            let bestAccuracy = Infinity;
-            let attempts = 0;
-            const MAX_ATTEMPTS = 12;       // ~12 seconds max
-            const TARGET_ACCURACY = 20;     // metres — within a few houses
+            let settled = false;
 
-            function acceptCoords(latitude, longitude, accuracy) {
-                if (watchId !== null) {
-                    navigator.geolocation.clearWatch(watchId);
-                    watchId = null;
-                }
+            function setAddress(lat, lon) {
+                if (settled) return;
+                settled = true;
+                if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Looking up address…';
                 (async () => {
                     try {
-                        inputEl.value = await reverseGeocode(latitude, longitude);
+                        inputEl.value = await reverseGeocode(lat, lon);
                         const latField = document.getElementById(inputEl.id + 'Lat');
                         const lonField = document.getElementById(inputEl.id + 'Lon');
-                        if (latField) latField.value = String(latitude);
-                        if (lonField) lonField.value = String(longitude);
+                        if (latField) latField.value = String(lat);
+                        if (lonField) lonField.value = String(lon);
                         setError(errorEl, '');
                         inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-                    } catch { setError(errorEl, '⚠ Could not get your address. Please enter it manually.'); }
+                    } catch {
+                        setError(errorEl, '⚠ Could not get your address. Please enter it manually.');
+                    }
                     finally { btn.innerHTML = orig; btn.disabled = false; }
                 })();
             }
 
             function fail(err) {
+                if (settled) return;
+                settled = true;
                 if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
                 btn.innerHTML = orig; btn.disabled = false;
                 setError(errorEl, err.code === err.PERMISSION_DENIED
@@ -351,58 +391,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     : '⚠ Unable to detect your location. Please enter your address manually.');
             }
 
-            // Fallback: if we never hit target accuracy but got some fix, use the best one
-            const fallbackTimer = setTimeout(() => {
-                if (watchId !== null) {
-                    navigator.geolocation.clearWatch(watchId);
-                    watchId = null;
+            // 1. Try high-accuracy first (GPS). If it times out, fallback below catches it.
+            // 2. After 12 seconds hard stop and use whatever we got
+            const hardTimeout = setTimeout(() => {
+                if (!settled) {
+                    // If we never got any fix, fail
+                    fail({ code: 2 });
                 }
-                if (bestCoords) {
-                    acceptCoords(bestCoords.latitude, bestCoords.longitude, bestAccuracy);
-                } else {
-                    fail({ code: 2 }); // timeout-style error
-                }
-            }, 15000);
+            }, 18000);
 
             watchId = navigator.geolocation.watchPosition(
                 ({ coords: { latitude, longitude, accuracy } }) => {
-                    attempts++;
-
-                    // Keep the best (lowest accuracy number = more precise) fix
-                    if (accuracy < bestAccuracy) {
-                        bestAccuracy = accuracy;
-                        bestCoords = { latitude, longitude };
-                    }
-
-                    // If accuracy is good enough, accept immediately
-                    if (accuracy <= TARGET_ACCURACY) {
-                        clearTimeout(fallbackTimer);
-                        acceptCoords(latitude, longitude, accuracy);
-                        return;
-                    }
-
-                    // If we've tried enough times, accept the best we have
-                    if (attempts >= MAX_ATTEMPTS && bestCoords) {
-                        clearTimeout(fallbackTimer);
-                        acceptCoords(bestCoords.latitude, bestCoords.longitude, bestAccuracy);
-                    }
+                    // Accept any fix immediately — even 100m+ accuracy
+                    // On phones the GPS will keep refining in the background,
+                    // but we want the user to see a result ASAP.
+                    clearTimeout(hardTimeout);
+                    setAddress(latitude, longitude);
                 },
                 err => {
-                    // Don't clear watch — let the fallback timer handle final resolution
-                    // The error might be a temporary blip (e.g. GPS timeout on first attempt)
-                    // If we have a good-enough fix already (within ~100m), accept it
-                    if (bestCoords && bestAccuracy <= 100) {
-                        clearTimeout(fallbackTimer);
-                        if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-                        acceptCoords(bestCoords.latitude, bestCoords.longitude, bestAccuracy);
+                    // If this is not a permission error and we haven't settled yet,
+                    // keep waiting — the hardTimeout will eventually handle it.
+                    if (err.code === err.PERMISSION_DENIED) {
+                        clearTimeout(hardTimeout);
+                        fail(err);
                     }
-                    // If we have some fix but it's not great, keep the watch going (fallback timer will handle)
-                    // If no fix at all, just log silently — let fallback timer show the error
-                    if (!bestCoords) {
-                        console.warn('Geolocation interim error (still retrying):', err.message || err.code);
-                    }
+                    // For timeout or other errors, just log and keep waiting
+                    console.warn('Geolocation interim (waiting for fix):', err.message || err.code);
                 },
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
             );
         });
     }
