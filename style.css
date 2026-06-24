@@ -2269,7 +2269,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .use-location-btn {
-    background: rgba(26, 80, 104, 0.05); /* Light teal background */
+    background: rgba(26, 80, 104, 0.05);
     border: 1px solid rgba(26, 80, 104, 0.15);
     color: var(--teal);
     border-radius: 24px;
@@ -2391,6 +2391,164 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.82rem;
     color: var(--text-muted);
     text-align: center;
+}
+
+/* ========================
+   MAP PICKER MODAL
+======================== */
+.map-picker-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.map-picker-overlay.open {
+    display: flex;
+}
+
+.map-picker-modal {
+    background: #fff;
+    width: 100%;
+    max-width: 750px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+    animation: fadeUp 0.25s ease forwards;
+}
+
+.map-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.map-picker-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.map-picker-close {
+    background: none;
+    border: 1px solid var(--border-color);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    padding: 0;
+    transition: var(--transition);
+}
+
+.map-picker-close:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.map-picker-body {
+    flex: 1;
+    position: relative;
+    min-height: 350px;
+    height: 55vh;
+}
+
+#mapPickerMap {
+    width: 100%;
+    height: 100%;
+}
+
+.map-picker-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.map-picker-address {
+    flex: 1;
+    min-width: 200px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.map-picker-address strong {
+    display: block;
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.map-picker-footer .btn-primary {
+    flex-shrink: 0;
+    padding: 10px 24px;
+    font-size: 0.78rem;
+}
+
+.map-picker-footer .btn-secondary {
+    flex-shrink: 0;
+    padding: 10px 24px;
+    font-size: 0.78rem;
+}
+
+/* Mobile responsive for map modal */
+@media (max-width: 767px) {
+    .map-picker-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+    
+    .map-picker-modal {
+        max-width: 100%;
+        max-height: 95vh;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .map-picker-body {
+        min-height: 280px;
+        height: 50vh;
+    }
+    
+    .map-picker-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .map-picker-address {
+        text-align: center;
+        min-width: auto;
+    }
+    
+    .map-picker-footer .btn-primary,
+    .map-picker-footer .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Leaflet overrides for dark theme compatibility */
+.leaflet-container {
+    font-family: 'Inter', sans-serif;
 }
 
 /* ========================

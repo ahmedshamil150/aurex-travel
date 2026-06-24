@@ -351,6 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 async ({ coords: { latitude, longitude } }) => {
                     try {
                         inputEl.value = await reverseGeocode(latitude, longitude);
+                        // If page has hidden lat/lon fields, keep them in sync
+                        const latField = document.getElementById(inputEl.id + 'Lat');
+                        const lonField = document.getElementById(inputEl.id + 'Lon');
+                        if (latField) latField.value = String(latitude);
+                        if (lonField) lonField.value = String(longitude);
                         setError(errorEl, '');
                         inputEl.dispatchEvent(new Event('change', { bubbles: true }));
                     } catch { setError(errorEl, '⚠ Could not get your address. Please enter it manually.'); }
@@ -364,6 +369,167 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 { timeout: 10000, enableHighAccuracy: true }
             );
+        });
+    }
+
+    // ── Map Picker (Leaflet + OpenStreetMap) ────────────────────────────
+    // We use a single map modal that gets re-initialised each time it's opened.
+    let mapPickerInstance = null;
+    let mapPickerMarker   = null;
+    let mapPickerLat      = null;
+    let mapPickerLon      = null;
+
+    function openMapPicker(onConfirm) {
+        const overlay = document.getElementById('bookMapPicker') || document.getElementById('quoteMapPicker');
+        // Determine which overlay is used based on which page we're on
+        const modalId = window.location.pathname.includes('book.html') ? 'book' : 'quote';
+        const overlayId = modalId + 'MapPicker';
+        const overlayEl = document.getElementById(overlayId);
+        if (!overlayEl) return;
+
+        overlayEl.classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        // Initialise Leaflet map in the modal
+        const mapContainer = document.getElementById('mapPickerMap');
+        if (!mapContainer) return;
+
+        // Small delay to let the modal render before initialising the map
+        setTimeout(() => {
+            if (mapPickerInstance) {
+                mapPickerInstance.invalidateSize();
+                return;
+            }
+
+            mapPickerInstance = L.map('mapPickerMap', {
+                center: [51.5074, -0.1278], // London
+                zoom: 10,
+                zoomControl: true
+            });
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19
+            }).addTo(mapPickerInstance);
+
+            // Default marker at London
+            mapPickerMarker = L.marker([51.5074, -0.1278], { draggable: true }).addTo(mapPickerInstance);
+
+            // Update address on marker drag
+            mapPickerMarker.on('dragend', async function () {
+                const pos = this.getLatLng();
+                mapPickerLat = pos.lat;
+                mapPickerLon = pos.lng;
+                await updateMapPickerAddress(pos.lat, pos.lng, modalId);
+            });
+
+            // Click on map to move marker
+            mapPickerInstance.on('click', async function (e) {
+                const { lat, lng } = e.latlng;
+                mapPickerMarker.setLatLng([lat, lng]);
+                mapPickerLat = lat;
+                mapPickerLon = lng;
+                await updateMapPickerAddress(lat, lng, modalId);
+            });
+
+            mapPickerInstance.invalidateSize();
+        }, 100);
+
+        // Override confirm handler
+        const confirmBtn = document.getElementById(modalId + 'MapPickerConfirm');
+        const cancelBtn  = document.getElementById(modalId + 'MapPickerCancel');
+        const closeBtn   = document.getElementById(modalId + 'MapPickerClose');
+
+        function closeMapPicker() {
+            overlayEl.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function handleConfirm() {
+            if (mapPickerLat !== null && mapPickerLon !== null) {
+                onConfirm(mapPickerLat, mapPickerLon);
+            }
+            closeMapPicker();
+        }
+
+        function handleCancel() {
+            closeMapPicker();
+        }
+
+        // Remove old listeners by cloning
+        const newConfirm = confirmBtn.cloneNode(true);
+        const newCancel  = cancelBtn.cloneNode(true);
+        const newClose   = closeBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+        closeBtn.parentNode.replaceChild(newClose, closeBtn);
+
+        newConfirm.addEventListener('click', handleConfirm);
+        newCancel.addEventListener('click', handleCancel);
+        newClose.addEventListener('click', handleCancel);
+
+        // Close on overlay click (but not modal click)
+        overlayEl.addEventListener('click', function overlayClick(e) {
+            if (e.target === overlayEl) {
+                handleCancel();
+                overlayEl.removeEventListener('click', overlayClick);
+            }
+        });
+
+        // Store refs for cleanup
+        overlayEl._mapConfirmHandler = handleConfirm;
+        overlayEl._mapCancelHandler  = handleCancel;
+    }
+
+    async function updateMapPickerAddress(lat, lon, modalId) {
+        const addrEl = document.getElementById(modalId + 'MapPickerAddr');
+        const coordEl = document.getElementById(modalId + 'MapPickerCoords');
+        if (addrEl) addrEl.textContent = 'Looking up address…';
+        if (coordEl) coordEl.textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        try {
+            const address = await reverseGeocode(lat, lon);
+            if (addrEl) addrEl.textContent = address;
+            if (addrEl) addrEl.style.fontWeight = '400';
+        } catch {
+            if (addrEl) addrEl.textContent = 'Could not retrieve address';
+        }
+    }
+
+    function attachMapPickerBtn(btnId, inputEl, errorEl) {
+        const btn = document.getElementById(btnId);
+        if (!btn || !inputEl) return;
+
+        btn.addEventListener('click', () => {
+            // Determine which modal ID to use
+            const modalId = window.location.pathname.includes('book.html') ? 'book' : 'quote';
+            const overlayEl = document.getElementById(modalId + 'MapPicker');
+            if (!overlayEl) return;
+
+            // Clean up previous map instance
+            if (mapPickerInstance) {
+                mapPickerInstance.remove();
+                mapPickerInstance = null;
+                mapPickerMarker = null;
+            }
+
+            openMapPicker(async (lat, lon) => {
+                // Set the address field
+                try {
+                    const address = await reverseGeocode(lat, lon);
+                    inputEl.value = address;
+                } catch {
+                    inputEl.value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+                }
+
+                // Set hidden lat/lon fields
+                const latField = document.getElementById(inputEl.id + 'Lat');
+                const lonField = document.getElementById(inputEl.id + 'Lon');
+                if (latField) latField.value = String(lat);
+                if (lonField) lonField.value = String(lon);
+
+                setError(errorEl, '');
+                inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+            });
         });
     }
 
@@ -386,6 +552,13 @@ document.addEventListener('DOMContentLoaded', () => {
     attachLocationBtn('bookPickupLocBtn', document.getElementById('bookPickup'), document.getElementById('bookPickupError'));
     attachAutocomplete(document.getElementById('bookPickup'));
     attachAutocomplete(document.getElementById('bookDropoff'));
+
+    // Map picker buttons
+    attachMapPickerBtn('iFromPickMapBtn', document.getElementById('iFrom'), document.getElementById('iFromError'));
+    attachMapPickerBtn('iToPickMapBtn', document.getElementById('iTo'), document.getElementById('iToError'));
+    attachMapPickerBtn('bookPickupPickMapBtn', document.getElementById('bookPickup'), document.getElementById('bookPickupError'));
+    attachMapPickerBtn('bookDropoffPickMapBtn', document.getElementById('bookDropoff'), document.getElementById('bookDropoffError'));
+
 
     // ── Homepage Quote form ────────────────────────────────────────────────────
     const quoteForm = document.getElementById('quoteForm');

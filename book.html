@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
@@ -102,12 +103,22 @@
                                     <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
                                 </button>
                             </div>
+                            <input type="hidden" id="bookPickupLat" name="pickupLat">
+                            <input type="hidden" id="bookPickupLon" name="pickupLon">
+                            <div style="margin-top:0.5rem;">
+                                <button type="button" class="btn-secondary" id="bookPickupPickMapBtn" style="width:auto; padding:10px 14px; font-size:0.78rem; letter-spacing:1px;">Pick on map</button>
+                            </div>
                             <span class="location-error" id="bookPickupError"></span>
                         </div>
                         <div class="form-group half">
                             <label for="bookDropoff">Drop-off Address *</label>
                             <div class="location-input-wrap">
                                 <input type="text" id="bookDropoff" name="dropoff" placeholder="Start typing destination or postcode" required>
+                            </div>
+                            <input type="hidden" id="bookDropoffLat" name="dropoffLat">
+                            <input type="hidden" id="bookDropoffLon" name="dropoffLon">
+                            <div style="margin-top:0.5rem;">
+                                <button type="button" class="btn-secondary" id="bookDropoffPickMapBtn" style="width:auto; padding:10px 14px; font-size:0.78rem; letter-spacing:1px;">Pick on map</button>
                             </div>
                             <span class="location-error" id="bookDropoffError"></span>
                         </div>
@@ -271,6 +282,29 @@
         </div>
     </section>
 
+    <!-- Map Picker Modal -->
+    <div class="map-picker-overlay" id="bookMapPicker">
+        <div class="map-picker-modal">
+            <div class="map-picker-header">
+                <h3>Choose on Map</h3>
+                <button type="button" class="map-picker-close" id="bookMapPickerClose"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="map-picker-body">
+                <div id="mapPickerMap"></div>
+            </div>
+            <div class="map-picker-footer">
+                <div class="map-picker-address">
+                    <strong id="bookMapPickerAddr">Click on the map or drag the marker</strong>
+                    <span id="bookMapPickerCoords"></span>
+                </div>
+                <div>
+                    <button type="button" class="btn-secondary" id="bookMapPickerCancel">Cancel</button>
+                    <button type="button" class="btn-primary" id="bookMapPickerConfirm">Confirm Location</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container footer-grid">
@@ -313,6 +347,7 @@
         </div>
     </footer>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
     <script>
         const PAYPAL_EMAIL = 'nayyer75@yahoo.com';
