@@ -156,7 +156,16 @@
                 </form>
             </div>
 
-            <!-- STEP 2 — Payment Panel -->
+            <!-- STEP 3 — Booking Confirmed Message -->
+            <div id="bookingConfirmed" style="display:none; max-width:900px; text-align:center; padding:4rem 2rem;">
+                <div class="payment-panel-icon" style="margin:0 auto 1.5rem auto; width:72px; height:72px;">
+                    <i class="fa-solid fa-circle-check" style="font-size:2rem;"></i>
+                </div>
+                <h2 style="font-weight:300; margin-bottom:1rem;">Thank You — We're On It!</h2>
+                <p style="color:var(--text-muted); max-width:520px; margin:0 auto 0.75rem auto; line-height:1.8;">Your payment notification has been sent to our team via WhatsApp. We will review and confirm your booking shortly.</p>
+                <p style="color:var(--text-muted); max-width:520px; margin:0 auto 2rem auto; font-size:0.9rem;">You will receive a confirmation message on WhatsApp or by phone within 30 minutes.</p>
+                <a href="index.html" class="btn-primary" style="display:inline-block;">Return to Home</a>
+            </div>
             <div id="paymentPanel" class="payment-panel" style="display:none; max-width: 900px;">
 
                 <div class="payment-panel-header">
@@ -198,9 +207,14 @@
                                 <p>Pay securely online — use your PayPal balance, debit or credit card. No PayPal account required.</p>
                             </div>
                         </div>
-                        <a id="paypalPayBtn" href="#" target="_blank" class="paypal-pay-btn">
-                            <i class="fa-brands fa-paypal"></i> Pay with PayPal
-                        </a>
+                        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                            <a id="paypalPayBtn" href="#" target="_blank" class="paypal-pay-btn" style="flex:1;">
+                                <i class="fa-brands fa-paypal"></i> Pay with PayPal
+                            </a>
+                            <button type="button" id="paypalSentBtn" class="btn-whatsapp" style="flex:1;">
+                                <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Payment Sent — Notify Us
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Bank Transfer -->
@@ -218,7 +232,9 @@
                             <div class="bank-detail-row"><span>Account Number</span><strong>11700062</strong><button type="button" class="copy-btn" data-copy="11700062"><i class="fa-regular fa-copy"></i></button></div>
                             <div class="bank-detail-row"><span>Reference</span><strong id="bankRef">Your Name + Travel Date</strong><button type="button" class="copy-btn" id="copyRefBtn"><i class="fa-regular fa-copy"></i></button></div>
                         </div>
-                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.75rem;">Once transferred, please send your payment confirmation to <a href="https://wa.me/447905298692">WhatsApp</a> or <a href="mailto:info@aurexexecutivetravel.com">email</a> so we can confirm your booking promptly.</p>
+                        <button type="button" id="bankSentBtn" class="btn-whatsapp" style="margin-top:0.75rem; width:100%;">
+                            <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send Proof of Payment via WhatsApp
+                        </button>
                     </div>
 
                     <!-- Cash -->
@@ -230,10 +246,9 @@
                                 <p>Pay your driver in cash on the day of travel. Please have the exact amount ready.</p>
                             </div>
                         </div>
-                        <p style="font-size:0.8rem; color:var(--text-muted);">To confirm a cash booking, please contact us via <a href="https://wa.me/447905298692">WhatsApp</a> or call <a href="tel:+447905298692">07905 298692</a> so our team can confirm your booking is secured.</p>
-                        <a href="https://wa.me/447905298692" target="_blank" class="btn-whatsapp" style="margin-top:0.75rem; display:inline-flex; align-items:center; gap:8px; width:auto;">
-                            <i class="fa-brands fa-whatsapp"></i> Confirm Cash Booking via WhatsApp
-                        </a>
+                        <button type="button" id="cashConfirmBtn" class="btn-whatsapp" style="width:100%;">
+                            <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Confirm Cash Booking via WhatsApp
+                        </button>
                     </div>
 
                 </div>
@@ -470,6 +485,33 @@
                 }
             });
         }
+        // Payment notification buttons — WhatsApp + show confirmed panel
+        function buildPaymentWAMessage(method) {
+            const name   = document.getElementById('bookName')?.value.trim() || params.get('pickup') || '';
+            const pickup = document.getElementById('payFromTo')?.textContent || '';
+            const date   = document.getElementById('payDateTime')?.textContent || '';
+            const total  = document.getElementById('payTotal')?.textContent || '';
+            return `*💳 Payment Notification — Aurex Executive Travel*\n\n` +
+                `*Method:* ${method}\n` +
+                `*Journey:* ${pickup}\n` +
+                `*Date/Time:* ${date}\n` +
+                `*Amount:* ${total}\n\n` +
+                (name ? `*Passenger:* ${name}\n\n` : '') +
+                `Please confirm the booking. Thank you.`;
+        }
+
+        function handlePaymentNotify(method) {
+            const msg = buildPaymentWAMessage(method);
+            window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            payPanel.style.display = 'none';
+            document.getElementById('bookingConfirmed').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.getElementById('paypalSentBtn')?.addEventListener('click', () => handlePaymentNotify('PayPal'));
+        document.getElementById('bankSentBtn')?.addEventListener('click',   () => handlePaymentNotify('Bank Transfer'));
+        document.getElementById('cashConfirmBtn')?.addEventListener('click', () => handlePaymentNotify('Cash'));
+
         // Copy bank details
         document.querySelectorAll('.copy-btn').forEach(btn => {
             btn.addEventListener('click', () => {
