@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const WA_NUMBER = '447905298692';
+    const WA_NUMBER     = '447905298692';
     const COMPANY_EMAIL = 'nayyer.zaman@gmail.com';
+    const GEO_KEY       = 'YOUR_GEOAPIFY_API_KEY'; // <-- replace with your free key from geoapify.com
 
     // --- Navbar Scroll Effect ---
     const navbar = document.querySelector('.navbar');
@@ -30,50 +31,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Desktop Dropdown (Drive With Us) ---
+    // --- Desktop Dropdown ---
     const dropdowns = document.querySelectorAll('.nav-dropdown');
     dropdowns.forEach(dropdown => {
         const toggle = dropdown.querySelector('.nav-dropdown-toggle');
         const menu   = dropdown.querySelector('.nav-dropdown-menu');
         let closeTimer = null;
 
-        function openMenu() {
-            clearTimeout(closeTimer);
-            menu.classList.add('open');
-            if (toggle.querySelector('i')) toggle.querySelector('i').style.transform = 'rotate(180deg)';
-        }
-
-        function closeMenu() {
-            closeTimer = setTimeout(() => {
-                menu.classList.remove('open');
-                if (toggle.querySelector('i')) toggle.querySelector('i').style.transform = '';
-            }, 150); // 150ms grace period — enough to move cursor from toggle into menu
-        }
+        function openMenu()  { clearTimeout(closeTimer); menu.classList.add('open'); if (toggle.querySelector('i')) toggle.querySelector('i').style.transform = 'rotate(180deg)'; }
+        function closeMenu() { closeTimer = setTimeout(() => { menu.classList.remove('open'); if (toggle.querySelector('i')) toggle.querySelector('i').style.transform = ''; }, 150); }
 
         if (toggle && menu) {
-            // Desktop: hover on the whole dropdown li (includes the bridge ::after)
             dropdown.addEventListener('mouseenter', openMenu);
             dropdown.addEventListener('mouseleave', closeMenu);
-            // Keep open when cursor is inside the menu itself
             menu.addEventListener('mouseenter', () => clearTimeout(closeTimer));
             menu.addEventListener('mouseleave', closeMenu);
-
-            // Mobile: click toggle
             toggle.addEventListener('click', (e) => {
                 e.preventDefault();
                 const isOpen = menu.classList.contains('open');
-                // Close any other open dropdowns first
                 document.querySelectorAll('.nav-dropdown-menu.open').forEach(m => m.classList.remove('open'));
                 document.querySelectorAll('.nav-dropdown-toggle i').forEach(i => i.style.transform = '');
-                if (!isOpen) {
-                    menu.classList.add('open');
-                    if (toggle.querySelector('i')) toggle.querySelector('i').style.transform = 'rotate(180deg)';
-                }
+                if (!isOpen) { menu.classList.add('open'); if (toggle.querySelector('i')) toggle.querySelector('i').style.transform = 'rotate(180deg)'; }
             });
         }
     });
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.nav-dropdown')) {
             document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
@@ -85,281 +67,141 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
     }
 
+    // ── Pricing ────────────────────────────────────────────────────────────────
     const PRICE_PER_MILE = 2;
-    const AIRPORT_COORDS = {
-        heathrow: { lat: 51.4700, lon: -0.4543 },
-        gatwick: { lat: 51.1537, lon: -0.1821 },
-        stansted: { lat: 51.8860, lon: 0.2389 },
-        luton: { lat: 51.8747, lon: -0.3683 },
-        bristol: { lat: 51.3827, lon: -2.7191 },
-        cardiff: { lat: 51.3967, lon: -3.3433 },
-        birmingham: { lat: 52.4539, lon: -1.7480 },
-        manchester: { lat: 53.3650, lon: -2.2722 },
-        'london city': { lat: 51.5053, lon: 0.0553 }
-    };
 
     const FIXED_ROUTE_PRICES = {
-        'cardiff->heathrow': { saloon: 230, vclass: 250 },
-        'cardiff->bristol': { saloon: 135, vclass: 155 },
-        'cardiff->cardiff airport': { saloon: 60, vclass: 80 },
-        'cardiff->gatwick': { saloon: 320, vclass: 340 }
+        'cardiff->heathrow':        { saloon: 230, vclass: 250 },
+        'cardiff->bristol':         { saloon: 135, vclass: 155 },
+        'cardiff->cardiff airport': { saloon: 60,  vclass: 80  },
+        'cardiff->gatwick':         { saloon: 320, vclass: 340 }
     };
 
-    function normalizeRouteLocation(text) {
-        if (!text || typeof text !== 'string') return null;
-        const value = text.trim().toLowerCase();
-        if (value.includes('cardiff airport') || value.includes('cardiff airpor') || value.includes('cwl')) return 'cardiff airport';
-        if (value.includes('cardiff')) return 'cardiff';
-        if (value.includes('heathrow')) return 'heathrow';
-        if (value.includes('gatwick')) return 'gatwick';
-        if (value.includes('stansted')) return 'stansted';
-        if (value.includes('luton')) return 'luton';
-        if (value.includes('bristol')) return 'bristol';
-        if (value.includes('birmingham')) return 'birmingham';
-        if (value.includes('manchester')) return 'manchester';
+    const AIRPORT_COORDS = {
+        'heathrow':      { lat: 51.4700, lon: -0.4543 },
+        'gatwick':       { lat: 51.1537, lon: -0.1821 },
+        'stansted':      { lat: 51.8860, lon:  0.2389 },
+        'luton':         { lat: 51.8747, lon: -0.3683 },
+        'bristol':       { lat: 51.3827, lon: -2.7191 },
+        'cardiff airport': { lat: 51.3967, lon: -3.3433 },
+        'birmingham':    { lat: 52.4539, lon: -1.7480 },
+        'manchester':    { lat: 53.3650, lon: -2.2722 },
+        'london city':   { lat: 51.5053, lon:  0.0553 }
+    };
+
+    function normalizeLocation(text) {
+        if (!text) return null;
+        const v = text.trim().toLowerCase();
+        if (v.includes('cardiff airport') || v.includes('cwl')) return 'cardiff airport';
+        if (v.includes('heathrow'))   return 'heathrow';
+        if (v.includes('gatwick'))    return 'gatwick';
+        if (v.includes('stansted'))   return 'stansted';
+        if (v.includes('luton'))      return 'luton';
+        if (v.includes('bristol airport') || v.includes('bristol intl')) return 'bristol';
+        if (v.includes('birmingham airport')) return 'birmingham';
+        if (v.includes('manchester airport')) return 'manchester';
+        if (v.includes('london city airport')) return 'london city';
+        if (v.includes('cardiff'))    return 'cardiff';
         return null;
     }
 
-    function getVehicleTypeKey(vehicleName) {
-        if (!vehicleName || typeof vehicleName !== 'string') return null;
-        const normalized = vehicleName.toLowerCase();
-        if (normalized.includes('v-class') || normalized.includes('v class')) return 'vclass';
-        return 'saloon';
-    }
-
-    function getFixedRoutePrice(pickup, dropoff, vehicleType) {
-        const from = normalizeRouteLocation(pickup);
-        const to = normalizeRouteLocation(dropoff);
+    function getFixedPrice(pickup, dropoff, vehicleType) {
+        const from = normalizeLocation(pickup);
+        const to   = normalizeLocation(dropoff);
         if (!from || !to || from === to) return null;
-
-        let routeKey = `${from}->${to}`;
-        let pricing = FIXED_ROUTE_PRICES[routeKey];
-        if (!pricing) {
-            routeKey = `${to}->${from}`;
-            pricing = FIXED_ROUTE_PRICES[routeKey];
-        }
+        let key = `${from}->${to}`;
+        let pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[`${to}->${from}`];
         if (!pricing) return null;
-
-        if (vehicleType) {
-            const price = pricing[vehicleType];
-            if (price !== undefined) return { price, routeKey };
-        }
-
-        const prices = Object.values(pricing).filter(p => typeof p === 'number');
-        if (!prices.length) return null;
-        return { price: Math.min(...prices), routeKey };
+        const type = vehicleType && vehicleType.toLowerCase().includes('v-class') ? 'vclass' : 'saloon';
+        return pricing[type] !== undefined ? pricing[type] : Math.min(...Object.values(pricing));
     }
 
-    async function calculateRouteDistance(pickup, dropoff) {
-        const [from, to] = await Promise.all([
-            geocodeLocation(pickup),
-            geocodeLocation(dropoff)
-        ]);
-        const routeUrl = `https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=false`;
-        const response = await fetch(routeUrl);
-        const data = await response.json();
-        if (!data.routes || !data.routes.length) throw new Error('Route not found');
+    // ── Geoapify ───────────────────────────────────────────────────────────────
 
-        const miles = Math.ceil(data.routes[0].distance / 1609.344);
-        return { miles };
-    }
-
-    async function calculateRouteEstimate(pickup, dropoff, vehicleType) {
-        const fixedRoute = getFixedRoutePrice(pickup, dropoff, vehicleType);
-        const distanceResult = await calculateRouteDistance(pickup, dropoff);
-        const miles = distanceResult.miles;
-
-        if (fixedRoute) {
-            return {
-                miles,
-                price: fixedRoute.price,
-                fixed: true,
-                routeKey: fixedRoute.routeKey
-            };
-        }
-
-        return {
-            miles,
-            price: miles * PRICE_PER_MILE,
-            fixed: false
-        };
-    }
-
-    // --- UK Postcode regex ---
-    const UK_POSTCODE_REGEX = /^([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}|[A-Z]{1,2}\d{1,2}\s*\d[A-Z]{2})$/i;
-
-    function isUKPostcode(str) {
-        return UK_POSTCODE_REGEX.test(str.trim());
-    }
-
-    // Lookup a UK postcode → { lat, lon, address } via postcodes.io
-    async function lookupPostcode(postcode) {
-        const clean = postcode.trim().toUpperCase().replace(/\s+/g, '');
-        const url = `https://api.postcodes.io/postcodes/${encodeURIComponent(clean)}`;
-        const res = await fetch(url);
+    // Autocomplete suggestions — UK only, house-number level
+    async function fetchGeoapifySuggestions(query, signal) {
+        const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:gb&format=json&limit=6&apiKey=${GEO_KEY}`;
+        const res  = await fetch(url, { signal });
         const data = await res.json();
-        if (data.status !== 200) throw new Error('Invalid UK postcode');
-        const r = data.result;
-        return {
-            lat: r.latitude,
-            lon: r.longitude,
-            address: `${r.parish !== r.admin_district ? r.parish + ', ' : ''}${r.admin_district}, ${r.admin_county || r.region}, UK`
-        };
+        return (data.results || []).map(r => ({
+            label:  r.formatted,
+            lat:    r.lat,
+            lon:    r.lon
+        }));
     }
 
-    function knownAirport(location) {
-        const value = location.toLowerCase();
-        return Object.keys(AIRPORT_COORDS).find(key => value.includes(key));
-    }
+    // Geocode a free-text address → { lat, lon }
+    async function geocodeAddress(text) {
+        const known = normalizeLocation(text);
+        if (known && AIRPORT_COORDS[known]) return AIRPORT_COORDS[known];
 
-    // Reverse geocode lat/lon → Address string via Nominatim
-    async function reverseGeocode(lat, lon) {
-        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`;
-        const res = await fetch(url);
+        const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(text)}&filter=countrycode:gb&limit=1&apiKey=${GEO_KEY}`;
+        const res  = await fetch(url);
         const data = await res.json();
-        if (!data || !data.address) throw new Error('Could not get address');
-        const addr = data.address;
-        
-        // Build a readable address
-        const parts = [
-            addr.road || addr.pedestrian || addr.path,
-            addr.suburb || addr.neighbourhood || addr.village || addr.town || addr.city_district,
-            addr.city || addr.town || addr.county || addr.state,
-            addr.postcode,
-            addr.country
-        ].filter(Boolean);
-        // De-duplicate parts (sometimes city and county are the same)
-        return [...new Set(parts)].join(', ');
-    }
-
-    async function geocodeLocation(location) {
-        const trimmed = location.trim();
-
-        // 1. Check known airports first
-        const airportKey = knownAirport(trimmed);
-        if (airportKey) return AIRPORT_COORDS[airportKey];
-
-        // 2. If it looks like a UK postcode, use postcodes.io
-        if (isUKPostcode(trimmed)) {
-            const result = await lookupPostcode(trimmed);
-            return { lat: result.lat, lon: result.lon };
-        }
-
-        // 3. Otherwise use Nominatim
-        const query = trimmed;
-        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
-        const response = await fetch(url);
-        const results = await response.json();
-        if (!results.length) throw new Error('not_found');
-        const lat = parseFloat(results[0].lat);
-        const lon = parseFloat(results[0].lon);
+        if (!data.features || !data.features.length) throw new Error('Address not found: ' + text);
+        const [lon, lat] = data.features[0].geometry.coordinates;
         return { lat, lon };
     }
 
-    function buildBookingUrl(pickup, dropoff, estimate) {
-        const params = new URLSearchParams({
-            pickup,
-            dropoff,
-            distance: estimate.miles,
-            amount: estimate.price.toFixed(2)
-        });
-        return `book.html?${params.toString()}`;
+    // Reverse geocode lat/lon → full formatted address string
+    async function reverseGeocode(lat, lon) {
+        const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${GEO_KEY}`;
+        const res  = await fetch(url);
+        const data = await res.json();
+        if (!data.features || !data.features.length) throw new Error('Reverse geocode failed');
+        return data.features[0].properties.formatted;
     }
 
+    // ── Route distance via OSRM ────────────────────────────────────────────────
+    async function getDrivingMiles(from, to) {
+        const url = `https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=false`;
+        const res  = await fetch(url);
+        const data = await res.json();
+        if (!data.routes || !data.routes.length) throw new Error('Route not found');
+        return Math.ceil(data.routes[0].distance / 1609.344);
+    }
+
+    // ── Main fare estimator (called from book.html inline script too) ──────────
+    async function calculateRouteEstimate(pickup, dropoff, vehicleType) {
+        const [fromCoords, toCoords] = await Promise.all([
+            geocodeAddress(pickup),
+            geocodeAddress(dropoff)
+        ]);
+        const miles = await getDrivingMiles(fromCoords, toCoords);
+        const fixed = getFixedPrice(pickup, dropoff, vehicleType);
+        return {
+            miles,
+            price: fixed !== null ? fixed : miles * PRICE_PER_MILE,
+            fixed: fixed !== null
+        };
+    }
     window.calculateRouteEstimate = calculateRouteEstimate;
 
-    // --- Helper: show/clear location error ---
-    function setLocationError(errorEl, msg) {
-        if (!errorEl) return;
-        errorEl.textContent = msg || '';
-        errorEl.style.display = msg ? 'block' : 'none';
+    // ── UI helpers ─────────────────────────────────────────────────────────────
+    function setError(el, msg) {
+        if (!el) return;
+        el.textContent    = msg || '';
+        el.style.display  = msg ? 'block' : 'none';
     }
 
-    // --- "Use Current Location" button handler ---
-    function attachLocationBtn(btnId, inputEl, errorEl) {
-        const btn = document.getElementById(btnId);
-        if (!btn || !inputEl) return;
-
-        btn.addEventListener('click', () => {
-            if (!navigator.geolocation) {
-                setLocationError(errorEl, 'Geolocation is not supported by your browser.');
-                return;
-            }
-
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
-            btn.disabled = true;
-
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    try {
-                        const { latitude, longitude } = position.coords;
-                        const address = await reverseGeocode(latitude, longitude);
-                        inputEl.value = address;
-                        setLocationError(errorEl, '');
-                    } catch (err) {
-                        setLocationError(errorEl, '⚠ Could not determine your address. Please enter it manually.');
-                    } finally {
-                        btn.innerHTML = originalHtml;
-                        btn.disabled = false;
-                    }
-                },
-                (err) => {
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                    if (err.code === err.PERMISSION_DENIED) {
-                        setLocationError(errorEl, '⚠ Location access denied. Please allow location access in your browser and try again.');
-                    } else {
-                        setLocationError(errorEl, '⚠ Unable to detect your location. Please enter your address manually.');
-                    }
-                },
-                { timeout: 10000, enableHighAccuracy: true }
-            );
-        });
+    function buildBookingUrl(pickup, dropoff, estimate) {
+        return `book.html?${new URLSearchParams({ pickup, dropoff, distance: estimate.miles, amount: estimate.price.toFixed(2) })}`;
     }
 
-    // --- Postcode detection on input blur ---
-    function attachPostcodeAutofill(inputEl, errorEl) {
-        if (!inputEl) return;
-        inputEl.addEventListener('blur', async () => {
-            const val = inputEl.value.trim();
-            if (!val || !isUKPostcode(val)) return;
-            try {
-                const result = await lookupPostcode(val);
-                // Only update if the user hasn't changed the field
-                if (inputEl.value.trim().toUpperCase().replace(/\s+/g, '') === val.toUpperCase().replace(/\s+/g, '')) {
-                    inputEl.value = result.address;
-                    setLocationError(errorEl, '');
-                }
-            } catch (e) {
-                setLocationError(errorEl, '⚠ Invalid UK postcode. Please check and try again.');
-            }
-        });
-    }
-
-    // --- Address Autocomplete (real-time suggestions) ---
+    // ── Autocomplete dropdown ──────────────────────────────────────────────────
     function attachAutocomplete(inputEl) {
         if (!inputEl) return;
 
-        // Find the parent location-input-wrap (which has the btn and input)
-        const locationWrap = inputEl.closest('.location-input-wrap');
-        // Use locationWrap as the positioning parent for the dropdown, or fall back to wrapping
-        let wrap;
-        if (locationWrap) {
-            locationWrap.style.position = 'relative';
-            wrap = locationWrap;
-        } else {
-            wrap = inputEl.closest('.autocomplete-wrap');
-            if (!wrap) {
-                wrap = document.createElement('div');
-                wrap.className = 'autocomplete-wrap';
-                wrap.style.position = 'relative';
-                inputEl.parentNode.insertBefore(wrap, inputEl);
-                wrap.appendChild(inputEl);
-            }
-        }
+        const wrap = inputEl.closest('.location-input-wrap') || inputEl.closest('.autocomplete-wrap') || (() => {
+            const w = document.createElement('div');
+            w.className = 'autocomplete-wrap';
+            w.style.position = 'relative';
+            inputEl.parentNode.insertBefore(w, inputEl);
+            w.appendChild(inputEl);
+            return w;
+        })();
+        wrap.style.position = 'relative';
 
-        // Create or reference the dropdown element
         let dropdown = wrap.querySelector('.autocomplete-dropdown');
         if (!dropdown) {
             dropdown = document.createElement('div');
@@ -367,298 +209,198 @@ document.addEventListener('DOMContentLoaded', () => {
             wrap.appendChild(dropdown);
         }
 
-        let debounceTimer = null;
-        let selectedIndex = -1;
-        let results = [];
-        let abortController = null;
+        let debounceTimer  = null;
+        let abortCtrl      = null;
+        let results        = [];
+        let selectedIndex  = -1;
 
-        function hideDropdown() {
-            dropdown.classList.remove('open');
-            selectedIndex = -1;
-            results = [];
-        }
+        function hide() { dropdown.classList.remove('open'); selectedIndex = -1; results = []; }
 
-        function renderDropdown() {
+        function render() {
             if (!results.length) {
                 dropdown.innerHTML = '<div class="autocomplete-no-results">No suggestions found</div>';
-                dropdown.classList.add('open');
-                return;
-            }
-
-            let html = '';
-            results.forEach((item, idx) => {
-                const activeClass = idx === selectedIndex ? ' active' : '';
-                const displayName = item.display_name || item.name || '';
-                // Extract a short sub-text (first comma part or region)
-                const parts = displayName.split(',');
-                const main = parts[0] || displayName;
-                const sub = parts.slice(1, 4).join(',').trim();
-                html += `<div class="autocomplete-item${activeClass}" data-index="${idx}">
-                    ${main}
-                    ${sub ? `<span class="autocomplete-sub">${sub}</span>` : ''}
-                </div>`;
-            });
-            dropdown.innerHTML = html;
-            dropdown.classList.add('open');
-
-            // Bind click events to items
-            dropdown.querySelectorAll('.autocomplete-item').forEach((el) => {
-                el.addEventListener('click', function() {
-                    const idx = parseInt(this.dataset.index, 10);
-                    if (results[idx]) {
-                        inputEl.value = results[idx].display_name;
-                        // Trigger change event so fare calculation picks it up
-                        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-                        hideDropdown();
-                    }
+            } else {
+                dropdown.innerHTML = results.map((r, i) => {
+                    const parts = r.label.split(',');
+                    const main  = parts[0];
+                    const sub   = parts.slice(1, 4).join(',').trim();
+                    return `<div class="autocomplete-item${i === selectedIndex ? ' active' : ''}" data-index="${i}">
+                        ${main}${sub ? `<span class="autocomplete-sub">${sub}</span>` : ''}
+                    </div>`;
+                }).join('');
+                dropdown.querySelectorAll('.autocomplete-item').forEach(el => {
+                    el.addEventListener('mousedown', e => {
+                        e.preventDefault();
+                        const r = results[+el.dataset.index];
+                        if (r) { inputEl.value = r.label; inputEl.dispatchEvent(new Event('change', { bubbles: true })); hide(); }
+                    });
                 });
-            });
+            }
+            dropdown.classList.add('open');
         }
 
-        async function fetchSuggestions(query) {
-            // Cancel any previous request
-            if (abortController) abortController.abort();
-            abortController = new AbortController();
-
-            if (query.length < 3) {
-                hideDropdown();
-                return;
-            }
-
+        async function search(q) {
+            if (abortCtrl) abortCtrl.abort();
+            abortCtrl = new AbortController();
             dropdown.innerHTML = '<div class="autocomplete-loading"><i class="fa-solid fa-spinner fa-spin"></i> Searching…</div>';
             dropdown.classList.add('open');
-
             try {
-                const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(query)}&addressdetails=1&countrycodes=gb`;
-                const response = await fetch(url, { signal: abortController.signal });
-                const data = await response.json();
-                results = data || [];
+                results = await fetchGeoapifySuggestions(q, abortCtrl.signal);
                 selectedIndex = -1;
-                renderDropdown();
-            } catch (err) {
-                if (err.name === 'AbortError') return;
-                // Silently fail — hide dropdown
-                hideDropdown();
+                render();
+            } catch (e) {
+                if (e.name !== 'AbortError') hide();
             }
         }
 
-        // Input listener with debounce
-        inputEl.addEventListener('input', function() {
+        inputEl.addEventListener('input', function () {
             clearTimeout(debounceTimer);
-            const val = this.value.trim();
-            if (val.length < 3) {
-                hideDropdown();
-                return;
-            }
-            debounceTimer = setTimeout(() => {
-                fetchSuggestions(val);
-            }, 300);
+            const v = this.value.trim();
+            if (v.length < 3) { hide(); return; }
+            debounceTimer = setTimeout(() => search(v), 300);
         });
 
-        // Keyboard navigation
-        inputEl.addEventListener('keydown', function(e) {
+        inputEl.addEventListener('keydown', function (e) {
             if (!dropdown.classList.contains('open') || !results.length) return;
-
-            if (e.key === 'ArrowDown') {
+            if (e.key === 'ArrowDown')  { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, results.length - 1); render(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, -1); render(); }
+            else if (e.key === 'Enter' && selectedIndex >= 0) {
                 e.preventDefault();
-                selectedIndex = Math.min(selectedIndex + 1, results.length - 1);
-                renderDropdown();
-                const activeItem = dropdown.querySelector('.autocomplete-item.active');
-                if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                selectedIndex = Math.max(selectedIndex - 1, -1);
-                renderDropdown();
-                const activeItem = dropdown.querySelector('.autocomplete-item.active');
-                if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
-            } else if (e.key === 'Enter' && selectedIndex >= 0 && results[selectedIndex]) {
-                e.preventDefault();
-                inputEl.value = results[selectedIndex].display_name;
+                inputEl.value = results[selectedIndex].label;
                 inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-                hideDropdown();
-            } else if (e.key === 'Escape') {
-                hideDropdown();
-            }
+                hide();
+            } else if (e.key === 'Escape') hide();
         });
 
-        // Hide on blur (with delay to allow click on dropdown)
-        inputEl.addEventListener('blur', function() {
-            setTimeout(() => {
-                if (!wrap.contains(document.activeElement)) {
-                    hideDropdown();
-                }
-            }, 200);
-        });
+        inputEl.addEventListener('blur', () => setTimeout(() => { if (!wrap.contains(document.activeElement)) hide(); }, 200));
+        document.addEventListener('click', e => { if (!wrap.contains(e.target)) hide(); });
+    }
 
-        // Hide if clicking outside
-        document.addEventListener('click', function(e) {
-            if (!wrap.contains(e.target)) {
-                hideDropdown();
-            }
+    // ── "Use Current Location" button ─────────────────────────────────────────
+    function attachLocationBtn(btnId, inputEl, errorEl) {
+        const btn = document.getElementById(btnId);
+        if (!btn || !inputEl) return;
+        btn.addEventListener('click', () => {
+            if (!navigator.geolocation) { setError(errorEl, 'Geolocation is not supported by your browser.'); return; }
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
+            btn.disabled  = true;
+            navigator.geolocation.getCurrentPosition(
+                async ({ coords: { latitude, longitude } }) => {
+                    try {
+                        inputEl.value = await reverseGeocode(latitude, longitude);
+                        setError(errorEl, '');
+                        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch { setError(errorEl, '⚠ Could not get your address. Please enter it manually.'); }
+                    finally   { btn.innerHTML = orig; btn.disabled = false; }
+                },
+                err => {
+                    btn.innerHTML = orig; btn.disabled = false;
+                    setError(errorEl, err.code === err.PERMISSION_DENIED
+                        ? '⚠ Location access denied. Please allow location access and try again.'
+                        : '⚠ Unable to detect your location. Please enter your address manually.');
+                },
+                { timeout: 10000, enableHighAccuracy: true }
+            );
         });
     }
 
-    // --- Wire up location buttons for each page ---
-    // Quote page — Instant Calculator
-    const iFromInput  = document.getElementById('iFrom');
-    const iToInput    = document.getElementById('iTo');
-    const iFromError  = document.getElementById('iFromError');
-    const iToError    = document.getElementById('iToError');
-    attachLocationBtn('iFromLocBtn', iFromInput, iFromError);
-    attachPostcodeAutofill(iFromInput, iFromError);
-    attachPostcodeAutofill(iToInput, iToError);
-    attachAutocomplete(iFromInput);
-    attachAutocomplete(iToInput);
-
-    // Quote page — Custom Quote
-    const cFromInput = document.getElementById('cFrom');
-    const cToInput   = document.getElementById('cTo');
-    const cFromError = document.getElementById('cFromError');
-    const cToError   = document.getElementById('cToError');
-    attachPostcodeAutofill(cFromInput, cFromError);
-    attachPostcodeAutofill(cToInput, cToError);
-    attachAutocomplete(cFromInput);
-    attachAutocomplete(cToInput);
-
+    // ── Wire up all address fields ─────────────────────────────────────────────
     // Homepage quote
-    const quoteFromInput = document.getElementById('quoteFrom');
-    const quoteToInput   = document.getElementById('quoteTo');
-    const quoteFromError = document.getElementById('quoteFromError');
-    const quoteToError   = document.getElementById('quoteToError');
-    attachLocationBtn('quoteFromLocBtn', quoteFromInput, quoteFromError);
-    attachPostcodeAutofill(quoteFromInput, quoteFromError);
-    attachPostcodeAutofill(quoteToInput, quoteToError);
-    attachAutocomplete(quoteFromInput);
-    attachAutocomplete(quoteToInput);
+    attachLocationBtn('quoteFromLocBtn', document.getElementById('quoteFrom'), document.getElementById('quoteFromError'));
+    attachAutocomplete(document.getElementById('quoteFrom'));
+    attachAutocomplete(document.getElementById('quoteTo'));
+
+    // Quote page — instant calculator
+    attachLocationBtn('iFromLocBtn', document.getElementById('iFrom'), document.getElementById('iFromError'));
+    attachAutocomplete(document.getElementById('iFrom'));
+    attachAutocomplete(document.getElementById('iTo'));
+
+    // Quote page — custom quote
+    attachAutocomplete(document.getElementById('cFrom'));
+    attachAutocomplete(document.getElementById('cTo'));
 
     // Book page
-    const bookPickupInput  = document.getElementById('bookPickup');
-    const bookDropoffInput = document.getElementById('bookDropoff');
-    const bookPickupError  = document.getElementById('bookPickupError');
-    const bookDropoffError = document.getElementById('bookDropoffError');
-    attachLocationBtn('bookPickupLocBtn', bookPickupInput, bookPickupError);
-    attachPostcodeAutofill(bookPickupInput, bookPickupError);
-    attachPostcodeAutofill(bookDropoffInput, bookDropoffError);
-    attachAutocomplete(bookPickupInput);
-    attachAutocomplete(bookDropoffInput);
+    attachLocationBtn('bookPickupLocBtn', document.getElementById('bookPickup'), document.getElementById('bookPickupError'));
+    attachAutocomplete(document.getElementById('bookPickup'));
+    attachAutocomplete(document.getElementById('bookDropoff'));
 
-    // --- Homepage Instant Quote Calculator ---
+    // ── Homepage Quote form ────────────────────────────────────────────────────
     const quoteForm = document.getElementById('quoteForm');
     if (quoteForm) {
-        quoteForm.addEventListener('submit', async (e) => {
+        quoteForm.addEventListener('submit', async e => {
             e.preventDefault();
-            const pickup = document.getElementById('quoteFrom').value.trim();
+            const pickup  = document.getElementById('quoteFrom').value.trim();
             const dropoff = document.getElementById('quoteTo').value.trim();
-            const btn = quoteForm.querySelector('button[type="submit"]');
+            const btn     = quoteForm.querySelector('button[type="submit"]');
             if (!pickup || !dropoff) return;
-
             try {
-                if (btn) {
-                    btn.textContent = 'Calculating...';
-                    btn.disabled = true;
-                }
-                const estimate = await calculateRouteEstimate(pickup, dropoff);
-                document.getElementById('estimatedDistance').textContent = estimate.miles;
-                document.getElementById('estimatedPrice').textContent = `£${estimate.price.toFixed(2)}`;
+                if (btn) { btn.textContent = 'Calculating...'; btn.disabled = true; }
+                const est = await calculateRouteEstimate(pickup, dropoff);
+                document.getElementById('estimatedPrice').textContent = `£${est.price.toFixed(2)}`;
                 const bookNow = document.getElementById('quoteBookNow');
-                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, estimate);
+                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, est);
                 const result = document.getElementById('quoteResult');
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            } catch (error) {
-                alert('Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.');
-            } finally {
-                if (btn) {
-                    btn.textContent = 'Calculate Quote';
-                    btn.disabled = false;
-                }
-            }
+            } catch { alert('Sorry, we could not calculate that route. Please check your addresses and try again.'); }
+            finally   { if (btn) { btn.textContent = 'Calculate Quote'; btn.disabled = false; } }
         });
-
     }
 
-    // --- Quote Page: Tab Switching ---
-    const tabs = document.querySelectorAll('.quote-tab');
-    const tabContents = document.querySelectorAll('.quote-tab-content');
-    tabs.forEach(tab => {
+    // ── Quote page tabs ────────────────────────────────────────────────────────
+    document.querySelectorAll('.quote-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.quote-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.quote-tab-content').forEach(c => c.classList.remove('active'));
             tab.classList.add('active');
             const target = document.getElementById('tab-' + tab.dataset.tab);
             if (target) target.classList.add('active');
         });
     });
 
-    // --- Quote Page: Instant Calculator ---
+    // ── Quote page: instant calculator ────────────────────────────────────────
     const instantForm = document.getElementById('instantQuoteForm');
     if (instantForm) {
-        instantForm.addEventListener('submit', async (e) => {
+        instantForm.addEventListener('submit', async e => {
             e.preventDefault();
-            const pickup = document.getElementById('iFrom').value.trim();
+            const pickup  = document.getElementById('iFrom').value.trim();
             const dropoff = document.getElementById('iTo').value.trim();
-            const btn = instantForm.querySelector('button[type="submit"]');
+            const btn     = instantForm.querySelector('button[type="submit"]');
             if (!pickup || !dropoff) return;
-
             try {
-                if (btn) {
-                    btn.textContent = 'Calculating...';
-                    btn.disabled = true;
-                }
-                const estimate = await calculateRouteEstimate(pickup, dropoff);
-                
-                // Check trip type
-                const iTripReturn = document.getElementById('iTripReturn');
-                const isReturn = iTripReturn && iTripReturn.checked;
-                const oneWayPrice = estimate.price;
-                const totalPrice = isReturn ? Math.round(oneWayPrice * 1.7) : oneWayPrice;
+                if (btn) { btn.textContent = 'Calculating...'; btn.disabled = true; }
+                const est        = await calculateRouteEstimate(pickup, dropoff);
+                const isReturn   = document.getElementById('iTripReturn')?.checked;
+                const total      = isReturn ? Math.round(est.price * 1.7 * 100) / 100 : est.price;
 
-                document.getElementById('calcPrice').textContent = `£${totalPrice.toFixed(2)}`;
-                
-                const instantPriceHeading = document.getElementById('instantPriceHeading');
-                if (instantPriceHeading) {
-                    instantPriceHeading.textContent = isReturn ? `Estimated Return Price: £${totalPrice.toFixed(2)}` : `Estimated Price: £${totalPrice.toFixed(2)}`;
-                }
-                
-                const instantReturnBreakdown = document.getElementById('instantReturnBreakdown');
-                if (instantReturnBreakdown) {
+                document.getElementById('calcPrice').textContent = `£${total.toFixed(2)}`;
+
+                const heading = document.getElementById('instantPriceHeading');
+                if (heading) heading.textContent = isReturn ? `Estimated Return Price: £${total.toFixed(2)}` : `Estimated Price: £${total.toFixed(2)}`;
+
+                const breakdown = document.getElementById('instantReturnBreakdown');
+                if (breakdown) {
                     if (isReturn) {
-                        instantReturnBreakdown.style.display = 'block';
-                        instantReturnBreakdown.innerHTML = `One way: £${oneWayPrice.toFixed(2)} &bull; Return leg (70%): £${(oneWayPrice * 0.7).toFixed(2)}`;
-                    } else {
-                        instantReturnBreakdown.style.display = 'none';
-                    }
+                        breakdown.style.display = 'block';
+                        breakdown.innerHTML = `One way: £${est.price.toFixed(2)} &bull; Return leg (70%): £${(est.price * 0.7).toFixed(2)}`;
+                    } else breakdown.style.display = 'none';
                 }
 
                 const bookNow = document.getElementById('instantBookNow');
-                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: estimate.miles, price: totalPrice });
+                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: est.miles, price: total });
                 const result = document.getElementById('instantResult');
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            } catch (error) {
-                alert('Sorry, we could not calculate that route. Please check the pickup and drop-off locations and try again.');
-            } finally {
-                if (btn) {
-                    btn.textContent = 'Calculate Estimate';
-                    btn.disabled = false;
-                }
-            }
+            } catch { alert('Sorry, we could not calculate that route. Please check your addresses and try again.'); }
+            finally   { if (btn) { btn.textContent = 'Calculate Estimate'; btn.disabled = false; } }
         });
     }
 
-    // --- Quote Page: Custom Quote Form → We use FormSubmit (email) + redirect to success ---
-
-    // --- Book Online Form: We use FormSubmit (email) + localStorage to show PayPal panel ---
-
-    // --- Corporate Enquiry Form → Let's set it up to use FormSubmit + redirect to success ---
-
-    // --- Driver Application: WhatsApp summary button ---
+    // ── Driver Application: WhatsApp summary ──────────────────────────────────
     const driverWABtn = document.getElementById('submitDriverWhatsApp');
     if (driverWABtn) {
         driverWABtn.addEventListener('click', () => {
-            const f = document.getElementById('driverApplicationForm');
-            if (!f) return;
-
             const firstName = document.getElementById('drvFirstName')?.value || '';
             const lastName  = document.getElementById('drvLastName')?.value  || '';
             const mobile    = document.getElementById('drvMobile')?.value    || '';
@@ -667,94 +409,59 @@ document.addEventListener('DOMContentLoaded', () => {
             const dbs       = document.getElementById('drvDBSStatus')?.value || '';
             const exp       = document.getElementById('drvExperience')?.value || '';
             const notes     = document.getElementById('drvNotes')?.value     || '';
-
-            if (!firstName || !mobile) {
-                alert('Please fill in at least your name and mobile number before sending via WhatsApp.');
-                return;
-            }
-
-            const message =
+            if (!firstName || !mobile) { alert('Please fill in at least your name and mobile number before sending via WhatsApp.'); return; }
+            sendToWhatsApp(
                 `*🚗 Driver Application – Aurex Executive Travel*\n\n` +
-                `*Name:* ${firstName} ${lastName}\n` +
-                `*Mobile:* ${mobile}\n` +
-                `*Email:* ${email}\n\n` +
-                `*Private Hire Licence:* ${phdl}\n` +
-                `*DBS Status:* ${dbs}\n` +
-                `*Experience:* ${exp}\n` +
+                `*Name:* ${firstName} ${lastName}\n*Mobile:* ${mobile}\n*Email:* ${email}\n\n` +
+                `*Private Hire Licence:* ${phdl}\n*DBS Status:* ${dbs}\n*Experience:* ${exp}\n` +
                 (notes ? `*Notes:* ${notes}\n` : '') +
-                `\n📎 Full application with documents sent to ${COMPANY_EMAIL}.\nPlease review and confirm next steps.`;
-
-            sendToWhatsApp(message);
+                `\n📎 Full application with documents sent to ${COMPANY_EMAIL}.`
+            );
         });
     }
 
-    // --- Vehicle Registration: WhatsApp summary button ---
+    // ── Vehicle Registration: WhatsApp summary ────────────────────────────────
     const vehicleWABtn = document.getElementById('submitVehicleWhatsApp');
     if (vehicleWABtn) {
         vehicleWABtn.addEventListener('click', () => {
-            const reg     = document.getElementById('vehReg')?.value     || '';
-            const make    = document.getElementById('vehMake')?.value    || '';
-            const model   = document.getElementById('vehModel')?.value   || '';
-            const year    = document.getElementById('vehYear')?.value    || '';
-            const colour  = document.getElementById('vehColour')?.value  || '';
-            const name    = document.getElementById('vehDriverName')?.value   || '';
-            const mobile  = document.getElementById('vehDriverMobile')?.value || '';
-            const email   = document.getElementById('vehDriverEmail')?.value  || '';
-            const phvl    = document.getElementById('vehPHVL')?.value    || '';
-
-            if (!reg || !name) {
-                alert('Please fill in the registration plate and your name before sending via WhatsApp.');
-                return;
-            }
-
-            const message =
+            const reg    = document.getElementById('vehReg')?.value          || '';
+            const make   = document.getElementById('vehMake')?.value         || '';
+            const model  = document.getElementById('vehModel')?.value        || '';
+            const year   = document.getElementById('vehYear')?.value         || '';
+            const colour = document.getElementById('vehColour')?.value       || '';
+            const name   = document.getElementById('vehDriverName')?.value   || '';
+            const mobile = document.getElementById('vehDriverMobile')?.value || '';
+            const email  = document.getElementById('vehDriverEmail')?.value  || '';
+            const phvl   = document.getElementById('vehPHVL')?.value         || '';
+            if (!reg || !name) { alert('Please fill in the registration plate and your name before sending via WhatsApp.'); return; }
+            sendToWhatsApp(
                 `*🚙 Vehicle Registration – Aurex Executive Travel*\n\n` +
-                `*Driver:* ${name}\n` +
-                `*Mobile:* ${mobile}\n` +
-                `*Email:* ${email}\n\n` +
-                `*Registration:* ${reg.toUpperCase()}\n` +
-                `*Make/Model:* ${make} ${model}\n` +
-                `*Year:* ${year}\n` +
-                `*Colour:* ${colour}\n` +
+                `*Driver:* ${name}\n*Mobile:* ${mobile}\n*Email:* ${email}\n\n` +
+                `*Registration:* ${reg.toUpperCase()}\n*Make/Model:* ${make} ${model}\n*Year:* ${year}\n*Colour:* ${colour}\n` +
                 (phvl ? `*PHVL Number:* ${phvl}\n` : '') +
-                `\n📎 Full registration with vehicle photos sent to ${COMPANY_EMAIL}.\nPlease review and confirm.`;
-
-            sendToWhatsApp(message);
+                `\n📎 Full registration with vehicle photos sent to ${COMPANY_EMAIL}.`
+            );
         });
     }
 
-    // --- Smooth Scrolling for Anchor Links ---
+    // ── Smooth Scrolling ──────────────────────────────────────────────────────
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             const targetId = this.getAttribute('href');
             if (targetId === '#') return;
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
+            const target = document.querySelector(targetId);
+            if (target) {
                 e.preventDefault();
-                targetElement.scrollIntoView({ behavior: 'smooth' });
-                if (navLinks && navLinks.classList.contains('active')) {
-                    hamburger.click();
-                }
+                target.scrollIntoView({ behavior: 'smooth' });
+                if (navLinks && navLinks.classList.contains('active')) hamburger.click();
             }
         });
     });
 
-    // --- Pre-fill book.html from URL query params ---
+    // ── Pre-fill book.html from URL query params ───────────────────────────────
     if (window.location.pathname.includes('book.html')) {
-        const params = new URLSearchParams(window.location.search);
+        const p = new URLSearchParams(window.location.search);
         const dropoffField = document.getElementById('bookDropoff');
-        if (params.get('route') && dropoffField) {
-            dropoffField.value = params.get('route').replace(/\+/g, ' ');
-        }
+        if (p.get('route') && dropoffField) dropoffField.value = p.get('route').replace(/\+/g, ' ');
     }
-
-    // --- Ensure Formsubmit forms always POST ---
-    const formsubmitForms = document.querySelectorAll('form[action^="https://formsubmit.co"]');
-    formsubmitForms.forEach(form => {
-        // Exclude booking form because it has custom localStorage handling
-        if (form.id === 'bookingForm') return;
-        
-        form.setAttribute('method', 'POST');
-        form.method = 'POST';
-    });
 });
