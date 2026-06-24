@@ -150,17 +150,21 @@ document.addEventListener('DOMContentLoaded', () => {
         function score(f) {
             const p = f.properties;
             let s = 0;
-            if (p.housenumber && p.street) s += 10;       // exact street address
-            if (p.street && !p.housenumber) s += 5;        // street level
-            if (p.street) s += p.address_line1 ? 3 : 0;    // has address line
-            if (p.postcode) s += 1;
-            if (p.result_type === 'building') s += 2;      // building-level result
-            if (p.result_type === 'street') s += 0;
-            if (p.result_type === 'suburb' || p.result_type === 'city') s -= 2;
+            if (typeof p.distance === 'number') {
+                // Prefer nearby results strongly.
+                s += Math.max(0, 50 - p.distance / 5);
+            }
+            if (p.housenumber && p.street) s += 20;       // exact street address
+            if (p.street && !p.housenumber) s += 8;        // street level
+            if (p.street) s += p.address_line1 ? 4 : 0;    // has address line
+            if (p.postcode) s += 2;
+            if (p.result_type === 'building') s += 5;      // building-level result
+            if (p.result_type === 'street') s += 1;
+            if (p.result_type === 'suburb' || p.result_type === 'city') s -= 3;
             return s;
         }
 
-        // Get best feature by score (most detailed)
+        // Get best feature by score (detailed and nearby)
         const features = [...data.features].sort((a, b) => score(b) - score(a));
         const props = features[0].properties;
 
@@ -218,7 +222,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return { saloon: pricing.saloon, mpv: pricing.mpv };
     }
 
-    async function calculateRouteEstimate(pickup, dropoff, vehicleType) {
+    function getInputCoords(inputId) {
+        const latEl = document.getElementById(inputId + 'Lat');
+        const lonEl = document.getElementById(inputId + 'Lon');
+        if (!latEl || !lonEl) return null;
+        const lat = parseFloat(latEl.value);
+        const lon = parseFloat(lonEl.value);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+        return { lat, lon };
+    }
+
+    async function calculateRouteEstimate(pickup, dropoff, vehicleType, pickupCoords = null, dropoffCoords = null) {
         const fromKey = normalizeLocation(pickup);
         const toKey   = normalizeLocation(dropoff);
         if (fromKey && toKey && fromKey !== toKey) {
@@ -231,25 +245,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 return { miles: null, price, fixed: true };
             }
         }
-        const fromCoords = (fromKey && AIRPORT_COORDS[fromKey])
+
+        const fromCoords = pickupCoords || ((fromKey && AIRPORT_COORDS[fromKey])
             ? AIRPORT_COORDS[fromKey]
-            : await geocodeAddress(pickup);
-        const toCoords = (toKey && AIRPORT_COORDS[toKey])
+            : await geocodeAddress(pickup));
+        const toCoords = dropoffCoords || ((toKey && AIRPORT_COORDS[toKey])
             ? AIRPORT_COORDS[toKey]
-            : await geocodeAddress(dropoff);
+            : await geocodeAddress(dropoff));
         const miles = await getDrivingMiles(fromCoords, toCoords);
         return { miles, price: miles * PRICE_PER_MILE, fixed: false };
     }
     window.calculateRouteEstimate = calculateRouteEstimate;
 
+    function buildBookingUrl(pickup, dropoff, estimate, pickupCoords = null, dropoffCoords = null) {
+        const params = new URLSearchParams({
+            pickup,
+            dropoff,
+            distance: estimate.miles || '',
+            amount: estimate.price.toFixed(2)
+        });
+        if (pickupCoords) {
+            params.set('pickupLat', pickupCoords.lat);
+            params.set('pickupLon', pickupCoords.lon);
+        }
+        if (dropoffCoords) {
+            params.set('dropoffLat', dropoffCoords.lat);
+            params.set('dropoffLon', dropoffCoords.lon);
+        }
+        return `book.html?${params.toString()}`;
+    }
+
     function setError(el, msg) {
         if (!el) return;
         el.textContent    = msg || '';
         el.style.display  = msg ? 'block' : 'none';
-    }
-
-    function buildBookingUrl(pickup, dropoff, estimate) {
-        return `book.html?${new URLSearchParams({ pickup, dropoff, distance: estimate.miles, amount: estimate.price.toFixed(2) })}`;
     }
 
     // ── Autocomplete dropdown ──────────────────────────────────────────────────
@@ -311,6 +340,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         inputEl.addEventListener('input', function () {
+            const latField = document.getElementById(inputEl.id + 'Lat');
+            const lonField = document.getElementById(inputEl.id + 'Lon');
+            if (latField && lonField && (latField.value || lonField.value)) {
+                latField.value = '';
+                lonField.value = '';
+            }
             clearTimeout(debounceTimer);
             const v = this.value.trim();
             if (v.length < 3) { hide(); return; }
@@ -359,6 +394,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let watchId = null;
             let settled = false;
+            let bestPosition = null;
+            let bestAccuracy = Infinity;
+            let sampleCount = 0;
+            const ACCEPT_ACCURACY = 25;
 
             function setAddress(lat, lon) {
                 if (settled) return;
@@ -391,34 +430,51 @@ document.addEventListener('DOMContentLoaded', () => {
                     : '⚠ Unable to detect your location. Please enter your address manually.');
             }
 
-            // 1. Try high-accuracy first (GPS). If it times out, fallback below catches it.
-            // 2. After 12 seconds hard stop and use whatever we got
+            function acceptBestPosition() {
+                if (!bestPosition) {
+                    fail({ code: 2 });
+                    return;
+                }
+                clearTimeout(hardTimeout);
+                setAddress(bestPosition.latitude, bestPosition.longitude);
+            }
+
             const hardTimeout = setTimeout(() => {
                 if (!settled) {
-                    // If we never got any fix, fail
-                    fail({ code: 2 });
+                    if (bestPosition) {
+                        acceptBestPosition();
+                    } else {
+                        fail({ code: 2 });
+                    }
                 }
-            }, 18000);
+            }, 30000);
 
             watchId = navigator.geolocation.watchPosition(
                 ({ coords: { latitude, longitude, accuracy } }) => {
-                    // Accept any fix immediately — even 100m+ accuracy
-                    // On phones the GPS will keep refining in the background,
-                    // but we want the user to see a result ASAP.
-                    clearTimeout(hardTimeout);
-                    setAddress(latitude, longitude);
+                    if (settled) return;
+                    sampleCount += 1;
+                    if (typeof accuracy === 'number') {
+                        if (accuracy < bestAccuracy) {
+                            bestAccuracy = accuracy;
+                            bestPosition = { latitude, longitude, accuracy };
+                        }
+                    } else if (!bestPosition) {
+                        bestPosition = { latitude, longitude, accuracy };
+                    }
+
+                    if (typeof bestAccuracy === 'number' && bestAccuracy <= ACCEPT_ACCURACY && sampleCount >= 2) {
+                        acceptBestPosition();
+                    }
                 },
                 err => {
-                    // If this is not a permission error and we haven't settled yet,
-                    // keep waiting — the hardTimeout will eventually handle it.
+                    if (settled) return;
                     if (err.code === err.PERMISSION_DENIED) {
                         clearTimeout(hardTimeout);
                         fail(err);
                     }
-                    // For timeout or other errors, just log and keep waiting
                     console.warn('Geolocation interim (waiting for fix):', err.message || err.code);
                 },
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
             );
         });
     }
@@ -618,16 +674,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const both = getBothFixedPrices(pickup, dropoff);
                 const priceEl  = document.getElementById('estimatedPrice');
                 const bothEl   = document.getElementById('estimatedPriceBoth');
+                const pickupCoords = getInputCoords('quoteFrom');
+                const dropoffCoords = getInputCoords('quoteTo');
                 if (both) {
                     if (priceEl)  priceEl.closest('.quote-result-single') && (priceEl.closest('.quote-result-single').style.display = 'none');
                     if (bothEl)   { bothEl.style.display = 'block'; bothEl.innerHTML = `<div class="quote-price-row"><span><i class="fa-solid fa-car"></i> Saloon</span><strong>£${both.saloon}</strong></div><div class="quote-price-row"><span><i class="fa-solid fa-van-shuttle"></i> MPV (7-Seater)</span><strong>£${both.mpv}</strong></div>`; }
                     if (priceEl)  priceEl.style.display = 'none';
+                    const bookNow = document.getElementById('quoteBookNow');
+                    if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: null, price: both.saloon }, pickupCoords, dropoffCoords);
                 } else {
-                    const est = await calculateRouteEstimate(pickup, dropoff);
+                    const est = await calculateRouteEstimate(pickup, dropoff, null, pickupCoords, dropoffCoords);
                     if (priceEl)  { priceEl.textContent = `£${est.price.toFixed(2)}`; priceEl.style.display = ''; }
                     if (bothEl)   bothEl.style.display = 'none';
                     const bookNow = document.getElementById('quoteBookNow');
-                    if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, est);
+                    if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, est, pickupCoords, dropoffCoords);
                 }
                 const result = document.getElementById('quoteResult');
                 result.style.display = 'block';
@@ -660,12 +720,13 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 if (btn) { btn.textContent = 'Calculating...'; btn.disabled = true; }
                 const isReturn = document.getElementById('iTripReturn')?.checked;
+                const pickupCoords = getInputCoords('iFrom');
+                const dropoffCoords = getInputCoords('iTo');
                 const both     = getBothFixedPrices(pickup, dropoff);
                 const heading  = document.getElementById('instantPriceHeading');
                 const priceEl  = document.getElementById('calcPrice');
                 const bothEl   = document.getElementById('calcPriceBoth');
                 const breakdown = document.getElementById('instantReturnBreakdown');
-
                 if (both) {
                     const saloon = isReturn ? Math.round((both.saloon + both.saloon * 0.7) * 100) / 100 : both.saloon;
                     const mpv    = isReturn ? Math.round((both.mpv   + both.mpv   * 0.7) * 100) / 100 : both.mpv;
@@ -679,7 +740,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const bookNow = document.getElementById('instantBookNow');
                     if (bookNow) bookNow.href = `book.html?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`;
                 } else {
-                    const est    = await calculateRouteEstimate(pickup, dropoff);
+                    const est    = await calculateRouteEstimate(pickup, dropoff, null, pickupCoords, dropoffCoords);
                     const oneWay = est.price;
                     const total  = isReturn ? Math.round((oneWay + oneWay * 0.7) * 100) / 100 : oneWay;
                     if (heading) heading.textContent = isReturn ? 'Estimated Return Price' : 'Estimated Price';
@@ -690,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         else breakdown.style.display = 'none';
                     }
                     const bookNow = document.getElementById('instantBookNow');
-                    if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: est.miles, price: total });
+                    if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: est.miles, price: total }, pickupCoords, dropoffCoords);
                 }
                 const result = document.getElementById('instantResult');
                 result.style.display = 'block';
@@ -764,7 +825,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Pre-fill book.html from URL query params ───────────────────────────────
     if (window.location.pathname.includes('book.html')) {
         const p = new URLSearchParams(window.location.search);
+        const pickupField = document.getElementById('bookPickup');
         const dropoffField = document.getElementById('bookDropoff');
-        if (p.get('route') && dropoffField) dropoffField.value = p.get('route').replace(/\+/g, ' ');
+        const pickupLat = p.get('pickupLat');
+        const pickupLon = p.get('pickupLon');
+        const dropoffLat = p.get('dropoffLat');
+        const dropoffLon = p.get('dropoffLon');
+        if (p.get('pickup') && pickupField) pickupField.value = p.get('pickup');
+        if (p.get('dropoff') && dropoffField) dropoffField.value = p.get('dropoff');
+        if (pickupLat && pickupLon) {
+            const pickupLatField = document.getElementById('bookPickupLat');
+            const pickupLonField = document.getElementById('bookPickupLon');
+            if (pickupLatField) pickupLatField.value = pickupLat;
+            if (pickupLonField) pickupLonField.value = pickupLon;
+        }
+        if (dropoffLat && dropoffLon) {
+            const dropoffLatField = document.getElementById('bookDropoffLat');
+            const dropoffLonField = document.getElementById('bookDropoffLon');
+            if (dropoffLatField) dropoffLatField.value = dropoffLat;
+            if (dropoffLonField) dropoffLonField.value = dropoffLon;
+        }
+        if (p.get('route') && dropoffField && !dropoffField.value) dropoffField.value = p.get('route').replace(/\+/g, ' ');
     }
 });
