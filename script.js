@@ -119,52 +119,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    function getFixedPrice(pickup, dropoff, vehicleType) {
-        const from = normalizeLocation(pickup);
-        const to   = normalizeLocation(dropoff);
-        if (!from || !to || from === to) return null;
-        // Try both directions
-        const key     = `${from}->${to}`;
-        const keyRev  = `${to}->${from}`;
-        const pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[keyRev];
-        if (!pricing) return null;
-        const type = vehicleType && vehicleType.toLowerCase().includes('mpv') ? 'mpv' : 'saloon';
-        return pricing[type] !== undefined ? pricing[type] : Math.min(...Object.values(pricing));
-    }
-
-    // ── Geoapify ───────────────────────────────────────────────────────────────
+    // ── Geoapify ────────────────────────────────────────────────────────────────
 
     const UK_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
     function isUKPostcode(str) { return UK_POSTCODE_RE.test(str.trim()); }
 
-    // Autocomplete suggestions — UK only, house-number level
     async function fetchGeoapifySuggestions(query, signal) {
-        // For postcodes: use search endpoint which returns full formatted addresses
         if (isUKPostcode(query)) {
             const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(query)}&filter=countrycode:gb&limit=6&apiKey=${GEO_KEY}`;
             const res  = await fetch(url, { signal });
             const data = await res.json();
-            return (data.features || []).map(f => ({
-                label: f.properties.formatted,
-                lat:   f.properties.lat,
-                lon:   f.properties.lon
-            }));
+            return (data.features || []).map(f => ({ label: f.properties.formatted, lat: f.properties.lat, lon: f.properties.lon }));
         }
         const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:gb&format=json&limit=6&apiKey=${GEO_KEY}`;
         const res  = await fetch(url, { signal });
         const data = await res.json();
-        return (data.results || []).map(r => ({
-            label: r.formatted,
-            lat:   r.lat,
-            lon:   r.lon
-        }));
+        return (data.results || []).map(r => ({ label: r.formatted, lat: r.lat, lon: r.lon }));
     }
 
-    // Geocode a free-text address → { lat, lon }
     async function geocodeAddress(text) {
         const known = normalizeLocation(text);
         if (known && AIRPORT_COORDS[known]) return AIRPORT_COORDS[known];
-
         const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(text)}&filter=countrycode:gb&limit=1&apiKey=${GEO_KEY}`;
         const res  = await fetch(url);
         const data = await res.json();
@@ -173,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return { lat, lon };
     }
 
-    // Reverse geocode lat/lon → full formatted address string
     async function reverseGeocode(lat, lon) {
         const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${GEO_KEY}`;
         const res  = await fetch(url);
@@ -182,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return data.features[0].properties.formatted;
     }
 
-    // ── Route distance via OSRM ────────────────────────────────────────────────
     async function getDrivingMiles(from, to) {
         const url = `https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=false`;
         const res  = await fetch(url);
@@ -191,18 +164,54 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.ceil(data.routes[0].distance / 1609.344);
     }
 
-    // ── Main fare estimator (called from book.html inline script too) ──────────
+    function getFixedPrice(pickup, dropoff, vehicleType) {
+        const from = normalizeLocation(pickup);
+        const to   = normalizeLocation(dropoff);
+        if (!from || !to || from === to) return null;
+        const key     = `${from}->${to}`;
+        const keyRev  = `${to}->${from}`;
+        const pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[keyRev];
+        if (!pricing) return null;
+        const type = vehicleType && vehicleType.toLowerCase().includes('mpv') ? 'mpv' : 'saloon';
+        return pricing[type] !== undefined ? pricing[type] : Math.min(...Object.values(pricing));
+    }
+
+    // Returns both saloon + mpv prices for a fixed route, or null if not fixed
+    function getBothFixedPrices(pickup, dropoff) {
+        const from = normalizeLocation(pickup);
+        const to   = normalizeLocation(dropoff);
+        if (!from || !to || from === to) return null;
+        const key = `${from}->${to}`;
+        const pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[`${to}->${from}`];
+        if (!pricing) return null;
+        return { saloon: pricing.saloon, mpv: pricing.mpv };
+    }
+
     async function calculateRouteEstimate(pickup, dropoff, vehicleType) {
-        // Check fixed price first — if found, no need to geocode or calculate distance
-        const fixed = getFixedPrice(pickup, dropoff, vehicleType);
-        if (fixed !== null) {
-            return { miles: null, price: fixed, fixed: true };
+        // Normalise both addresses first
+        const fromKey = normalizeLocation(pickup);
+        const toKey   = normalizeLocation(dropoff);
+
+        // Check fixed price using normalised keys directly (bypasses raw string issues)
+        if (fromKey && toKey && fromKey !== toKey) {
+            const key     = `${fromKey}->${toKey}`;
+            const keyRev  = `${toKey}->${fromKey}`;
+            const pricing = FIXED_ROUTE_PRICES[key] || FIXED_ROUTE_PRICES[keyRev];
+            if (pricing) {
+                const type  = vehicleType && vehicleType.toLowerCase().includes('mpv') ? 'mpv' : 'saloon';
+                const price = pricing[type] !== undefined ? pricing[type] : Math.min(...Object.values(pricing));
+                return { miles: null, price, fixed: true };
+            }
         }
-        // No fixed price — geocode and calculate by distance
-        const [fromCoords, toCoords] = await Promise.all([
-            geocodeAddress(pickup),
-            geocodeAddress(dropoff)
-        ]);
+
+        // No fixed price — geocode pickup (use known airport coords if recognised)
+        const fromCoords = (fromKey && AIRPORT_COORDS[fromKey])
+            ? AIRPORT_COORDS[fromKey]
+            : await geocodeAddress(pickup);
+        const toCoords = (toKey && AIRPORT_COORDS[toKey])
+            ? AIRPORT_COORDS[toKey]
+            : await geocodeAddress(dropoff);
+
         const miles = await getDrivingMiles(fromCoords, toCoords);
         return { miles, price: miles * PRICE_PER_MILE, fixed: false };
     }
@@ -384,10 +393,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!pickup || !dropoff) return;
             try {
                 if (btn) { btn.textContent = 'Calculating...'; btn.disabled = true; }
-                const est = await calculateRouteEstimate(pickup, dropoff);
-                document.getElementById('estimatedPrice').textContent = `£${est.price.toFixed(2)}`;
-                const bookNow = document.getElementById('quoteBookNow');
-                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, est);
+                const both = getBothFixedPrices(pickup, dropoff);
+                const priceEl  = document.getElementById('estimatedPrice');
+                const bothEl   = document.getElementById('estimatedPriceBoth');
+                if (both) {
+                    if (priceEl)  priceEl.closest('.quote-result-single') && (priceEl.closest('.quote-result-single').style.display = 'none');
+                    if (bothEl)   { bothEl.style.display = 'block'; bothEl.innerHTML = `<div class="quote-price-row"><span><i class="fa-solid fa-car"></i> Saloon</span><strong>£${both.saloon}</strong></div><div class="quote-price-row"><span><i class="fa-solid fa-van-shuttle"></i> MPV (7-Seater)</span><strong>£${both.mpv}</strong></div>`; }
+                    if (priceEl)  priceEl.style.display = 'none';
+                } else {
+                    const est = await calculateRouteEstimate(pickup, dropoff);
+                    if (priceEl)  { priceEl.textContent = `£${est.price.toFixed(2)}`; priceEl.style.display = ''; }
+                    if (bothEl)   bothEl.style.display = 'none';
+                    const bookNow = document.getElementById('quoteBookNow');
+                    if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, est);
+                }
                 const result = document.getElementById('quoteResult');
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -418,26 +437,42 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!pickup || !dropoff) return;
             try {
                 if (btn) { btn.textContent = 'Calculating...'; btn.disabled = true; }
-                const est      = await calculateRouteEstimate(pickup, dropoff);
                 const isReturn = document.getElementById('iTripReturn')?.checked;
-                const oneWay   = est.price;
-                const total    = isReturn ? Math.round((oneWay + oneWay * 0.7) * 100) / 100 : oneWay;
-
-                document.getElementById('calcPrice').textContent = `£${total.toFixed(2)}`;
-
-                const heading = document.getElementById('instantPriceHeading');
-                if (heading) heading.textContent = isReturn ? 'Estimated Return Price' : 'Estimated Price';
-
+                const both     = getBothFixedPrices(pickup, dropoff);
+                const heading  = document.getElementById('instantPriceHeading');
+                const priceEl  = document.getElementById('calcPrice');
+                const bothEl   = document.getElementById('calcPriceBoth');
                 const breakdown = document.getElementById('instantReturnBreakdown');
-                if (breakdown) {
-                    if (isReturn) {
-                        breakdown.style.display = 'block';
-                        breakdown.innerHTML = `One way: £${oneWay.toFixed(2)} &bull; Return leg (70%): £${(oneWay * 0.7).toFixed(2)}`;
-                    } else breakdown.style.display = 'none';
+
+                if (both) {
+                    // Fixed route — show both vehicle prices
+                    const saloon = isReturn ? Math.round((both.saloon + both.saloon * 0.7) * 100) / 100 : both.saloon;
+                    const mpv    = isReturn ? Math.round((both.mpv   + both.mpv   * 0.7) * 100) / 100 : both.mpv;
+                    if (heading) heading.textContent = isReturn ? 'Fixed Return Prices' : 'Fixed Prices';
+                    if (priceEl) priceEl.style.display = 'none';
+                    if (bothEl)  { bothEl.style.display = 'block'; bothEl.innerHTML = `<div class="quote-price-row"><span><i class="fa-solid fa-car"></i> Saloon (up to 3 passengers)</span><strong>£${saloon.toFixed(2)}</strong></div><div class="quote-price-row"><span><i class="fa-solid fa-van-shuttle"></i> MPV 7-Seater (4+ passengers)</span><strong>£${mpv.toFixed(2)}</strong></div>`; }
+                    if (breakdown) {
+                        if (isReturn) { breakdown.style.display = 'block'; breakdown.innerHTML = `Return leg priced at 70% of one-way fare`; }
+                        else breakdown.style.display = 'none';
+                    }
+                    const bookNow = document.getElementById('instantBookNow');
+                    if (bookNow) bookNow.href = `book.html?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`;
+                } else {
+                    // Calculated route — single price
+                    const est    = await calculateRouteEstimate(pickup, dropoff);
+                    const oneWay = est.price;
+                    const total  = isReturn ? Math.round((oneWay + oneWay * 0.7) * 100) / 100 : oneWay;
+                    if (heading) heading.textContent = isReturn ? 'Estimated Return Price' : 'Estimated Price';
+                    if (priceEl) { priceEl.textContent = `£${total.toFixed(2)}`; priceEl.style.display = ''; }
+                    if (bothEl)  bothEl.style.display = 'none';
+                    if (breakdown) {
+                        if (isReturn) { breakdown.style.display = 'block'; breakdown.innerHTML = `One way: £${oneWay.toFixed(2)} &bull; Return leg (70%): £${(oneWay * 0.7).toFixed(2)}`; }
+                        else breakdown.style.display = 'none';
+                    }
+                    const bookNow = document.getElementById('instantBookNow');
+                    if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: est.miles, price: total });
                 }
 
-                const bookNow = document.getElementById('instantBookNow');
-                if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: est.miles, price: total });
                 const result = document.getElementById('instantResult');
                 result.style.display = 'block';
                 result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

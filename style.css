@@ -2795,3 +2795,27 @@ textarea { resize: vertical; min-height: 110px; }
         font-size: 1.6rem;
     }
 }
+
+/* ── Quote dual price rows (fixed routes) ── */
+.quote-price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.95rem;
+}
+.quote-price-row:last-child { border-bottom: none; }
+.quote-price-row span { color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 0.6rem; }
+.quote-price-row span i { color: var(--accent); font-size: 1rem; }
+.quote-price-row strong { color: var(--accent); font-size: 1.5rem; font-weight: 700; }
+
+/* Homepage quote result — price rows on light background */
+#quoteResult .quote-price-row {
+    border-bottom: 1px solid var(--border-color);
+    background: #fafafa;
+}
+#quoteResult .quote-price-row span { color: var(--text-muted); }
+#quoteResult .quote-price-row strong { color: var(--text-main); }
+#quoteResult .quote-price-row:last-child { border-bottom: none; }
+#estimatedPriceBoth { margin: 0.75rem 0; border: 1px solid var(--border-color); }
