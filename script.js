@@ -487,8 +487,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let mapPickerResolve  = null;
 
     function getModalId() {
+        if (window.__AUREX_PAGE__ === 'book') return 'book';
+        if (window.__AUREX_PAGE__ === 'quote') return 'quote';
         return window.location.pathname.includes('book.html') ? 'book' : 'quote';
     }
+
 
     function openMapPicker(onConfirm) {
         const modalId = getModalId();
