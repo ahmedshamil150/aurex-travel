@@ -139,36 +139,82 @@ document.addEventListener('DOMContentLoaded', () => {
         return { lat, lon };
     }
 
-    async function reverseGeocode(lat, lon) {
-        // Request multiple results and pick the most precise one
-        const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&limit=5&apiKey=${GEO_KEY}`;
+    async function reverseGeocodeSuggestions(lat, lon) {
+        const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&limit=6&apiKey=${GEO_KEY}`;
         const res  = await fetch(url);
         const data = await res.json();
         if (!data.features || !data.features.length) throw new Error('Reverse geocode failed');
 
-        // Sort results: prefer those with housenumber, then street, then anything
         function score(f) {
             const p = f.properties;
             let s = 0;
             if (typeof p.distance === 'number') {
-                // Prefer nearby results strongly.
                 s += Math.max(0, 50 - p.distance / 5);
             }
-            if (p.housenumber && p.street) s += 20;       // exact street address
-            if (p.street && !p.housenumber) s += 8;        // street level
-            if (p.street) s += p.address_line1 ? 4 : 0;    // has address line
+            if (p.housenumber && p.street) s += 20;
+            if (p.street && !p.housenumber) s += 8;
+            if (p.street) s += p.address_line1 ? 4 : 0;
             if (p.postcode) s += 2;
-            if (p.result_type === 'building') s += 5;      // building-level result
+            if (p.result_type === 'building') s += 5;
             if (p.result_type === 'street') s += 1;
             if (p.result_type === 'suburb' || p.result_type === 'city') s -= 3;
             return s;
         }
 
-        // Get best feature by score (detailed and nearby)
-        const features = [...data.features].sort((a, b) => score(b) - score(a));
-        const props = features[0].properties;
+        function geoDistanceMeters(a, b) {
+            const toRad = x => x * Math.PI / 180;
+            const lat1 = toRad(a.lat);
+            const lon1 = toRad(a.lon);
+            const lat2 = toRad(b.lat);
+            const lon2 = toRad(b.lon);
+            const dLat = lat2 - lat1;
+            const dLon = lon2 - lon1;
+            const R = 6371000;
+            const sinLat = Math.sin(dLat / 2);
+            const sinLon = Math.sin(dLon / 2);
+            const h = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLon * sinLon;
+            return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+        }
 
-        // Build precise address: house number + street is ideal
+        const requested = { lat, lon };
+        const candidates = [...data.features]
+            .map(f => {
+                const props = f.properties;
+                const geom = f.geometry && Array.isArray(f.geometry.coordinates) ? { lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] } : null;
+                const featureCoords = geom || (typeof props.lon === 'number' && typeof props.lat === 'number' ? { lon: props.lon, lat: props.lat } : null);
+                const distance = typeof props.distance === 'number'
+                    ? props.distance
+                    : featureCoords ? geoDistanceMeters(requested, featureCoords) : Infinity;
+                return {
+                    feature: f,
+                    score: score(f),
+                    distance,
+                    coords: featureCoords
+                };
+            })
+            .filter(item => item.coords && Number.isFinite(item.distance))
+            .sort((a, b) => a.score !== b.score ? b.score - a.score : a.distance - b.distance);
+
+        const nearby = candidates.filter(c => c.distance <= 15);
+        const candidatesToUse = nearby.length ? nearby : candidates;
+
+        const suggestions = [];
+        const seen = new Set();
+        for (const item of candidatesToUse) {
+            const props = item.feature.properties;
+            const label = formatReverseGeocodeLabel(props);
+            if (!label || seen.has(label)) continue;
+            seen.add(label);
+            suggestions.push({ label, lat: item.coords.lat, lon: item.coords.lon });
+            if (suggestions.length >= 3) break;
+        }
+        if (!suggestions.length) {
+            throw new Error('No nearby addresses could be generated from geolocation results');
+        }
+        return suggestions;
+    }
+
+    function formatReverseGeocodeLabel(props) {
         const parts = [];
         if (props.housenumber && props.street) {
             parts.push(`${props.housenumber} ${props.street}`);
@@ -179,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (props.name) {
             parts.push(props.name);
         }
-
         if (props.suburb && props.city && props.suburb.toLowerCase() !== props.city.toLowerCase()) {
             parts.push(props.suburb);
         }
@@ -187,9 +232,72 @@ document.addEventListener('DOMContentLoaded', () => {
             parts.push(props.city);
         }
         if (props.postcode) parts.push(props.postcode);
+        if (!parts.length) {
+            return props.formatted || 'Unknown address';
+        }
+        return parts.join(', ');
+    }
 
-        const result = parts.length >= 2 ? parts.join(', ') : (props.formatted || parts.join(', '));
-        return result;
+    async function reverseGeocode(lat, lon) {
+        const suggestions = await reverseGeocodeSuggestions(lat, lon);
+        return suggestions[0].label;
+    }
+
+    function showLocationSuggestions(inputEl, suggestions) {
+        const wrap = inputEl.closest('.location-input-wrap') || inputEl.closest('.autocomplete-wrap') || (() => {
+            const w = document.createElement('div');
+            w.className = 'autocomplete-wrap';
+            w.style.position = 'relative';
+            inputEl.parentNode.insertBefore(w, inputEl);
+            w.appendChild(inputEl);
+            return w;
+        })();
+        wrap.style.position = 'relative';
+        let dropdown = wrap.querySelector('.autocomplete-dropdown');
+        if (!dropdown) {
+            dropdown = document.createElement('div');
+            dropdown.className = 'autocomplete-dropdown';
+            wrap.appendChild(dropdown);
+        }
+
+        const latField = document.getElementById(inputEl.id + 'Lat');
+        const lonField = document.getElementById(inputEl.id + 'Lon');
+
+        function applySelection(selection) {
+            inputEl.value = selection.label;
+            if (latField) latField.value = String(selection.lat);
+            if (lonField) lonField.value = String(selection.lon);
+            inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+            dropdown.classList.remove('open');
+        }
+
+        if (!suggestions.length) {
+            dropdown.innerHTML = '<div class="autocomplete-no-results">No address suggestions found</div>';
+            dropdown.classList.add('open');
+            return;
+        }
+
+        inputEl.value = suggestions[0].label;
+        if (latField) latField.value = String(suggestions[0].lat);
+        if (lonField) lonField.value = String(suggestions[0].lon);
+
+        dropdown.innerHTML = `
+            <div class="autocomplete-note">Choose the correct address if needed.</div>
+            ${suggestions.map((r, i) => `
+                <div class="autocomplete-item${i === 0 ? ' active' : ''}" data-index="${i}">
+                    ${r.label}
+                </div>
+            `).join('')}
+        `;
+        dropdown.classList.add('open');
+        dropdown.querySelectorAll('.autocomplete-item').forEach(el => {
+            el.addEventListener('mousedown', e => {
+                e.preventDefault();
+                const idx = +el.dataset.index;
+                const selection = suggestions[idx];
+                if (selection) applySelection(selection);
+            });
+        });
     }
 
     async function getDrivingMiles(from, to) {
@@ -406,13 +514,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Looking up address…';
                 (async () => {
                     try {
-                        inputEl.value = await reverseGeocode(lat, lon);
-                        const latField = document.getElementById(inputEl.id + 'Lat');
-                        const lonField = document.getElementById(inputEl.id + 'Lon');
-                        if (latField) latField.value = String(lat);
-                        if (lonField) lonField.value = String(lon);
-                        setError(errorEl, '');
-                        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                        const suggestions = await reverseGeocodeSuggestions(lat, lon);
+                        if (suggestions.length > 1) {
+                            showLocationSuggestions(inputEl, suggestions);
+                        } else {
+                            inputEl.value = suggestions[0].label;
+                            const latField = document.getElementById(inputEl.id + 'Lat');
+                            const lonField = document.getElementById(inputEl.id + 'Lon');
+                            if (latField) latField.value = String(suggestions[0].lat);
+                            if (lonField) lonField.value = String(suggestions[0].lon);
+                            setError(errorEl, '');
+                            inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
                     } catch {
                         setError(errorEl, '⚠ Could not get your address. Please enter it manually.');
                     }
