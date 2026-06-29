@@ -331,7 +331,7 @@ The contact page has a standard enquiry form with:
   - Subject
   - Message
 
-This form uses the HTML mailto: action (action="mailto:info@aurexexecutivetravel.com").
+This form uses the HTML mailto: action (action="mailto:aurexexecutivetravel@gmail.com").
 This means it opens the customer's default email client with the fields
 pre-filled. It does NOT send email automatically through a server.
 
@@ -341,7 +341,7 @@ a free service like Formspree (formspree.io) or EmailJS (emailjs.com).
 The contact page also shows direct contact methods:
   - Phone: +44 000 000 000 (needs updating with real number)
   - WhatsApp: wa.me/923325308087
-  - Email: info@aurexexecutivetravel.com
+  - Email: aurexexecutivetravel@gmail.com
 
 
 --------------------------------------------------------------------------------
@@ -408,7 +408,7 @@ Before launching the website to real customers, update these items:
    Search for "+44000000000" and replace with your real UK number.
 
 2. EMAIL ADDRESS
-   Currently: info@aurexexecutivetravel.com
+   Currently: aurexexecutivetravel@gmail.com
    Update in: contact.html (form action + displayed link) and all footer cols.
    Also update terms.html and privacy.html contact email.
 

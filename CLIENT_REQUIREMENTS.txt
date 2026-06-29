@@ -39,7 +39,7 @@ Please send me the following so I can update the website with your real info:
   a) Business Email Address
      - The email address where ALL enquiries, bookings, and form submissions
        should arrive (e.g. info@aurextravel.co.uk)
-     - This will replace the current placeholder: info@aurexexecutivetravel.com
+     - This will replace the current placeholder: aurexexecutivetravel@gmail.com
 
   b) Business Phone Number
      - The UK number your customers should call
