@@ -230,45 +230,6 @@
                         </div>
                     </div>
 
-                    <!-- PayPal -->
-                    <div class="payment-option">
-                        <div class="payment-option-header">
-                            <i class="fa-brands fa-paypal"></i>
-                            <div>
-                                <strong>Pay by PayPal</strong>
-                                <p>Pay securely online — use your PayPal balance, debit or credit card. No PayPal account required.</p>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-                            <a id="paypalPayBtn" href="#" target="_blank" class="paypal-pay-btn" style="flex:1;">
-                                <i class="fa-brands fa-paypal"></i> Pay with PayPal
-                            </a>
-                            <button type="button" id="paypalSentBtn" class="btn-whatsapp" style="flex:1;">
-                                <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Payment Sent — Notify Us
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Bank Transfer -->
-                    <div class="payment-option">
-                        <div class="payment-option-header">
-                            <i class="fa-solid fa-building-columns"></i>
-                            <div>
-                                <strong>Pay by Bank Transfer</strong>
-                                <p>Transfer directly to our bank account. Please use your name and travel date as the reference.</p>
-                            </div>
-                        </div>
-                        <div class="bank-details">
-                            <div class="bank-detail-row"><span>Account Name</span><strong>Mr Nayyer Zaman</strong><button type="button" class="copy-btn" data-copy="Mr Nayyer Zaman"><i class="fa-regular fa-copy"></i></button></div>
-                            <div class="bank-detail-row"><span>Sort Code</span><strong>11-01-41</strong><button type="button" class="copy-btn" data-copy="110141"><i class="fa-regular fa-copy"></i></button></div>
-                            <div class="bank-detail-row"><span>Account Number</span><strong>11700062</strong><button type="button" class="copy-btn" data-copy="11700062"><i class="fa-regular fa-copy"></i></button></div>
-                            <div class="bank-detail-row"><span>Reference</span><strong id="bankRef">Your Name + Travel Date</strong><button type="button" class="copy-btn" id="copyRefBtn"><i class="fa-regular fa-copy"></i></button></div>
-                        </div>
-                        <button type="button" id="bankSentBtn" class="btn-whatsapp" style="margin-top:0.75rem; width:100%;">
-                            <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send Proof of Payment via WhatsApp
-                        </button>
-                    </div>
-
                     <!-- Cash -->
                     <div class="payment-option">
                         <div class="payment-option-header">
@@ -371,7 +332,6 @@
     <script src="script.js"></script>
     <script>
 
-        const PAYPAL_EMAIL = 'nayyer75@yahoo.com';
         const WA_NUMBER    = '447905298692';
 
         const formSection   = document.getElementById('bookingFormSection');
@@ -438,11 +398,6 @@
             document.getElementById('payDateTime').textContent = `${date} at ${time}`;
             document.getElementById('payVehicle').textContent  = vehicle || '—';
             document.getElementById('payTotal').textContent    = `£${Number(amount).toFixed(2)}`;
-            document.getElementById('bankRef').textContent     = `${document.getElementById('bookName')?.value.trim() || pickup} ${date}`;
-
-            const paypalNote = encodeURIComponent(`Aurex Executive Travel – ${pickup} to ${dropoff} on ${date}`);
-            document.getElementById('paypalPayBtn').href =
-                `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(PAYPAL_EMAIL)}&amount=${Number(amount).toFixed(2)}&currency_code=GBP&item_name=${paypalNote}&no_shipping=1`;
 
             const stripeBtn = document.getElementById('stripePayBtn');
             if (stripeBtn) {
@@ -488,7 +443,6 @@
                 const b = JSON.parse(saved);
                 sessionStorage.removeItem('aurex_booking');
                 showPaymentPanel(b.pickup, b.dropoff, b.date, b.time, b.vehicle, b.amount);
-                document.getElementById('bankRef').textContent = `${b.name} ${b.date}`;
             }
         }
 
@@ -593,8 +547,6 @@
         }
 
         document.getElementById('stripeSentBtn')?.addEventListener('click', () => handlePaymentNotify('Stripe'));
-        document.getElementById('paypalSentBtn')?.addEventListener('click', () => handlePaymentNotify('PayPal'));
-        document.getElementById('bankSentBtn')?.addEventListener('click',   () => handlePaymentNotify('Bank Transfer'));
         document.getElementById('cashConfirmBtn')?.addEventListener('click', () => handlePaymentNotify('Cash'));
 
         const stripePayBtn = document.getElementById('stripePayBtn');
@@ -637,21 +589,6 @@
                 }
             });
         }
-
-        // Copy bank details
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const text = btn.id === 'copyRefBtn'
-                    ? document.getElementById('bankRef').textContent
-                    : btn.dataset.copy;
-                navigator.clipboard.writeText(text).then(() => {
-                    const icon = btn.querySelector('i');
-                    icon.className = 'fa-solid fa-check';
-                    btn.style.color = '#25D366';
-                    setTimeout(() => { icon.className = 'fa-regular fa-copy'; btn.style.color = ''; }, 1500);
-                });
-            });
-        });
     </script>
 </body>
 
