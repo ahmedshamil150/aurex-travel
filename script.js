@@ -567,7 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         fail({ code: 2 });
                     }
                 }
-            }, 30000);
+            }, 10000);
 
             watchId = navigator.geolocation.watchPosition(
                 ({ coords: { latitude, longitude, accuracy } }) => {
@@ -594,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     console.warn('Geolocation interim (waiting for fix):', err.message || err.code);
                 },
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
             );
         });
     }
