@@ -361,14 +361,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const fromCoords = pickupCoords || ((fromKey && AIRPORT_COORDS[fromKey])
-            ? AIRPORT_COORDS[fromKey]
-            : await geocodeAddress(pickup));
-        const toCoords = dropoffCoords || ((toKey && AIRPORT_COORDS[toKey])
-            ? AIRPORT_COORDS[toKey]
-            : await geocodeAddress(dropoff));
-        const miles = await getDrivingMiles(fromCoords, toCoords);
-        return { miles, price: calculateFareByDistance(miles), fixed: false };
+        try {
+            const fromCoords = pickupCoords || ((fromKey && AIRPORT_COORDS[fromKey])
+                ? AIRPORT_COORDS[fromKey]
+                : await geocodeAddress(pickup));
+            const toCoords = dropoffCoords || ((toKey && AIRPORT_COORDS[toKey])
+                ? AIRPORT_COORDS[toKey]
+                : await geocodeAddress(dropoff));
+            const miles = await getDrivingMiles(fromCoords, toCoords);
+            return { miles, price: calculateFareByDistance(miles), fixed: false };
+        } catch (e) {
+            console.error('Route calculation error:', e);
+            throw e;
+        }
     }
     window.calculateRouteEstimate = calculateRouteEstimate;
 
@@ -807,9 +812,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const bookNow = document.getElementById('quoteBookNow');
                     if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, { miles: null, price: both.saloon }, pickupCoords, dropoffCoords);
                 } else {
-                    const est = await calculateRouteEstimate(pickup, dropoff, null, pickupCoords, dropoffCoords);
-                    if (priceEl)  { priceEl.textContent = `£${est.price.toFixed(2)}`; priceEl.style.display = ''; }
+                    if (priceEl)  { priceEl.textContent = 'Calculating...'; priceEl.style.display = ''; }
                     if (bothEl)   bothEl.style.display = 'none';
+                    const est = await calculateRouteEstimate(pickup, dropoff, null, pickupCoords, dropoffCoords);
+                    if (priceEl)  { priceEl.textContent = `£${est.price.toFixed(2)}`; }
                     const bookNow = document.getElementById('quoteBookNow');
                     if (bookNow) bookNow.href = buildBookingUrl(pickup, dropoff, est, pickupCoords, dropoffCoords);
                 }
@@ -864,12 +870,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const bookNow = document.getElementById('instantBookNow');
                     if (bookNow) bookNow.href = `book.html?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`;
                 } else {
+                    if (heading) heading.textContent = 'Calculating...';
+                    if (priceEl) { priceEl.textContent = 'Calculating...'; priceEl.style.display = ''; }
+                    if (bothEl)  bothEl.style.display = 'none';
                     const est    = await calculateRouteEstimate(pickup, dropoff, null, pickupCoords, dropoffCoords);
                     const oneWay = est.price;
                     const total  = isReturn ? Math.round((oneWay + oneWay * 0.7) * 100) / 100 : oneWay;
                     if (heading) heading.textContent = isReturn ? 'Estimated Return Price' : 'Estimated Price';
-                    if (priceEl) { priceEl.textContent = `£${total.toFixed(2)}`; priceEl.style.display = ''; }
-                    if (bothEl)  bothEl.style.display = 'none';
+                    if (priceEl) { priceEl.textContent = `£${total.toFixed(2)}`; }
                     if (breakdown) {
                         if (isReturn) { breakdown.style.display = 'block'; breakdown.innerHTML = `One way: £${oneWay.toFixed(2)} &bull; Return leg (70%): £${(oneWay * 0.7).toFixed(2)}`; }
                         else breakdown.style.display = 'none';

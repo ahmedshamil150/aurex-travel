@@ -360,6 +360,11 @@
             const pickup   = pickupField.value.trim();
             const dropoff  = dropoffField.value.trim();
             if (!pickup || !dropoff) return false;
+            
+            // Show loading state
+            farePrice.textContent = 'Calculating...';
+            fareSummary.style.display = 'block';
+            
             const vehicle  = vehicleSelect ? vehicleSelect.value : '';
             const estimate = await calculateRouteEstimate(pickup, dropoff, vehicle);
             const isReturn = document.getElementById('bookTripReturn').checked;
