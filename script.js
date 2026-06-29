@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const WA_NUMBER     = '447905298692';
+    const WA_NUMBER     = '447405805932';
     const COMPANY_EMAIL = 'aurexexecutivetravel@gmail.com';
     const GEO_KEY       = '1681c0e18bb747a8a7317699a0c094f3';
 
@@ -68,7 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Pricing ────────────────────────────────────────────────────────────────
-    const PRICE_PER_MILE = 2;
+    function calculateFareByDistance(miles) {
+        if (miles <= 5) return 20.00;
+        if (miles <= 10) return miles * 4.00;
+        if (miles <= 20) return miles * 3.50;
+        if (miles <= 40) return miles * 3.00;
+        if (miles <= 50) return miles * 2.50;
+        return miles * 2.00;
+    }
 
     const FIXED_ROUTE_PRICES = {
         'cardiff->heathrow':        { saloon: 230, mpv: 250 },
@@ -361,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ? AIRPORT_COORDS[toKey]
             : await geocodeAddress(dropoff));
         const miles = await getDrivingMiles(fromCoords, toCoords);
-        return { miles, price: miles * PRICE_PER_MILE, fixed: false };
+        return { miles, price: calculateFareByDistance(miles), fixed: false };
     }
     window.calculateRouteEstimate = calculateRouteEstimate;
 
