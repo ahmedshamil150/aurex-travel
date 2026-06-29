@@ -211,6 +211,25 @@
                 <div class="payment-methods">
                     <h4>Choose Payment Method</h4>
 
+                    <!-- Stripe (Card / Apple Pay) -->
+                    <div class="payment-option">
+                        <div class="payment-option-header">
+                            <i class="fa-brands fa-stripe"></i>
+                            <div>
+                                <strong>Pay by Card / Apple Pay</strong>
+                                <p>Pay securely online with credit/debit card, Apple Pay, or Google Pay via Stripe.</p>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                            <button type="button" id="stripePayBtn" class="btn-primary" style="flex:1;">
+                                <i class="fa-solid fa-credit-card" style="margin-right:8px;"></i> Pay Now (Stripe)
+                            </button>
+                            <button type="button" id="stripeSentBtn" class="btn-whatsapp" style="flex:1;">
+                                <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Payment Sent — Notify Us
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- PayPal -->
                     <div class="payment-option">
                         <div class="payment-option-header">
@@ -425,6 +444,17 @@
             document.getElementById('paypalPayBtn').href =
                 `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(PAYPAL_EMAIL)}&amount=${Number(amount).toFixed(2)}&currency_code=GBP&item_name=${paypalNote}&no_shipping=1`;
 
+            const stripeBtn = document.getElementById('stripePayBtn');
+            if (stripeBtn) {
+                stripeBtn.dataset.amount = amount;
+                stripeBtn.dataset.pickup = pickup;
+                stripeBtn.dataset.dropoff = dropoff;
+                stripeBtn.dataset.date = date;
+                stripeBtn.dataset.time = time;
+                stripeBtn.dataset.vehicle = vehicle;
+                stripeBtn.dataset.name = document.getElementById('bookName')?.value.trim() || '';
+            }
+
             formSection.style.display = 'none';
             payPanel.style.display    = 'block';
             payPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -562,9 +592,51 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        document.getElementById('stripeSentBtn')?.addEventListener('click', () => handlePaymentNotify('Stripe'));
         document.getElementById('paypalSentBtn')?.addEventListener('click', () => handlePaymentNotify('PayPal'));
         document.getElementById('bankSentBtn')?.addEventListener('click',   () => handlePaymentNotify('Bank Transfer'));
         document.getElementById('cashConfirmBtn')?.addEventListener('click', () => handlePaymentNotify('Cash'));
+
+        const stripePayBtn = document.getElementById('stripePayBtn');
+        if (stripePayBtn) {
+            stripePayBtn.addEventListener('click', async () => {
+                const amount = stripePayBtn.dataset.amount;
+                if (!amount) {
+                    alert('Amount is missing. Please review your booking details.');
+                    return;
+                }
+                const originalText = stripePayBtn.innerHTML;
+                stripePayBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i> Processing...';
+                stripePayBtn.disabled = true;
+
+                try {
+                    const res = await fetch('/api/create-checkout-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: amount,
+                            pickup: stripePayBtn.dataset.pickup,
+                            dropoff: stripePayBtn.dataset.dropoff,
+                            date: stripePayBtn.dataset.date,
+                            time: stripePayBtn.dataset.time,
+                            vehicle: stripePayBtn.dataset.vehicle,
+                            name: stripePayBtn.dataset.name
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else {
+                        throw new Error(data.error || 'Failed to create session');
+                    }
+                } catch (err) {
+                    console.error('Stripe error:', err);
+                    alert('Failed to initialize payment. Please try again or use another payment method.');
+                    stripePayBtn.innerHTML = originalText;
+                    stripePayBtn.disabled = false;
+                }
+            });
+        }
 
         // Copy bank details
         document.querySelectorAll('.copy-btn').forEach(btn => {
