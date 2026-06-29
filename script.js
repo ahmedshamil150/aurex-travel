@@ -728,7 +728,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById(btnId);
         if (!btn || !inputEl) return;
 
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
             if (mapPickerInstance) {
                 mapPickerInstance.remove();
                 mapPickerInstance = null;
