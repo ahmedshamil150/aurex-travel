@@ -152,8 +152,11 @@
 
                     <!-- Submit buttons -->
                     <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
-                        <button type="submit" class="btn-primary" style="flex:1; min-width:200px;">
-                            <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Submit Booking by Email
+                        <button type="button" class="btn-secondary" id="bookCalculateBtn" style="flex:1; min-width:200px;">
+                            <i class="fa-solid fa-calculator" style="margin-right:8px;"></i>Calculate Fare
+                        </button>
+                        <button type="submit" class="btn-primary" id="bookSubmitBtn" style="flex:1; min-width:200px;" disabled>
+                            <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now
                         </button>
                         <button type="button" id="bookWhatsAppBtn" class="btn-whatsapp" style="flex:1; min-width:200px;">
                             <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send via WhatsApp (Instant)
@@ -339,7 +342,25 @@
         const fareSummary   = document.getElementById('bookFareSummary');
         const farePrice     = document.getElementById('bookEstimatedPrice');
         const dateField     = document.getElementById('bookDate');
+        const bookSubmitBtn = document.getElementById('bookSubmitBtn');
+        const bookCalculateBtn = document.getElementById('bookCalculateBtn');
         let fareReadyToSubmit = false;
+
+        function updateSubmitButtonState() {
+            if (!bookSubmitBtn) return;
+            if (fareReadyToSubmit) {
+                bookSubmitBtn.disabled = false;
+                bookSubmitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now';
+            } else {
+                bookSubmitBtn.disabled = true;
+                bookSubmitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now';
+            }
+        }
+
+        function resetBookingState() {
+            fareReadyToSubmit = false;
+            updateSubmitButtonState();
+        }
 
         // ── Set minimum date to today to prevent past date bookings ──
         function setMinimumDate() {
@@ -380,12 +401,18 @@
             farePrice.textContent = `£${Number(amount).toFixed(2)}`;
             fareSummary.style.display = 'block';
             fareReadyToSubmit = true;
+            updateSubmitButtonState();
         }
 
         async function calculateBookingFare() {
             const pickup   = pickupField.value.trim();
             const dropoff  = dropoffField.value.trim();
-            if (!pickup || !dropoff) return false;
+            if (!pickup || !dropoff) {
+                farePrice.textContent = 'Enter pickup and drop-off to calculate fare.';
+                fareSummary.style.display = 'block';
+                resetBookingState();
+                return false;
+            }
             
             // Show loading state
             farePrice.textContent = 'Calculating...';
@@ -497,17 +524,31 @@
         [pickupField, dropoffField].forEach(field => {
             if (!field) return;
             field.addEventListener('change', () => {
-                fareReadyToSubmit = false;
-                calculateBookingFare().catch(() => {});
+                resetBookingState();
             });
         });
 
         document.querySelectorAll('input[name="bookTripType"]').forEach(r => {
             r.addEventListener('change', () => {
-                fareReadyToSubmit = false;
-                calculateBookingFare().catch(() => {});
+                resetBookingState();
             });
         });
+
+        if (bookCalculateBtn) {
+            bookCalculateBtn.addEventListener('click', async () => {
+                if (!bookingForm.reportValidity()) return;
+                bookCalculateBtn.disabled = true;
+                bookCalculateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Calculating...';
+                try {
+                    await calculateBookingFare();
+                } catch {
+                    alert('Sorry, we could not calculate the fare for that route. Please check the addresses and try again.');
+                } finally {
+                    bookCalculateBtn.disabled = false;
+                    bookCalculateBtn.innerHTML = '<i class="fa-solid fa-calculator" style="margin-right:8px;"></i>Calculate Fare';
+                }
+            });
+        }
 
         // Email submit
         if (bookingForm) {
@@ -515,11 +556,10 @@
                 e.preventDefault();
                 if (!validateBookingDate()) return;
                 if (!bookingForm.reportValidity()) return;
+                if (!fareReadyToSubmit) return;
                 const submitBtn = bookingForm.querySelector('button[type="submit"]');
                 try {
-                    if (submitBtn) { submitBtn.textContent = 'Calculating fare...'; submitBtn.disabled = true; }
-                    await calculateBookingFare();
-                    fareReadyToSubmit = true;
+                    if (submitBtn) { submitBtn.disabled = true; }
                     showPaymentPanel(
                         pickupField.value.trim(),
                         dropoffField.value.trim(),
@@ -530,11 +570,10 @@
                     );
                     openBookingEmailDraft();
                 } catch {
-                    alert('Sorry, we could not calculate the fare for that route. Please check the addresses and try again.');
+                    alert('Sorry, we could not proceed with booking. Please try again.');
                 } finally {
                     if (submitBtn) {
-                        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Submit Booking by Email';
-                        submitBtn.disabled  = false;
+                        submitBtn.disabled = false;
                     }
                 }
             });
