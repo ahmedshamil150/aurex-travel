@@ -64,14 +64,7 @@
 
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
-                <form id="bookingForm"
-                      action="https://formsubmit.co/aurexexecutivetravel@gmail.com"
-                      method="POST">
-
-                    <!-- FormSubmit Config -->
-                    <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
-                    <input type="hidden" name="_next" value="https://aurexexecutivetravel.co.uk/book.html?submitted=true">
-                    <input type="hidden" name="_captcha" value="false">
+                <form id="bookingForm" action="#" method="POST">
 
                     <h3 class="form-section-title">Passenger Details</h3>
                     <div class="form-row">
@@ -453,42 +446,43 @@
             payPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Save booking details to sessionStorage before email form submits
-        // so they survive the FormSubmit redirect back to this page
-        if (bookingForm) {
-            bookingForm.addEventListener('submit', function(e) {
-                // Validate booking date is not in the past
-                if (!validateBookingDate()) {
-                    e.preventDefault();
-                    return false;
-                }
-                
-                if (!fareReadyToSubmit) return;
-                sessionStorage.setItem('aurex_booking', JSON.stringify({
-                    pickup:  pickupField.value.trim(),
-                    dropoff: dropoffField.value.trim(),
-                    date:    document.getElementById('bookDate').value,
-                    time:    document.getElementById('bookTime').value,
-                    vehicle: vehicleSelect ? vehicleSelect.value : '',
-                    amount:  amountField.value,
-                    name:    document.getElementById('bookName').value.trim()
-                }));
-            }, true); // capture phase so it fires before the submit handler checks fareReadyToSubmit
+        function buildBookingEmailBody() {
+            const name    = document.getElementById('bookName')?.value.trim() || '';
+            const mobile  = document.getElementById('bookMobile')?.value.trim() || '';
+            const vehicle = vehicleSelect ? vehicleSelect.value : '';
+            const pickup  = pickupField.value.trim();
+            const dropoff = dropoffField.value.trim();
+            const date    = document.getElementById('bookDate')?.value || '';
+            const time    = document.getElementById('bookTime')?.value || '';
+            const flight  = document.getElementById('bookFlight')?.value.trim() || '';
+            const trip    = document.getElementById('bookTripTypeHidden')?.value || 'One Way';
+            const amount  = amountField.value ? `£${Number(amountField.value).toFixed(2)}` : 'TBC';
+
+            return [
+                `Name: ${name}`,
+                `Mobile: ${mobile}`,
+                `Vehicle: ${vehicle}`,
+                `Pickup: ${pickup}`,
+                `Drop-off: ${dropoff}`,
+                `Date: ${date}`,
+                `Time: ${time}`,
+                `Trip Type: ${trip}`,
+                flight ? `Flight: ${flight}` : null,
+                `Estimated Fare: ${amount}`
+            ].filter(Boolean).join('\n');
         }
+
+        function openBookingEmailDraft() {
+            const subject = 'New Booking Request — Aurex Executive Travel';
+            const body = buildBookingEmailBody();
+            const mailtoUrl = `mailto:${COMPANY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.open(mailtoUrl, '_blank');
+        }
+
         const params = new URLSearchParams(window.location.search);
         const vehicleMap = { 'tesla': 'Saloon', 'e-class': 'Saloon', 'v-class': 'MPV' };
         const vehicleParam = params.get('vehicle');
         if (vehicleParam && vehicleSelect) vehicleSelect.value = vehicleMap[vehicleParam] || vehicleParam;
-
-        // Redirected back from FormSubmit — restore from sessionStorage
-        if (params.get('submitted') === 'true') {
-            const saved = sessionStorage.getItem('aurex_booking');
-            if (saved) {
-                const b = JSON.parse(saved);
-                sessionStorage.removeItem('aurex_booking');
-                showPaymentPanel(b.pickup, b.dropoff, b.date, b.time, b.vehicle, b.amount);
-            }
-        }
 
         if (editBtn) {
             editBtn.addEventListener('click', () => {
@@ -518,19 +512,27 @@
         // Email submit
         if (bookingForm) {
             bookingForm.addEventListener('submit', async function (e) {
-                if (fareReadyToSubmit && amountField.value) return;
                 e.preventDefault();
+                if (!validateBookingDate()) return;
                 if (!bookingForm.reportValidity()) return;
                 const submitBtn = bookingForm.querySelector('button[type="submit"]');
                 try {
                     if (submitBtn) { submitBtn.textContent = 'Calculating fare...'; submitBtn.disabled = true; }
                     await calculateBookingFare();
                     fareReadyToSubmit = true;
-                    bookingForm.requestSubmit();
+                    showPaymentPanel(
+                        pickupField.value.trim(),
+                        dropoffField.value.trim(),
+                        document.getElementById('bookDate').value,
+                        document.getElementById('bookTime').value,
+                        vehicleSelect ? vehicleSelect.value : '',
+                        amountField.value || '0'
+                    );
+                    openBookingEmailDraft();
                 } catch {
                     alert('Sorry, we could not calculate the fare for that route. Please check the addresses and try again.');
                 } finally {
-                    if (submitBtn && !fareReadyToSubmit) {
+                    if (submitBtn) {
                         submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Submit Booking by Email';
                         submitBtn.disabled  = false;
                     }
