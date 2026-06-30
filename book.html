@@ -500,9 +500,10 @@
         }
 
         function openBookingEmailDraft() {
+            const email = 'aurexexecutivetravel@gmail.com';
             const subject = 'New Booking Request — Aurex Executive Travel';
             const body = buildBookingEmailBody();
-            const mailtoUrl = `mailto:${COMPANY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.open(mailtoUrl, '_blank');
         }
 
