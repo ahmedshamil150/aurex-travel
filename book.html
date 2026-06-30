@@ -345,7 +345,40 @@
         const distanceField = document.getElementById('bookDistance');
         const fareSummary   = document.getElementById('bookFareSummary');
         const farePrice     = document.getElementById('bookEstimatedPrice');
+        const dateField     = document.getElementById('bookDate');
         let fareReadyToSubmit = false;
+
+        // ── Set minimum date to today to prevent past date bookings ──
+        function setMinimumDate() {
+            if (!dateField) return;
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayString = `${year}-${month}-${day}`;
+            dateField.min = todayString;
+        }
+
+        // ── Validate date is not in the past ──
+        function validateBookingDate() {
+            if (!dateField || !dateField.value) return true;
+            
+            const selectedDate = new Date(dateField.value);
+            const today = new Date();
+            // Reset time to midnight for fair comparison
+            today.setHours(0, 0, 0, 0);
+            selectedDate.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                alert('❌ Booking date cannot be in the past. Please select today or a future date.');
+                dateField.focus();
+                return false;
+            }
+            return true;
+        }
+
+        // Set minimum date on page load
+        setMinimumDate();
 
         function setBookingFare(distance, amount) {
             if (!amount) return;
@@ -423,7 +456,13 @@
         // Save booking details to sessionStorage before email form submits
         // so they survive the FormSubmit redirect back to this page
         if (bookingForm) {
-            bookingForm.addEventListener('submit', function() {
+            bookingForm.addEventListener('submit', function(e) {
+                // Validate booking date is not in the past
+                if (!validateBookingDate()) {
+                    e.preventDefault();
+                    return false;
+                }
+                
                 if (!fareReadyToSubmit) return;
                 sessionStorage.setItem('aurex_booking', JSON.stringify({
                     pickup:  pickupField.value.trim(),

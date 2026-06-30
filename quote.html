@@ -311,6 +311,51 @@
         if (quoteNext) {
             quoteNext.value = window.location.origin + '/success.html?type=quote';
         }
+
+        // ── Set minimum date to today to prevent past date bookings ──
+        const customDateField = document.getElementById('cDate');
+        if (customDateField) {
+            // Set minimum date on page load
+            function setQuoteMinimumDate() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayString = `${year}-${month}-${day}`;
+                customDateField.min = todayString;
+            }
+
+            // Validate date is not in the past
+            function validateQuoteDate() {
+                if (!customDateField.value) return true;
+                
+                const selectedDate = new Date(customDateField.value);
+                const today = new Date();
+                // Reset time to midnight for fair comparison
+                today.setHours(0, 0, 0, 0);
+                selectedDate.setHours(0, 0, 0, 0);
+                
+                if (selectedDate < today) {
+                    alert('❌ Travel date cannot be in the past. Please select today or a future date.');
+                    customDateField.focus();
+                    return false;
+                }
+                return true;
+            }
+
+            setQuoteMinimumDate();
+
+            // Add validation to custom quote form
+            const customQuoteForm = document.getElementById('customQuoteForm');
+            if (customQuoteForm) {
+                customQuoteForm.addEventListener('submit', function(e) {
+                    if (!validateQuoteDate()) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            }
+        }
     </script>
 </body>
 
