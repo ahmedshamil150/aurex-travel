@@ -64,7 +64,9 @@
 
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
-                <form id="bookingForm" action="#" method="POST">
+                <form id="bookingForm" action="https://formsubmit.co/ajax/aurexexecutivetravel@gmail.com" method="POST">
+                    <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
+                    <input type="hidden" name="_captcha" value="false">
 
                     <h3 class="form-section-title">Passenger Details</h3>
                     <div class="form-row">
@@ -344,6 +346,7 @@
         const dateField     = document.getElementById('bookDate');
         const bookSubmitBtn = document.getElementById('bookSubmitBtn');
         const bookCalculateBtn = document.getElementById('bookCalculateBtn');
+        const FORM_SUBMIT_URL = 'https://formsubmit.co/ajax/aurexexecutivetravel@gmail.com';
         let fareReadyToSubmit = false;
 
         function updateSubmitButtonState() {
@@ -499,12 +502,21 @@
             ].filter(Boolean).join('\n');
         }
 
-        function openBookingEmailDraft() {
-            const email = 'aurexexecutivetravel@gmail.com';
-            const subject = 'New Booking Request — Aurex Executive Travel';
-            const body = buildBookingEmailBody();
-            const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.open(mailtoUrl, '_blank');
+        async function submitBookingRequest() {
+            if (!bookingForm) throw new Error('Booking form not found');
+            const formData = new FormData(bookingForm);
+            formData.set('_subject', 'New Booking Request — Aurex Executive Travel');
+            formData.set('_captcha', 'false');
+
+            const res = await fetch(FORM_SUBMIT_URL, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Form submission failed');
+            }
+            return data;
         }
 
         const params = new URLSearchParams(window.location.search);
@@ -560,7 +572,8 @@
                 if (!fareReadyToSubmit) return;
                 const submitBtn = bookingForm.querySelector('button[type="submit"]');
                 try {
-                    if (submitBtn) { submitBtn.disabled = true; }
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Sending...'; }
+                    await submitBookingRequest();
                     showPaymentPanel(
                         pickupField.value.trim(),
                         dropoffField.value.trim(),
@@ -569,12 +582,13 @@
                         vehicleSelect ? vehicleSelect.value : '',
                         amountField.value || '0'
                     );
-                    openBookingEmailDraft();
-                } catch {
-                    alert('Sorry, we could not proceed with booking. Please try again.');
+                } catch (err) {
+                    console.error('Booking submission error:', err);
+                    alert('Sorry, the booking request could not be sent. Please try again.');
                 } finally {
                     if (submitBtn) {
                         submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now';
                     }
                 }
             });
