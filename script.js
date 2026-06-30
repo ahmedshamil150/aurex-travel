@@ -5,10 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Navbar Scroll Effect ---
     const navbar = document.querySelector('.navbar');
+    let scrollTicking = false;
     window.addEventListener('scroll', () => {
-        navbar.style.borderBottom = window.scrollY > 50
-            ? '1px solid rgba(255,255,255,0.08)'
-            : '1px solid rgba(255,255,255,0.05)';
+        if (!scrollTicking) {
+            requestAnimationFrame(() => {
+                navbar.classList.toggle('scrolled', window.scrollY > 80);
+                scrollTicking = false;
+            });
+            scrollTicking = true;
+        }
     });
 
     // --- Mobile Menu Toggle ---
