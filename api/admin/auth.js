@@ -1,5 +1,5 @@
 const supabase = require('../../lib/supabase-admin');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'aurex-admin-secret-change-in-production';
