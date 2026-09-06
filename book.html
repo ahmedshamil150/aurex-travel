@@ -64,9 +64,7 @@
 
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
-                <form id="bookingForm" action="https://formsubmit.co/ajax/aurexexecutivetravel@gmail.com" method="POST">
-                    <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
-                    <input type="hidden" name="_captcha" value="false">
+                <form id="bookingForm">
 
                     <h3 class="form-section-title">Passenger Details</h3>
                     <div class="form-row">
@@ -157,15 +155,12 @@
                         <button type="button" class="btn-secondary" id="bookCalculateBtn" style="flex:1; min-width:200px;">
                             <i class="fa-solid fa-calculator" style="margin-right:8px;"></i>Calculate Fare
                         </button>
-                        <button type="submit" class="btn-primary" id="bookSubmitBtn" style="flex:1; min-width:200px;" disabled>
-                            <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now (Disabled)
+                        <button type="submit" class="btn-primary" id="bookSubmitBtn" style="flex:1; min-width:200px;">
+                            <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now
                         </button>
                         <button type="button" id="bookWhatsAppBtn" class="btn-whatsapp" style="flex:1; min-width:200px;">
                             <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send via WhatsApp (Instant)
                         </button>
-                    </div>
-                    <div style="margin-top:1rem; color:#a00; font-weight:700;">
-                        Booking via the website is temporarily disabled while we resolve the form submission issue. Please use WhatsApp or call us to book now.
                     </div>
                 </form>
             </div>
@@ -350,17 +345,15 @@
         const dateField     = document.getElementById('bookDate');
         const bookSubmitBtn = document.getElementById('bookSubmitBtn');
         const bookCalculateBtn = document.getElementById('bookCalculateBtn');
-        const FORM_SUBMIT_URL = 'https://formsubmit.co/ajax/aurexexecutivetravel@gmail.com';
+        const FORM_SUBMIT_URL = null; // Now using /api/submit-booking
         let fareReadyToSubmit = false;
 
         function updateSubmitButtonState() {
-            if (!bookSubmitBtn) return;
-            bookSubmitBtn.disabled = true;
-            bookSubmitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now (Temporarily Disabled)';
+            // Button is always enabled now
         }
 
         function resetBookingState() {
-            fareReadyToSubmit = false;
+            fareReadyToSubmit = true;
             updateSubmitButtonState();
         }
 
@@ -502,30 +495,8 @@
         }
 
         async function submitBookingRequest() {
-            if (!bookingForm) throw new Error('Booking form not found');
-            const formData = new FormData(bookingForm);
-            formData.set('_subject', 'New Booking Request — Aurex Executive Travel');
-            formData.set('_captcha', 'false');
-
-            const res = await fetch(FORM_SUBMIT_URL, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json'
-                },
-                body: formData
-            });
-            const text = await res.text();
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (err) {
-                throw new Error(`FormSubmit returned non-JSON response: ${text}`);
-            }
-
-            if (!res.ok || !(data.success || data.status === 'success')) {
-                throw new Error(data.message || data.error || `FormSubmit failed: ${text}`);
-            }
-            return data;
+            // Submission is now handled by the main script.js form handler
+            return { success: true };
         }
 
         const params = new URLSearchParams(window.location.search);

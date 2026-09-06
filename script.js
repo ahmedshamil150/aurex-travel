@@ -3,6 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const COMPANY_EMAIL = 'aurexexecutivetravel@gmail.com';
     const GEO_KEY       = '1681c0e18bb747a8a7317699a0c094f3';
 
+    // ── Load prices from database ────────────────────────────────────────────
+    let FIXED_ROUTE_PRICES = {
+        'cardiff->heathrow':        { saloon: 230, mpv: 250 },
+        'cardiff->bristol':         { saloon: 135, mpv: 155 },
+        'cardiff->cardiff airport': { saloon: 60,  mpv: 80  },
+        'cardiff->gatwick':         { saloon: 320, mpv: 340 },
+        'cardiff->birmingham':      { saloon: 230, mpv: 260 },
+        'cardiff->manchester':      { saloon: 320, mpv: 350 }
+    };
+
+    fetch('/api/get-prices')
+        .then(r => r.json())
+        .then(dbPrices => {
+            if (dbPrices && typeof dbPrices === 'object' && Object.keys(dbPrices).length > 0) {
+                FIXED_ROUTE_PRICES = dbPrices;
+            }
+        })
+        .catch(() => {});
+
     // --- Navbar Scroll Effect ---
     const navbar = document.querySelector('.navbar');
     let scrollTicking = false;
@@ -983,5 +1002,250 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dropoffLonField) dropoffLonField.value = dropoffLon;
         }
         if (p.get('route') && dropoffField && !dropoffField.value) dropoffField.value = p.get('route').replace(/\+/g, ' ');
+        if (p.get('amount')) {
+            const priceEl = document.getElementById('bookEstimatedPrice');
+            const fareSummary = document.getElementById('bookFareSummary');
+            if (priceEl) priceEl.textContent = '£' + parseFloat(p.get('amount')).toFixed(2);
+            if (fareSummary) fareSummary.style.display = 'block';
+            const amountField = document.getElementById('bookAmount');
+            if (amountField) amountField.value = p.get('amount');
+        }
+        if (p.get('distance')) {
+            const distField = document.getElementById('bookDistance');
+            if (distField) distField.value = p.get('distance');
+        }
+    }
+
+    // ── Booking Form Submit ──────────────────────────────────────────────────
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('bookSubmitBtn');
+            const name = document.getElementById('bookName').value.trim();
+            const mobile = document.getElementById('bookMobile').value.trim();
+            const vehicle = document.getElementById('bookVehicle').value;
+            const pickup = document.getElementById('bookPickup').value.trim();
+            const dropoff = document.getElementById('bookDropoff').value.trim();
+            const date = document.getElementById('bookDate').value;
+            const time = document.getElementById('bookTime').value;
+            const flight = document.getElementById('bookFlight').value.trim();
+            const tripType = document.getElementById('bookTripTypeHidden')?.value || 'One Way';
+            const passengers = 1;
+            const estimatedPrice = document.getElementById('bookAmount')?.value || '';
+            const distance = document.getElementById('bookDistance')?.value || '';
+            const pickupLat = document.getElementById('bookPickupLat')?.value || '';
+            const pickupLon = document.getElementById('bookPickupLon')?.value || '';
+            const dropoffLat = document.getElementById('bookDropoffLat')?.value || '';
+            const dropoffLon = document.getElementById('bookDropoffLon')?.value || '';
+
+            if (!name || !mobile || !vehicle || !pickup || !dropoff || !date) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+            try {
+                const res = await fetch('/api/submit-booking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name, mobile, vehicle, pickup, dropoff, date, time, flight,
+                        tripType: tripType === 'Return' ? 'return' : 'one_way',
+                        passengers, estimatedPrice, distance,
+                        pickupLat, pickupLon, dropoffLat, dropoffLon
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Submission failed');
+
+                // Show payment panel
+                document.getElementById('bookingFormSection').style.display = 'none';
+                document.getElementById('paymentPanel').style.display = 'block';
+                document.getElementById('payFromTo').textContent = pickup + ' → ' + dropoff;
+                document.getElementById('payDateTime').textContent = date + (time ? ' at ' + time : '');
+                document.getElementById('payVehicle').textContent = vehicle;
+                document.getElementById('payTotal').textContent = estimatedPrice ? '£' + parseFloat(estimatedPrice).toFixed(2) : 'TBC';
+
+                // Store booking ID for Stripe
+                window._aurexBookingId = data.booking_id;
+                window._aurexBookingAmount = estimatedPrice;
+                window._aurexBookingName = name;
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now';
+            }
+        });
+    }
+
+    // ── Custom Quote Form Submit ─────────────────────────────────────────────
+    const customQuoteForm = document.getElementById('customQuoteForm');
+    if (customQuoteForm) {
+        customQuoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('cName').value.trim();
+            const mobile = document.getElementById('cMobile').value.trim();
+            const pickup = document.getElementById('cFrom').value.trim();
+            const dropoff = document.getElementById('cTo').value.trim();
+            const date = document.getElementById('cDate').value;
+            const time = document.getElementById('cTime').value;
+            const passengers = document.getElementById('cPassengers').value;
+            const vehicle = document.getElementById('cVehicle').value;
+            const price = document.getElementById('cOffered').value;
+            const notes = document.getElementById('cNotes').value.trim();
+
+            if (!name || !mobile || !pickup || !dropoff) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const submitBtn = customQuoteForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+
+            try {
+                const res = await fetch('/api/submit-quote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, mobile, pickup, dropoff, date, time, passengers, vehicle, price, notes })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Submission failed');
+
+                customQuoteForm.innerHTML = '<div style="text-align:center;padding:3rem 1rem;"><i class="fa-solid fa-circle-check" style="font-size:3rem;color:var(--accent);margin-bottom:1rem;display:block;"></i><h3 style="margin-bottom:0.5rem;">Quote Request Sent!</h3><p style="color:var(--text-muted);">We\'ll review your request and get back to you shortly.</p></div>';
+            } catch (err) {
+                alert('Error: ' + err.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Quote Request';
+            }
+        });
+    }
+
+    // ── Contact Form Submit ──────────────────────────────────────────────────
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = contactForm.querySelector('[name="name"]')?.value?.trim() || '';
+            const email = contactForm.querySelector('[name="email"]')?.value?.trim() || '';
+            const subject = contactForm.querySelector('[name="subject"]')?.value?.trim() || '';
+            const message = contactForm.querySelector('[name="message"]')?.value?.trim() || '';
+
+            if (!name || !email || !message) { alert('Please fill in all required fields.'); return; }
+
+            const btn = contactForm.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = 'Sending...';
+
+            try {
+                const res = await fetch('/api/submit-contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, subject, message })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed');
+                contactForm.innerHTML = '<div style="text-align:center;padding:3rem 1rem;"><i class="fa-solid fa-circle-check" style="font-size:3rem;color:var(--accent);margin-bottom:1rem;display:block;"></i><h3>Message Sent!</h3><p style="color:var(--text-muted);">Thank you. We\'ll get back to you shortly.</p></div>';
+            } catch (err) { alert('Error: ' + err.message); btn.disabled = false; btn.textContent = 'Send Message'; }
+        });
+    }
+
+    // ── Corporate Form Submit ────────────────────────────────────────────────
+    const corporateForm = document.getElementById('corporateForm');
+    if (corporateForm) {
+        corporateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = corporateForm.querySelector('[name="name"]')?.value?.trim() || '';
+            const email = corporateForm.querySelector('[name="email"]')?.value?.trim() || '';
+            const phone = corporateForm.querySelector('[name="phone"]')?.value?.trim() || '';
+            const company = corporateForm.querySelector('[name="company"]')?.value?.trim() || '';
+            const journeys = corporateForm.querySelector('[name="journeys"]')?.value || '';
+            const requirements = corporateForm.querySelector('[name="requirements"]')?.value?.trim() || '';
+
+            if (!name || !phone || !company) { alert('Please fill in all required fields.'); return; }
+
+            const btn = corporateForm.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = 'Sending...';
+
+            try {
+                const res = await fetch('/api/submit-corporate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, company, journeys, requirements })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed');
+                corporateForm.innerHTML = '<div style="text-align:center;padding:3rem 1rem;"><i class="fa-solid fa-circle-check" style="font-size:3rem;color:var(--accent);margin-bottom:1rem;display:block;"></i><h3>Enquiry Sent!</h3><p style="color:var(--text-muted);">We\'ll be in touch shortly to discuss your corporate account.</p></div>';
+            } catch (err) { alert('Error: ' + err.message); btn.disabled = false; btn.textContent = 'Send Enquiry'; }
+        });
+    }
+
+    // ── Driver Application Form Submit ───────────────────────────────────────
+    const driverForm = document.getElementById('driverApplicationForm');
+    if (driverForm) {
+        driverForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const firstName = document.getElementById('drvFirstName')?.value?.trim() || '';
+            const lastName = document.getElementById('drvLastName')?.value?.trim() || '';
+            const mobile = document.getElementById('drvMobile')?.value?.trim() || '';
+            const email = document.getElementById('drvEmail')?.value?.trim() || '';
+            const phdl = document.getElementById('drvPHDL')?.value?.trim() || '';
+            const dbsStatus = document.getElementById('drvDBSStatus')?.value || '';
+            const experience = document.getElementById('drvExperience')?.value || '';
+            const notes = document.getElementById('drvNotes')?.value?.trim() || '';
+
+            if (!firstName || !lastName || !mobile) { alert('Please fill in all required fields.'); return; }
+
+            const btn = driverForm.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = 'Submitting...';
+
+            try {
+                const res = await fetch('/api/submit-driver', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ firstName, lastName, mobile, email, phdl, dbsStatus, experience, notes })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed');
+                driverForm.innerHTML = '<div style="text-align:center;padding:3rem 1rem;"><i class="fa-solid fa-circle-check" style="font-size:3rem;color:var(--accent);margin-bottom:1rem;display:block;"></i><h3>Application Submitted!</h3><p style="color:var(--text-muted);">We\'ll review your application and get back to you within 48 hours.</p></div>';
+            } catch (err) { alert('Error: ' + err.message); btn.disabled = false; btn.textContent = 'Submit Application'; }
+        });
+    }
+
+    // ── Vehicle Registration Form Submit ─────────────────────────────────────
+    const vehicleForm = document.getElementById('vehicleRegistrationForm');
+    if (vehicleForm) {
+        vehicleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const reg = document.getElementById('vehReg')?.value?.trim() || '';
+            const make = document.getElementById('vehMake')?.value?.trim() || '';
+            const model = document.getElementById('vehModel')?.value?.trim() || '';
+            const year = document.getElementById('vehYear')?.value || '';
+            const colour = document.getElementById('vehColour')?.value?.trim() || '';
+            const driverName = document.getElementById('vehDriverName')?.value?.trim() || '';
+            const driverMobile = document.getElementById('vehDriverMobile')?.value?.trim() || '';
+            const driverEmail = document.getElementById('vehDriverEmail')?.value?.trim() || '';
+            const phvl = document.getElementById('vehPHVL')?.value?.trim() || '';
+            const vehicleType = (make.toLowerCase().includes('v-class') || make.toLowerCase().includes('vclass')) ? 'mpv' : 'saloon';
+
+            if (!reg || !make || !model || !driverName || !driverMobile) { alert('Please fill in all required fields.'); return; }
+
+            const btn = vehicleForm.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = 'Submitting...';
+
+            try {
+                const res = await fetch('/api/submit-vehicle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reg, make, model, year, colour, driverName, driverMobile, driverEmail, phvl, vehicleType })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed');
+                vehicleForm.innerHTML = '<div style="text-align:center;padding:3rem 1rem;"><i class="fa-solid fa-circle-check" style="font-size:3rem;color:var(--accent);margin-bottom:1rem;display:block;"></i><h3>Vehicle Registered!</h3><p style="color:var(--text-muted);">We\'ll review your vehicle details and confirm within 48 hours.</p></div>';
+            } catch (err) { alert('Error: ' + err.message); btn.disabled = false; btn.textContent = 'Submit Registration'; }
+        });
     }
 });

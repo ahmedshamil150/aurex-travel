@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurex Admin Panel</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">AUREX</div>
+        <span class="sidebar-subtitle">Admin Panel</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" data-page="dashboard">
+          <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+        <a href="#bookings" class="nav-item" data-page="bookings">
+          <i class="fa-solid fa-calendar-check"></i><span>Bookings</span>
+          <span class="badge" id="badge-bookings"></span>
+        </a>
+        <a href="#quotes" class="nav-item" data-page="quotes">
+          <i class="fa-solid fa-file-invoice"></i><span>Quotes</span>
+          <span class="badge" id="badge-quotes"></span>
+        </a>
+        <a href="#drivers" class="nav-item" data-page="drivers">
+          <i class="fa-solid fa-user-tie"></i><span>Drivers</span>
+        </a>
+        <a href="#vehicles" class="nav-item" data-page="vehicles">
+          <i class="fa-solid fa-car"></i><span>Vehicles</span>
+        </a>
+        <a href="#prices" class="nav-item" data-page="prices">
+          <i class="fa-solid fa-tag"></i><span>Prices</span>
+        </a>
+        <a href="#customers" class="nav-item" data-page="customers">
+          <i class="fa-solid fa-users"></i><span>Customers</span>
+        </a>
+        <a href="#messages" class="nav-item" data-page="messages">
+          <i class="fa-solid fa-envelope"></i><span>Messages</span>
+          <span class="badge" id="badge-messages"></span>
+        </a>
+        <a href="#corporate" class="nav-item" data-page="corporate">
+          <i class="fa-solid fa-building"></i><span>Corporate</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/" target="_blank" class="nav-item"><i class="fa-solid fa-external-link"></i><span>View Site</span></a>
+        <a href="#" class="nav-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+      </div>
+    </aside>
+
+    <!-- Mobile overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <button class="hamburger-btn" id="hamburgerBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        <div class="topbar-right">
+          <span class="admin-name" id="adminName"></span>
+        </div>
+      </header>
+      <div class="content-area" id="contentArea">
+        <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Aurex Admin</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:#0f1117;color:#e1e4e8;display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .login-card{background:#1a1f2e;border-radius:16px;padding:3rem;width:100%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,.4)}
+    .login-logo{text-align:center;margin-bottom:2rem}
+    .login-logo .logo-text{font-size:2rem;font-weight:700;color:#c9a84c;letter-spacing:3px}
+    .login-logo p{color:#8b949e;font-size:.85rem;margin-top:.5rem}
+    .login-logo i{font-size:2.5rem;color:#c9a84c;margin-bottom:1rem;display:block}
+    .form-group{margin-bottom:1.25rem}
+    .form-group label{display:block;font-size:.8rem;font-weight:500;color:#8b949e;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px}
+    .form-group input{width:100%;padding:.75rem 1rem;background:#0f1117;border:1px solid #2d333b;border-radius:8px;color:#e1e4e8;font-size:.95rem;transition:border .2s}
+    .form-group input:focus{outline:none;border-color:#c9a84c}
+    .login-btn{width:100%;padding:.85rem;background:linear-gradient(135deg,#c9a84c,#b8963e);color:#0f1117;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;margin-top:.5rem}
+    .login-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(201,168,76,.3)}
+    .login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .error-msg{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:#f85149;padding:.75rem;border-radius:8px;font-size:.85rem;display:none;margin-bottom:1rem}
+    .spinner{display:inline-block;width:18px;height:18px;border:2px solid transparent;border-top-color:#0f1117;border-radius:50%;animation:spin .6s linear infinite;margin-right:.5rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-logo">
+      <i class="fa-solid fa-shield-halved"></i>
+      <div class="logo-text">AUREX</div>
+      <p>Admin Panel</p>
+    </div>
+    <div id="errorMsg" class="error-msg"></div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="email" required autocomplete="email" placeholder="admin@aurexexecutivetravel.co.uk">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" required autocomplete="current-password" placeholder="Enter your password">
+      </div>
+      <button type="submit" class="login-btn" id="loginBtn">
+        <span id="btnText">Sign In</span>
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('aurex_admin_token');
+    if (token) window.location.href = '/admin/';
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const errEl = document.getElementById('errorMsg');
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      btn.disabled = true;
+      document.getElementById('btnText').innerHTML = '<span class="spinner"></span>Signing in...';
+      errEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/admin/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+
+        localStorage.setItem('aurex_admin_token', data.token);
+        localStorage.setItem('aurex_admin_user', JSON.stringify(data.user));
+        window.location.href = '/admin/';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        document.getElementById('btnText').textContent = 'Sign In';
+      }
+    });
+  </script>
+</body>
+</html>
