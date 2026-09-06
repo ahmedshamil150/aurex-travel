@@ -251,7 +251,7 @@ ON CONFLICT (origin, destination) DO NOTHING;
 -- Change this password after first login!
 -- ============================================================
 INSERT INTO admin_users (email, password_hash, full_name, role) VALUES
-  ('admin@aurexexecutivetravel.co.uk', '$2b$10$ilzuPueQ97AOoM097S/Pvus7DUTEVCgJ961jyJS/lGxqW4TGvDw22', 'Aurex Admin', 'super_admin')
+  ('admin@aurexexecutivetravel.co.uk', '$2b$10$ViDsUcVv4gjD4jxhOvtLMeD8Nvyw2mj4G6.gH2Jc2MTSIfVoIlrLe', 'Aurex Admin', 'super_admin')
 ON CONFLICT (email) DO NOTHING;
 
 -- ============================================================
