@@ -1,6 +1,9 @@
 {
-  "cleanUrls": true,
+  "framework": null,
+  "buildCommand": null,
   "outputDirectory": ".",
+  "installCommand": "npm install --ignore-scripts",
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/api/(.*)",
