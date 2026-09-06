@@ -1,6 +1,4 @@
 {
-  "outputDirectory": ".",
-  "installCommand": "npm install --ignore-scripts",
   "cleanUrls": true,
   "headers": [
     {
