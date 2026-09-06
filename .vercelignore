@@ -1,0 +1,11 @@
+node_modules
+.git
+*.pdf
+Aurex.txt
+WEBSITE_OPERATIONS.txt
+CLIENT_REQUIREMENTS.txt
+project_memory.txt
+q-dev-chat-2026-06-24.md
+clients messages.txt
+git.txt
+supabase-schema.sql
