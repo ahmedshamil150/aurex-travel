@@ -1,6 +1,4 @@
 {
-  "framework": null,
-  "buildCommand": null,
   "outputDirectory": ".",
   "installCommand": "npm install --ignore-scripts",
   "cleanUrls": true,
