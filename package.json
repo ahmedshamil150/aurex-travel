@@ -1,5 +1,8 @@
 {
   "private": true,
+  "scripts": {
+    "build": "node --check script.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",
     "bcryptjs": "^3.0.3",

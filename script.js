@@ -101,15 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return miles * 2.00;
     }
 
-    const FIXED_ROUTE_PRICES = {
-        'cardiff->heathrow':        { saloon: 230, mpv: 250 },
-        'cardiff->bristol':         { saloon: 135, mpv: 155 },
-        'cardiff->cardiff airport': { saloon: 60,  mpv: 80  },
-        'cardiff->gatwick':         { saloon: 320, mpv: 340 },
-        'cardiff->birmingham':      { saloon: 230, mpv: 260 },
-        'cardiff->manchester':      { saloon: 320, mpv: 350 }
-    };
-
     const AIRPORT_COORDS = {
         'heathrow':      { lat: 51.4700, lon: -0.4543 },
         'gatwick':       { lat: 51.1537, lon: -0.1821 },
