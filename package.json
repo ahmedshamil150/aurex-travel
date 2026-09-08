@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "build": "node --check script.js"
+    "check": "node --check script.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",

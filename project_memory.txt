@@ -4,6 +4,7 @@ Instructions for editors:
 Whoever edits this project must read this file first. Any updates or changes made to the project must be documented here in the Changelog section. Keep it up to date with every modification you make. This ensures we have a complete history of how the project evolved.
 
 Changelog:
+- 2026-09-08: Switched Vercel to explicit static-site mode by disabling the build command. Renamed the local JavaScript validation command from build to check so Vercel does not expect a public output folder after running npm run build.
 - 2026-09-08: Configured Vercel to use the repository root as its output directory, preventing the deployment from failing while looking for a missing public folder.
 - 2026-09-08: Fixed Vercel deployment blockers. Removed the duplicate FIXED_ROUTE_PRICES declaration from script.js, which caused a JavaScript syntax error, and added a lightweight npm build script that validates script.js when Vercel runs npm run build.
 - 2026-06-15: Initialized basic landing page. Added "Book Now" button and booking form modal. Implemented WhatsApp integration to format form details and redirect to WhatsApp on submission. Styled with basic CSS to keep it clean, human-readable, and adhering to the requested color scheme (Black, Gold, White, Dark Grey).
