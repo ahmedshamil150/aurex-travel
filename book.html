@@ -157,16 +157,12 @@
                         <button type="button" class="btn-secondary" id="bookCalculateBtn" style="flex:1; min-width:200px;">
                             <i class="fa-solid fa-calculator" style="margin-right:8px;"></i>Calculate Fare
                         </button>
-                        <button type="submit" class="btn-primary" id="bookSubmitBtn" style="flex:1; min-width:200px;" disabled>
-                            <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now (Disabled)
+                        <button type="submit" class="btn-primary" id="bookSubmitBtn" style="flex:1; min-width:200px;">
+                            <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now
                         </button>
                         <button type="button" id="bookWhatsAppBtn" class="btn-whatsapp" style="flex:1; min-width:200px;">
                             <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send via WhatsApp (Instant)
                         </button>
-                    </div>
-                    <div style="margin-top:1rem; color:#a00; font-weight:700;">
-                        Booking via the website is temporarily disabled while we resolve the form submission issue. Please use WhatsApp or call us to book now.
-                    </div>
                 </form>
             </div>
 
@@ -357,8 +353,13 @@
 
         function updateSubmitButtonState() {
             if (!bookSubmitBtn) return;
-            bookSubmitBtn.disabled = true;
-            bookSubmitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now (Temporarily Disabled)';
+            if (fareReadyToSubmit) {
+                bookSubmitBtn.disabled = false;
+                bookSubmitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now';
+            } else {
+                bookSubmitBtn.disabled = true;
+                bookSubmitBtn.innerHTML = '<i class="fa-solid fa-calculator" style="margin-right:8px;"></i>Calculate Fare First';
+            }
         }
 
         function resetBookingState() {
