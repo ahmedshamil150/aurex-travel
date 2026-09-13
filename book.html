@@ -575,60 +575,116 @@
             });
         }
 
-        // Save to Supabase + WhatsApp submit
+        // ── Email helper ──────────────────────────────────────────────────────────
+        async function sendBookingEmail() {
+            try {
+                const formData = new FormData();
+                formData.append('name', document.getElementById('bookName')?.value.trim() || '');
+                formData.append('mobile', document.getElementById('bookMobile')?.value.trim() || '');
+                formData.append('vehicle', vehicleSelect ? vehicleSelect.value : '');
+                formData.append('pickup', pickupField.value.trim());
+                formData.append('dropoff', dropoffField.value.trim());
+                formData.append('date', document.getElementById('bookDate')?.value || '');
+                formData.append('time', document.getElementById('bookTime')?.value || '');
+                formData.append('flight', document.getElementById('bookFlight')?.value.trim() || '');
+                formData.append('trip_type', document.getElementById('bookTripTypeHidden')?.value || 'One Way');
+                formData.append('amount', amountField.value ? `£${Number(amountField.value).toFixed(2)}` : 'TBC');
+                formData.append('_subject', 'New Booking Request — Aurex Executive Travel');
+                formData.append('_captcha', 'false');
+                await fetch(FORM_SUBMIT_URL, { method: 'POST', headers: { Accept: 'application/json' }, body: formData });
+            } catch (e) { console.warn('Email send failed:', e); }
+        }
+
+        // ── Process booking: save to Supabase, send email, show payment panel ──────
+        async function processBooking(openWhatsApp) {
+            if (!bookingForm.reportValidity()) return;
+            const btn = openWhatsApp ? waBtn : bookSubmitBtn;
+            const orig = btn.innerHTML;
+            try {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>Processing...';
+                btn.disabled = true;
+                if (!fareReadyToSubmit || !amountField.value) await calculateBookingFare();
+
+                // 1. Save to Supabase
+                let bookingId = null;
+                if (window.AurexDB) {
+                    const result = await window.AurexDB.saveBooking({
+                        name: document.getElementById('bookName')?.value.trim() || '',
+                        mobile: document.getElementById('bookMobile')?.value.trim() || '',
+                        email: '',
+                        pickup: pickupField.value.trim(),
+                        dropoff: dropoffField.value.trim(),
+                        airport: '',
+                        flight: document.getElementById('bookFlight')?.value.trim() || '',
+                        date: document.getElementById('bookDate').value,
+                        time: document.getElementById('bookTime').value,
+                        passengers: 1,
+                        vehicle: vehicleSelect ? vehicleSelect.value : '',
+                        amount: parseFloat(amountField.value) || 0,
+                        notes: document.getElementById('bookTripTypeHidden')?.value || 'One Way'
+                    });
+                    if (result && result.id) bookingId = result.id;
+                }
+
+                // 2. Store booking ID for payment success redirect
+                if (bookingId) localStorage.setItem('aurex_pending_booking', bookingId);
+
+                // 3. Send email notification (fire-and-forget)
+                sendBookingEmail();
+
+                // 4. Open WhatsApp if requested
+                if (openWhatsApp) {
+                    const msg = buildWAMessage();
+                    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+                }
+
+                // 5. Show payment panel
+                showPaymentPanel(
+                    pickupField.value.trim(),
+                    dropoffField.value.trim(),
+                    document.getElementById('bookDate').value,
+                    document.getElementById('bookTime').value,
+                    vehicleSelect ? vehicleSelect.value : '',
+                    amountField.value || '0'
+                );
+            } catch (e) {
+                console.error('Booking error:', e);
+                alert('Sorry, something went wrong. Please try again.');
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        }
+
+        // ── Book Now (form submit) ────────────────────────────────────────────────
         if (bookingForm) {
             bookingForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                document.getElementById('bookWhatsAppBtn').click();
+                processBooking(false);
             });
         }
 
-        // WhatsApp submit
+        // ── WhatsApp button ──────────────────────────────────────────────────────
         const waBtn = document.getElementById('bookWhatsAppBtn');
         if (waBtn) {
-            waBtn.addEventListener('click', async () => {
-                if (!bookingForm.reportValidity()) return;
-                const orig = waBtn.innerHTML;
-                try {
-                    waBtn.innerHTML  = '<i class="fa-solid fa-spinner fa-spin"></i> Calculating...';
-                    waBtn.disabled   = true;
-                    if (!fareReadyToSubmit || !amountField.value) await calculateBookingFare();
-                    const msg = buildWAMessage();
-                    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-                    // Save booking to Supabase
-                    if (window.AurexDB) {
-                        window.AurexDB.saveBooking({
-                            name: document.getElementById('bookName')?.value.trim() || '',
-                            mobile: document.getElementById('bookMobile')?.value.trim() || '',
-                            email: '',
-                            pickup: pickupField.value.trim(),
-                            dropoff: dropoffField.value.trim(),
-                            airport: '',
-                            flight: document.getElementById('bookFlight')?.value.trim() || '',
-                            date: document.getElementById('bookDate').value,
-                            time: document.getElementById('bookTime').value,
-                            passengers: 1,
-                            vehicle: vehicleSelect ? vehicleSelect.value : '',
-                            amount: parseFloat(amountField.value) || 0,
-                            notes: document.getElementById('bookTripTypeHidden')?.value || 'One Way'
-                        }).catch(e => console.warn('Booking save failed:', e));
-                    }
-                    // Show payment panel immediately after WhatsApp
-                    showPaymentPanel(
-                        pickupField.value.trim(),
-                        dropoffField.value.trim(),
-                        document.getElementById('bookDate').value,
-                        document.getElementById('bookTime').value,
-                        vehicleSelect ? vehicleSelect.value : '',
-                        amountField.value || '0'
-                    );
-                } catch {
-                    alert('Sorry, we could not calculate the fare. Please check the addresses and try again.');
-                } finally {
-                    waBtn.innerHTML = orig;
-                    waBtn.disabled  = false;
-                }
-            });
+            waBtn.addEventListener('click', () => processBooking(true));
+        }
+
+        // ── Handle Stripe payment success redirect ──────────────────────────────
+        if (params.get('payment') === 'success') {
+            const pendingBookingId = localStorage.getItem('aurex_pending_booking');
+            if (pendingBookingId && publicDb) {
+                publicDb.from('bookings').update({ payment: 'paid', status: 'confirmed', updated_at: new Date().toISOString() }).eq('id', pendingBookingId).then(({ error }) => {
+                    if (error) console.warn('Payment status update failed:', error);
+                    localStorage.removeItem('aurex_pending_booking');
+                });
+            }
+            formSection.style.display = 'none';
+            payPanel.style.display = 'none';
+            document.getElementById('bookingConfirmed').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (params.get('payment') === 'cancel') {
+            // Payment cancelled — show form again
         }
         // Payment notification buttons — WhatsApp + show confirmed panel
         function buildPaymentWAMessage(method) {
