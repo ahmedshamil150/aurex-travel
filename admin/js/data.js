@@ -13,10 +13,9 @@ const Data = {
                 query = query.eq(f.column, f.value);
             });
         }
-        if (options.search) {
-            options.search.forEach(s => {
-                query = query.or(`${s.column}.ilike.%${s.value}%`);
-            });
+        if (options.search && options.search.length) {
+            const searchStr = options.search.map(s => `${s.column}.ilike.%${s.value}%`).join(',');
+            query = query.or(searchStr);
         }
         if (options.order) {
             query = query.order(options.order.column, { ascending: options.order.ascending ?? false });
