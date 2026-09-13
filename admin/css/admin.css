@@ -481,6 +481,18 @@ tbody tr:last-child td {
     background: rgba(245,158,11,0.1);
 }
 
+.badge-cash {
+    color: var(--info);
+    border-color: var(--info);
+    background: rgba(59,130,246,0.1);
+}
+
+.badge-bank_transfer {
+    color: #a78bfa;
+    border-color: #a78bfa;
+    background: rgba(167,139,250,0.1);
+}
+
 /* ======================== MODAL ======================== */
 .modal-overlay {
     display: none;

@@ -53,8 +53,10 @@
                             </select>
                             <select id="paymentFilter" onchange="renderTable()">
                                 <option value="">All Payments</option>
-                                <option value="paid">Paid</option>
+                                <option value="paid">Paid (Stripe)</option>
                                 <option value="unpaid">Unpaid</option>
+                                <option value="cash">Cash</option>
+                                <option value="bank_transfer">Bank Transfer</option>
                             </select>
                         </div>
                         <span id="bookingCount" style="font-size:0.82rem;color:var(--text-muted);"></span>
@@ -103,7 +105,7 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group"><label>Status</label><select id="fStatus"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div>
-                    <div class="form-group"><label>Payment</label><select id="fPayment"><option value="unpaid">Unpaid</option><option value="paid">Paid</option></select></div>
+                    <div class="form-group"><label>Payment</label><select id="fPayment"><option value="unpaid">Unpaid</option><option value="paid">Paid (Stripe)</option><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option></select></div>
                 </div>
                 <div class="form-group"><label>Notes</label><textarea id="fNotes" rows="2"></textarea></div>
             </div>

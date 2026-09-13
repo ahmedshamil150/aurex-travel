@@ -64,7 +64,7 @@
 
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
-                <form id="bookingForm" action="https://formsubmit.co/ajax/aurexexecutivetravel@gmail.com" method="POST">
+                <form id="bookingForm" action="#">
                     <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
                     <input type="hidden" name="_captcha" value="false">
 
@@ -217,14 +217,29 @@
                                 <p>Pay securely online with credit/debit card, Apple Pay, or Google Pay via Stripe.</p>
                             </div>
                         </div>
-                        <div class="payment-btn-group">
-                            <button type="button" id="stripePayBtn" class="btn-primary">
-                                <i class="fa-solid fa-credit-card" style="margin-right:8px;"></i> Pay Now (Stripe)
-                            </button>
-                            <button type="button" id="stripeSentBtn" class="btn-whatsapp">
-                                <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Payment Sent — Notify Us
-                            </button>
+                        <button type="button" id="stripePayBtn" class="btn-primary" style="width:100%;">
+                            <i class="fa-solid fa-credit-card" style="margin-right:8px;"></i> Pay with Card (Stripe)
+                        </button>
+                    </div>
+
+                    <!-- Bank Transfer -->
+                    <div class="payment-option">
+                        <div class="payment-option-header">
+                            <i class="fa-solid fa-university"></i>
+                            <div>
+                                <strong>Pay by Bank Transfer</strong>
+                                <p>Transfer directly to our bank account. Booking confirmed once payment is received.</p>
+                            </div>
                         </div>
+                        <div style="padding:0.75rem 1rem; background:var(--bg-input); border-radius:6px; margin-bottom:0.75rem; font-size:0.85rem; color:var(--text-muted);">
+                            <strong style="color:var(--text);">Bank Details:</strong><br>
+                            Account Name: Aurex Executive Travel<br>
+                            Sort Code: 12-34-56<br>
+                            Account Number: 12345678
+                        </div>
+                        <button type="button" id="bankTransferBtn" class="btn-primary" style="width:100%;">
+                            <i class="fa-solid fa-check" style="margin-right:8px;"></i> I've Made the Transfer
+                        </button>
                     </div>
 
                     <!-- Cash -->
@@ -236,8 +251,8 @@
                                 <p>Pay your driver in cash on the day of travel. Please have the exact amount ready.</p>
                             </div>
                         </div>
-                        <button type="button" id="cashConfirmBtn" class="btn-whatsapp" style="width:100%;">
-                            <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Confirm Cash Booking via WhatsApp
+                        <button type="button" id="cashConfirmBtn" class="btn-primary" style="width:100%;">
+                            <i class="fa-solid fa-check" style="margin-right:8px;"></i> Confirm Cash Booking
                         </button>
                     </div>
 
@@ -670,7 +685,7 @@
             waBtn.addEventListener('click', () => processBooking(true));
         }
 
-        // ── Handle Stripe payment success redirect ──────────────────────────────
+        // ── Payment success redirect ────────────────────────────────────────────
         if (params.get('payment') === 'success') {
             const pendingBookingId = localStorage.getItem('aurex_pending_booking');
             if (pendingBookingId && publicDb) {
@@ -681,36 +696,56 @@
             }
             formSection.style.display = 'none';
             payPanel.style.display = 'none';
+            document.getElementById('bookingConfirmed').querySelector('h2').textContent = 'Payment Received!';
+            document.getElementById('bookingConfirmed').querySelector('p').textContent = 'Your payment has been confirmed. We will send you a booking confirmation shortly.';
             document.getElementById('bookingConfirmed').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else if (params.get('payment') === 'cancel') {
-            // Payment cancelled — show form again
+            // Payment cancelled — show payment panel again
         }
-        // Payment notification buttons — WhatsApp + show confirmed panel
+
+        // ── Update booking payment in Supabase ─────────────────────────────────
+        async function updatePayment(method) {
+            const pendingBookingId = localStorage.getItem('aurex_pending_booking');
+            if (!pendingBookingId || !publicDb) return;
+            const { error } = await publicDb.from('bookings').update({ payment: method, updated_at: new Date().toISOString() }).eq('id', pendingBookingId);
+            if (error) console.warn('Payment update failed:', error);
+            localStorage.removeItem('aurex_pending_booking');
+        }
+
         function buildPaymentWAMessage(method) {
-            const name   = document.getElementById('bookName')?.value.trim() || params.get('pickup') || '';
+            const name   = document.getElementById('bookName')?.value.trim() || '';
             const pickup = document.getElementById('payFromTo')?.textContent || '';
             const date   = document.getElementById('payDateTime')?.textContent || '';
             const total  = document.getElementById('payTotal')?.textContent || '';
-            return `*💳 Payment Notification — Aurex Executive Travel*\n\n` +
-                `*Method:* ${method}\n` +
-                `*Journey:* ${pickup}\n` +
-                `*Date/Time:* ${date}\n` +
-                `*Amount:* ${total}\n\n` +
+            return `*Payment Notification — Aurex Executive Travel*\n\n` +
+                `*Method:* ${method}\n*Journey:* ${pickup}\n*Date/Time:* ${date}\n*Amount:* ${total}\n\n` +
                 (name ? `*Passenger:* ${name}\n\n` : '') +
                 `Please confirm the booking. Thank you.`;
         }
 
-        function handlePaymentNotify(method) {
-            const msg = buildPaymentWAMessage(method);
-            window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+        // ── Bank Transfer button ──────────────────────────────────────────────
+        document.getElementById('bankTransferBtn')?.addEventListener('click', async () => {
+            await updatePayment('bank_transfer');
             payPanel.style.display = 'none';
+            document.getElementById('bookingConfirmed').querySelector('h2').textContent = 'Bank Transfer Selected';
+            document.getElementById('bookingConfirmed').querySelector('p').textContent = 'Please make the bank transfer using the details above. Your booking will be confirmed once payment is received.';
             document.getElementById('bookingConfirmed').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+            sendBookingEmail();
+        });
 
-        document.getElementById('stripeSentBtn')?.addEventListener('click', () => handlePaymentNotify('Stripe'));
-        document.getElementById('cashConfirmBtn')?.addEventListener('click', () => handlePaymentNotify('Cash'));
+        // ── Cash button ──────────────────────────────────────────────────────
+        document.getElementById('cashConfirmBtn')?.addEventListener('click', async () => {
+            await updatePayment('cash');
+            const msg = buildPaymentWAMessage('Cash');
+            window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+            payPanel.style.display = 'none';
+            document.getElementById('bookingConfirmed').querySelector('h2').textContent = 'Cash Booking Confirmed';
+            document.getElementById('bookingConfirmed').querySelector('p').textContent = 'Please have the exact cash amount ready for your driver on the day of travel.';
+            document.getElementById('bookingConfirmed').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
 
         const stripePayBtn = document.getElementById('stripePayBtn');
         if (stripePayBtn) {
