@@ -274,6 +274,8 @@ const Data = {
 
     // ── Pricing ──────────────────────────────────────────────
     async getPricing() {
+        if (!db) initSupabase();
+        if (!db) return [];
         const { data, error } = await db
             .from('pricing')
             .select('*')
@@ -283,6 +285,8 @@ const Data = {
     },
 
     async updatePricingRow(id, updates) {
+        if (!db) initSupabase();
+        if (!db) return;
         const { error } = await db
             .from('pricing')
             .update({ route: updates.route, saloon: updates.saloon, mpv: updates.mpv })
@@ -291,6 +295,8 @@ const Data = {
     },
 
     async addPricingRow(route, saloon, mpv) {
+        if (!db) initSupabase();
+        if (!db) return null;
         const { data, error } = await db
             .from('pricing')
             .insert({ route, saloon, mpv, sort_order: 99 })
@@ -300,6 +306,8 @@ const Data = {
     },
 
     async deletePricingRow(id) {
+        if (!db) initSupabase();
+        if (!db) return;
         const { error } = await db.from('pricing').delete().eq('id', id);
         if (error) console.error('Delete pricing error:', error);
     },
