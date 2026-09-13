@@ -387,12 +387,42 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="public-db.js"></script>
     <script src="script.js"></script>
     <script>
         // Set absolute URL for FormSubmit _next parameter
         const vehicleNext = document.getElementById('vehicleNext');
         if (vehicleNext) {
             vehicleNext.value = window.location.origin + '/success.html?type=vehicle';
+        }
+
+        // Save vehicle registration to Supabase
+        const vehicleForm = document.getElementById('vehicleRegistrationForm');
+        if (vehicleForm && window.AurexDB) {
+            let vehicleSubmitting = false;
+            vehicleForm.addEventListener('submit', function(e) {
+                if (vehicleSubmitting) return;
+                e.preventDefault();
+                vehicleSubmitting = true;
+                window.AurexDB.saveVehicle({
+                    driverName: document.getElementById('vehDriverName')?.value.trim() || '',
+                    driverMobile: document.getElementById('vehDriverMobile')?.value.trim() || '',
+                    driverEmail: document.getElementById('vehDriverEmail')?.value.trim() || '',
+                    reg: document.getElementById('vehReg')?.value.trim().toUpperCase() || '',
+                    make: document.getElementById('vehMake')?.value || '',
+                    model: document.getElementById('vehModel')?.value.trim() || '',
+                    year: document.getElementById('vehYear')?.value || '',
+                    colour: document.getElementById('vehColour')?.value.trim() || '',
+                    phvl: document.getElementById('vehPHVL')?.value.trim() || '',
+                    notes: document.getElementById('vehNotes')?.value || ''
+                }).then(() => {
+                    vehicleForm.submit();
+                }).catch(err => {
+                    console.warn('Vehicle save failed:', err);
+                    vehicleForm.submit();
+                });
+            });
         }
     </script>
 </body>

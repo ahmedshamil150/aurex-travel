@@ -331,6 +331,8 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>window.__AUREX_PAGE__ = 'book';</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="public-db.js"></script>
     <script src="script.js"></script>
     <script>
 
@@ -572,11 +574,11 @@
             });
         }
 
-        // Email submit
+        // Save to Supabase + WhatsApp submit
         if (bookingForm) {
             bookingForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                alert('Booking is temporarily disabled while we resolve the form submission issue. Please use WhatsApp or call us to place your booking.');
+                document.getElementById('bookWhatsAppBtn').click();
             });
         }
 
@@ -592,6 +594,24 @@
                     if (!fareReadyToSubmit || !amountField.value) await calculateBookingFare();
                     const msg = buildWAMessage();
                     window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+                    // Save booking to Supabase
+                    if (window.AurexDB) {
+                        window.AurexDB.saveBooking({
+                            name: document.getElementById('bookName')?.value.trim() || '',
+                            mobile: document.getElementById('bookMobile')?.value.trim() || '',
+                            email: '',
+                            pickup: pickupField.value.trim(),
+                            dropoff: dropoffField.value.trim(),
+                            airport: '',
+                            flight: document.getElementById('bookFlight')?.value.trim() || '',
+                            date: document.getElementById('bookDate').value,
+                            time: document.getElementById('bookTime').value,
+                            passengers: 1,
+                            vehicle: vehicleSelect ? vehicleSelect.value : '',
+                            amount: parseFloat(amountField.value) || 0,
+                            notes: document.getElementById('bookTripTypeHidden')?.value || 'One Way'
+                        }).catch(e => console.warn('Booking save failed:', e));
+                    }
                     // Show payment panel immediately after WhatsApp
                     showPaymentPanel(
                         pickupField.value.trim(),

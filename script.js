@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const COMPANY_EMAIL = 'aurexexecutivetravel@gmail.com';
     const GEO_KEY       = '1681c0e18bb747a8a7317699a0c094f3';
 
+    // ── Initialize Supabase for public site ─────────────────────────────────────
+    if (typeof initPublicDb === 'function') initPublicDb();
+
     // --- Navbar Scroll Effect ---
     const navbar = document.querySelector('.navbar');
     let scrollTicking = false;
@@ -82,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return miles * 2.00;
     }
 
-    const FIXED_ROUTE_PRICES = {
+    let FIXED_ROUTE_PRICES = {
         'cardiff->heathrow':        { saloon: 230, mpv: 250 },
         'cardiff->bristol':         { saloon: 135, mpv: 155 },
         'cardiff->cardiff airport': { saloon: 60,  mpv: 80  },
@@ -90,6 +93,46 @@ document.addEventListener('DOMContentLoaded', () => {
         'cardiff->birmingham':      { saloon: 230, mpv: 260 },
         'cardiff->manchester':      { saloon: 320, mpv: 350 }
     };
+
+    // Load live prices from Supabase (updates FIXED_ROUTE_PRICES in place)
+    async function loadLivePrices() {
+        if (!publicDb) return;
+        try {
+            const { data, error } = await publicDb.from('pricing').select('*').order('sort_order', { ascending: true });
+            if (error || !data || !data.length) return;
+            const live = {};
+            data.forEach(row => {
+                const route = (row.route || '').toLowerCase().replace(/\s+/g, ' ').trim();
+                const key = normalizeRouteKey(route);
+                if (key) live[key] = { saloon: Number(row.saloon) || 0, mpv: Number(row.mpv) || 0 };
+            });
+            if (Object.keys(live).length) FIXED_ROUTE_PRICES = live;
+            window.dispatchEvent(new Event('pricesLoaded'));
+        } catch (e) {
+            console.warn('Could not load live prices:', e);
+        }
+    }
+
+    function normalizeRouteKey(route) {
+        if (!route) return null;
+        const r = route.toLowerCase();
+        const airportMap = {
+            'heathrow': 'heathrow', 'gatwick': 'gatwick', 'bristol': 'bristol',
+            'cardiff airport': 'cardiff airport', 'cwl': 'cardiff airport',
+            'birmingham': 'birmingham', 'manchester': 'manchester',
+            'stansted': 'stansted', 'luton': 'luton'
+        };
+        let from = null, to = null;
+        const parts = r.split(/\bto\b/);
+        if (parts.length === 2) {
+            from = normalizeLocation(parts[0].trim());
+            to = normalizeLocation(parts[1].trim());
+        }
+        if (!from || !to || from === to) return null;
+        return `${from}->${to}`;
+    }
+
+    loadLivePrices();
 
     const AIRPORT_COORDS = {
         'heathrow':      { lat: 51.4700, lon: -0.4543 },
@@ -984,4 +1027,83 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (p.get('route') && dropoffField && !dropoffField.value) dropoffField.value = p.get('route').replace(/\+/g, ' ');
     }
+
+    // ── Supabase save helpers (exposed globally for page scripts) ────────────────
+    window.AurexDB = {
+        async saveBooking(data) {
+            if (!publicDb) initPublicDb();
+            if (!publicDb) return null;
+            const { data: result, error } = await publicDb
+                .from('bookings')
+                .insert({
+                    name: data.name, mobile: data.mobile, email: data.email || '',
+                    pickup: data.pickup, dropoff: data.dropoff,
+                    airport: data.airport || '', flight: data.flight || '',
+                    date: data.date, time: data.time,
+                    passengers: data.passengers || 1, suitcases: data.suitcases || 0,
+                    vehicle: data.vehicle, amount: data.amount || 0,
+                    status: 'pending', payment: 'unpaid',
+                    notes: data.notes || ''
+                })
+                .select().single();
+            if (error) { console.error('Save booking error:', error); return null; }
+            return result;
+        },
+
+        async saveQuote(data) {
+            if (!publicDb) initPublicDb();
+            if (!publicDb) return null;
+            const { data: result, error } = await publicDb
+                .from('quotes')
+                .insert({
+                    name: data.name, mobile: data.mobile, email: data.email || '',
+                    pickup: data.pickup, dropoff: data.dropoff,
+                    date: data.date, time: data.time,
+                    passengers: data.passengers || 1,
+                    vehicle: data.vehicle || '',
+                    offered_price: data.offered_price || null,
+                    notes: data.notes || '',
+                    status: 'pending'
+                })
+                .select().single();
+            if (error) { console.error('Save quote error:', error); return null; }
+            return result;
+        },
+
+        async saveDriver(data) {
+            if (!publicDb) initPublicDb();
+            if (!publicDb) return null;
+            const { data: result, error } = await publicDb
+                .from('drivers')
+                .insert({
+                    first_name: data.firstName, last_name: data.lastName,
+                    mobile: data.mobile, email: data.email || '',
+                    phdl: data.phdl || '', dbs_status: data.dbs || '',
+                    experience: data.experience || '',
+                    notes: data.notes || '',
+                    status: 'pending'
+                })
+                .select().single();
+            if (error) { console.error('Save driver error:', error); return null; }
+            return result;
+        },
+
+        async saveVehicle(data) {
+            if (!publicDb) initPublicDb();
+            if (!publicDb) return null;
+            const { data: result, error } = await publicDb
+                .from('vehicles')
+                .insert({
+                    driver_name: data.driverName, driver_mobile: data.driverMobile,
+                    driver_email: data.driverEmail || '',
+                    reg: data.reg, make: data.make, model: data.model,
+                    year: data.year, colour: data.colour, phvl: data.phvl || '',
+                    notes: data.notes || '',
+                    status: 'pending'
+                })
+                .select().single();
+            if (error) { console.error('Save vehicle error:', error); return null; }
+            return result;
+        }
+    };
 });

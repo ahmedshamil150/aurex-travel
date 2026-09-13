@@ -305,6 +305,8 @@
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="public-db.js"></script>
     <script src="script.js"></script>
     <script>
         // Set absolute URL for FormSubmit _next parameter
@@ -349,10 +351,34 @@
             // Add validation to custom quote form
             const customQuoteForm = document.getElementById('customQuoteForm');
             if (customQuoteForm) {
-                customQuoteForm.addEventListener('submit', function(e) {
+                let quoteSubmitting = false;
+                customQuoteForm.addEventListener('submit', async function(e) {
+                    if (quoteSubmitting) return;
                     if (!validateQuoteDate()) {
                         e.preventDefault();
                         return false;
+                    }
+                    if (window.AurexDB) {
+                        e.preventDefault();
+                        quoteSubmitting = true;
+                        window.AurexDB.saveQuote({
+                            name: document.getElementById('cName')?.value.trim() || '',
+                            mobile: document.getElementById('cMobile')?.value.trim() || '',
+                            email: '',
+                            pickup: document.getElementById('cFrom')?.value.trim() || '',
+                            dropoff: document.getElementById('cTo')?.value.trim() || '',
+                            date: document.getElementById('cDate')?.value || '',
+                            time: document.getElementById('cTime')?.value || '',
+                            passengers: parseInt(document.getElementById('cPassengers')?.value) || 1,
+                            vehicle: document.getElementById('cVehicle')?.value || '',
+                            offered_price: parseFloat(document.getElementById('cOffered')?.value) || null,
+                            notes: document.getElementById('cNotes')?.value || ''
+                        }).then(() => {
+                            customQuoteForm.submit();
+                        }).catch(err => {
+                            console.warn('Quote save failed:', err);
+                            customQuoteForm.submit();
+                        });
                     }
                 });
             }

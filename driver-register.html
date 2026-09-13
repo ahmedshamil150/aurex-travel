@@ -459,12 +459,40 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="public-db.js"></script>
     <script src="script.js"></script>
     <script>
         // Set absolute URL for FormSubmit _next parameter
         const driverNext = document.getElementById('driverNext');
         if (driverNext) {
             driverNext.value = window.location.origin + '/success.html?type=driver';
+        }
+
+        // Save driver application to Supabase
+        const driverForm = document.getElementById('driverApplicationForm');
+        if (driverForm && window.AurexDB) {
+            let driverSubmitting = false;
+            driverForm.addEventListener('submit', function(e) {
+                if (driverSubmitting) return;
+                e.preventDefault();
+                driverSubmitting = true;
+                window.AurexDB.saveDriver({
+                    firstName: document.getElementById('drvFirstName')?.value.trim() || '',
+                    lastName: document.getElementById('drvLastName')?.value.trim() || '',
+                    mobile: document.getElementById('drvMobile')?.value.trim() || '',
+                    email: document.getElementById('drvEmail')?.value.trim() || '',
+                    phdl: document.getElementById('drvPHDL')?.value || '',
+                    dbs: document.getElementById('drvDBSStatus')?.value || '',
+                    experience: document.getElementById('drvExperience')?.value || '',
+                    notes: document.getElementById('drvNotes')?.value || ''
+                }).then(() => {
+                    driverForm.submit();
+                }).catch(err => {
+                    console.warn('Driver save failed:', err);
+                    driverForm.submit();
+                });
+            });
         }
     </script>
 </body>
