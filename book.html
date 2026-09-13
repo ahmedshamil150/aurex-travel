@@ -64,7 +64,7 @@
 
             <!-- STEP 1 — Booking Form -->
             <div id="bookingFormSection" class="quote-calculator" style="max-width: 900px;">
-                <form id="bookingForm" action="#">
+                <form id="bookingForm">
                     <input type="hidden" name="_subject" value="New Booking Request — Aurex Executive Travel">
                     <input type="hidden" name="_captcha" value="false">
 
@@ -157,12 +157,13 @@
                         <button type="button" class="btn-secondary" id="bookCalculateBtn" style="flex:1; min-width:200px;">
                             <i class="fa-solid fa-calculator" style="margin-right:8px;"></i>Calculate Fare
                         </button>
-                        <button type="submit" class="btn-primary" id="bookSubmitBtn" style="flex:1; min-width:200px;">
+                        <button type="button" class="btn-primary" id="bookSubmitBtn" style="flex:1; min-width:200px;">
                             <i class="fa-solid fa-paper-plane" style="margin-right:8px;"></i>Book Now
                         </button>
                         <button type="button" id="bookWhatsAppBtn" class="btn-whatsapp" style="flex:1; min-width:200px;">
                             <i class="fa-brands fa-whatsapp" style="margin-right:8px;"></i>Send via WhatsApp (Instant)
                         </button>
+                    </div>
                 </form>
             </div>
 
@@ -671,12 +672,9 @@
             }
         }
 
-        // ── Book Now (form submit) ────────────────────────────────────────────────
-        if (bookingForm) {
-            bookingForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-                processBooking(false);
-            });
+        // ── Book Now button click ─────────────────────────────────────────────────
+        if (bookSubmitBtn) {
+            bookSubmitBtn.addEventListener('click', () => processBooking(false));
         }
 
         // ── WhatsApp button ──────────────────────────────────────────────────────
