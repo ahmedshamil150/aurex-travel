@@ -33,29 +33,20 @@
             </div>
 
             <div class="content">
-                <!-- Change Password -->
+                <!-- Session Info -->
                 <div class="table-wrapper" style="margin-bottom:1.5rem;">
-                    <div class="table-header"><h2>Change Password</h2></div>
-                    <div style="padding:1.5rem;max-width:400px;">
-                        <div class="form-group">
-                            <label>Current Password</label>
-                            <input type="password" id="currentPass">
+                    <div class="table-header"><h2>Session</h2></div>
+                    <div style="padding:1.5rem;">
+                        <div class="detail-grid">
+                            <div class="detail-item"><div class="detail-label">Logged in as</div><div class="detail-value" id="sessionEmail">—</div></div>
+                            <div class="detail-item"><div class="detail-label">Session started</div><div class="detail-value" id="sessionTime">—</div></div>
                         </div>
-                        <div class="form-group">
-                            <label>New Password</label>
-                            <input type="password" id="newPass">
-                        </div>
-                        <div class="form-group">
-                            <label>Confirm New Password</label>
-                            <input type="password" id="confirmPass">
-                        </div>
-                        <button class="btn btn-accent" onclick="changePassword()">Update Password</button>
                     </div>
                 </div>
 
-                <!-- Data Management -->
+                <!-- Data Export -->
                 <div class="table-wrapper" style="margin-bottom:1.5rem;">
-                    <div class="table-header"><h2>Data Management</h2></div>
+                    <div class="table-header"><h2>Data Export</h2></div>
                     <div style="padding:1.5rem;">
                         <div style="display:flex;gap:1rem;flex-wrap:wrap;">
                             <button class="btn btn-outline" onclick="Data.exportCSV('bookings')"><i class="fa-solid fa-download"></i> Export Bookings</button>
@@ -67,29 +58,17 @@
                     </div>
                 </div>
 
-                <!-- Danger Zone -->
-                <div class="table-wrapper" style="border-color:var(--danger);">
-                    <div class="table-header" style="border-bottom-color:var(--danger);"><h2 style="color:var(--danger);">Danger Zone</h2></div>
-                    <div style="padding:1.5rem;">
-                        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
-                            <button class="btn btn-danger" onclick="clearAllData()"><i class="fa-solid fa-trash"></i> Clear All Data</button>
-                            <button class="btn btn-outline" onclick="resetSampleData()"><i class="fa-solid fa-rotate-left"></i> Load Sample Data</button>
-                        </div>
-                        <p style="font-size:0.82rem;color:var(--text-muted);margin-top:1rem;">Clearing data removes all bookings, quotes, drivers, and vehicles from localStorage. This cannot be undone.</p>
-                    </div>
-                </div>
-
                 <!-- System Info -->
-                <div class="table-wrapper" style="margin-top:1.5rem;">
+                <div class="table-wrapper">
                     <div class="table-header"><h2>System Info</h2></div>
                     <div style="padding:1.5rem;">
                         <div class="detail-grid">
-                            <div class="detail-item"><div class="detail-label">Version</div><div class="detail-value">1.0.0</div></div>
-                            <div class="detail-item"><div class="detail-label">Storage</div><div class="detail-value" id="storageUsed">Calculating...</div></div>
-                            <div class="detail-item"><div class="detail-label">Bookings</div><div class="detail-value" id="infoBookings">0</div></div>
-                            <div class="detail-item"><div class="detail-label">Quotes</div><div class="detail-value" id="infoQuotes">0</div></div>
-                            <div class="detail-item"><div class="detail-label">Drivers</div><div class="detail-value" id="infoDrivers">0</div></div>
-                            <div class="detail-item"><div class="detail-label">Vehicles</div><div class="detail-value" id="infoVehicles">0</div></div>
+                            <div class="detail-item"><div class="detail-label">Version</div><div class="detail-value">2.0.0 (Supabase)</div></div>
+                            <div class="detail-item"><div class="detail-label">Database</div><div class="detail-value">Supabase PostgreSQL</div></div>
+                            <div class="detail-item"><div class="detail-label">Bookings</div><div class="detail-value" id="infoBookings">...</div></div>
+                            <div class="detail-item"><div class="detail-label">Quotes</div><div class="detail-value" id="infoQuotes">...</div></div>
+                            <div class="detail-item"><div class="detail-label">Drivers</div><div class="detail-value" id="infoDrivers">...</div></div>
+                            <div class="detail-item"><div class="detail-label">Vehicles</div><div class="detail-value" id="infoVehicles">...</div></div>
                         </div>
                     </div>
                 </div>
@@ -97,75 +76,32 @@
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
     <script>
         if (!Auth.requireAuth()) throw new Error('Not authenticated');
 
-        function changePassword() {
-            const current = document.getElementById('currentPass').value;
-            const newP = document.getElementById('newPass').value;
-            const confirm = document.getElementById('confirmPass').value;
+        (async () => {
+            const session = Auth.getSession();
+            document.getElementById('sessionEmail').textContent = session.email || '—';
+            document.getElementById('sessionTime').textContent = session.timestamp ? formatDateTime(new Date(session.timestamp).toISOString()) : '—';
 
-            if (!current || !newP) {
-                Toast.show('Please fill in all fields', 'error');
-                return;
-            }
-            if (newP !== confirm) {
-                Toast.show('New passwords do not match', 'error');
-                return;
-            }
-            if (newP.length < 4) {
-                Toast.show('Password must be at least 4 characters', 'error');
-                return;
-            }
-            if (Auth.changePassword(current, newP)) {
-                Toast.show('Password updated', 'success');
-                document.getElementById('currentPass').value = '';
-                document.getElementById('newPass').value = '';
-                document.getElementById('confirmPass').value = '';
-            } else {
-                Toast.show('Current password is incorrect', 'error');
-            }
-        }
+            const [bookings, quotes, drivers, vehicles] = await Promise.all([
+                Data.getBookings(),
+                Data.getQuotes(),
+                Data.getDrivers(),
+                Data.getVehicles()
+            ]);
 
-        function clearAllData() {
-            if (!confirm('Are you sure? This will delete ALL data and cannot be undone.')) return;
-            if (!confirm('Really delete everything?')) return;
-            localStorage.removeItem('aurex_bookings');
-            localStorage.removeItem('aurex_quotes');
-            localStorage.removeItem('aurex_drivers');
-            localStorage.removeItem('aurex_vehicles');
-            Toast.show('All data cleared', 'success');
-            updateSystemInfo();
-        }
+            document.getElementById('infoBookings').textContent = bookings.length;
+            document.getElementById('infoQuotes').textContent = quotes.length;
+            document.getElementById('infoDrivers').textContent = drivers.length;
+            document.getElementById('infoVehicles').textContent = vehicles.length;
+        })();
 
-        function resetSampleData() {
-            localStorage.removeItem('aurex_bookings');
-            localStorage.removeItem('aurex_quotes');
-            localStorage.removeItem('aurex_drivers');
-            localStorage.removeItem('aurex_vehicles');
-            Data.seedSampleData();
-            updateSystemInfo();
-        }
-
-        function updateSystemInfo() {
-            document.getElementById('infoBookings').textContent = Data.getBookings().length;
-            document.getElementById('infoQuotes').textContent = Data.getQuotes().length;
-            document.getElementById('infoDrivers').textContent = Data.getDrivers().length;
-            document.getElementById('infoVehicles').textContent = Data.getVehicles().length;
-
-            let total = 0;
-            for (let key in localStorage) {
-                if (localStorage.hasOwnProperty(key) && key.startsWith('aurex_')) {
-                    total += localStorage.getItem(key).length * 2;
-                }
-            }
-            document.getElementById('storageUsed').textContent = total > 1024 ? (total / 1024).toFixed(1) + ' KB' : total + ' B';
-        }
-
-        updateSystemInfo();
         if (window.innerWidth <= 900) document.querySelector('.sidebar-toggle').style.display = 'inline-flex';
         window.addEventListener('resize', () => {
             document.querySelector('.sidebar-toggle').style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';

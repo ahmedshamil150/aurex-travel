@@ -1,205 +1,388 @@
 /* ===================================================
-   Data Module — localStorage CRUD for all entities
+   Data Module — Supabase CRUD for all entities
    =================================================== */
 
 const Data = {
-    KEYS: {
-        bookings: 'aurex_bookings',
-        quotes: 'aurex_quotes',
-        drivers: 'aurex_drivers',
-        vehicles: 'aurex_vehicles',
-        pricing: 'aurex_pricing',
-        settings: 'aurex_settings'
-    },
-
     // ── Generic helpers ──────────────────────────────────────
-    _get(key) {
-        return JSON.parse(localStorage.getItem(key) || '[]');
-    },
+    async _query(table, options = {}) {
+        if (!supabase) initSupabase();
+        let query = supabase.from(table).select(options.select || '*');
 
-    _set(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
-    },
+        if (options.filter) {
+            options.filter.forEach(f => {
+                query = query.eq(f.column, f.value);
+            });
+        }
+        if (options.search) {
+            options.search.forEach(s => {
+                query = query.or(`${s.column}.ilike.%${s.value}%`);
+            });
+        }
+        if (options.order) {
+            query = query.order(options.order.column, { ascending: options.order.ascending ?? false });
+        }
+        if (options.limit) {
+            query = query.limit(options.limit);
+        }
 
-    _genId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        const { data, error } = await query;
+        if (error) {
+            console.error(`Query error on ${table}:`, error);
+            return [];
+        }
+        return data || [];
     },
 
     // ── Bookings ─────────────────────────────────────────────
-    getBookings() {
-        return this._get(this.KEYS.bookings);
+    async getBookings(filters = {}) {
+        const options = { order: { column: 'created_at', ascending: false } };
+        if (filters.search) {
+            options.search = [
+                { column: 'name', value: filters.search },
+                { column: 'pickup', value: filters.search },
+                { column: 'dropoff', value: filters.search },
+                { column: 'email', value: filters.search },
+                { column: 'mobile', value: filters.search }
+            ];
+        }
+        if (filters.status) {
+            options.filter = [{ column: 'status', value: filters.status }];
+        }
+        if (filters.payment) {
+            options.filter = options.filter || [];
+            options.filter.push({ column: 'payment', value: filters.payment });
+        }
+        return this._query('bookings', options);
     },
 
-    getBooking(id) {
-        return this.getBookings().find(b => b.id === id);
+    async getBooking(id) {
+        const { data, error } = await supabase.from('bookings').select('*').eq('id', id).single();
+        if (error) return null;
+        return data;
     },
 
-    addBooking(data) {
-        const bookings = this.getBookings();
-        const booking = {
-            id: this._genId(),
-            ...data,
-            status: data.status || 'pending',
-            payment: data.payment || 'unpaid',
-            createdAt: new Date().toISOString()
-        };
-        bookings.unshift(booking);
-        this._set(this.KEYS.bookings, bookings);
-        return booking;
+    async addBooking(data) {
+        const { data: result, error } = await supabase
+            .from('bookings')
+            .insert({
+                name: data.name,
+                mobile: data.mobile,
+                email: data.email,
+                pickup: data.pickup,
+                dropoff: data.dropoff,
+                airport: data.airport,
+                flight: data.flight,
+                date: data.date,
+                time: data.time,
+                passengers: data.passengers,
+                suitcases: data.suitcases,
+                vehicle: data.vehicle,
+                amount: data.amount,
+                status: data.status || 'pending',
+                payment: data.payment || 'unpaid',
+                notes: data.notes
+            })
+            .select()
+            .single();
+        if (error) {
+            console.error('Add booking error:', error);
+            return null;
+        }
+        return result;
     },
 
-    updateBooking(id, updates) {
-        const bookings = this.getBookings();
-        const idx = bookings.findIndex(b => b.id === id);
-        if (idx === -1) return null;
-        bookings[idx] = { ...bookings[idx], ...updates, updatedAt: new Date().toISOString() };
-        this._set(this.KEYS.bookings, bookings);
-        return bookings[idx];
+    async updateBooking(id, updates) {
+        const { data, error } = await supabase
+            .from('bookings')
+            .update({ ...updates, updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) {
+            console.error('Update booking error:', error);
+            return null;
+        }
+        return data;
     },
 
-    deleteBooking(id) {
-        const bookings = this.getBookings().filter(b => b.id !== id);
-        this._set(this.KEYS.bookings, bookings);
+    async deleteBooking(id) {
+        const { error } = await supabase.from('bookings').delete().eq('id', id);
+        if (error) console.error('Delete booking error:', error);
     },
 
     // ── Quotes ───────────────────────────────────────────────
-    getQuotes() {
-        return this._get(this.KEYS.quotes);
+    async getQuotes(filters = {}) {
+        const options = { order: { column: 'created_at', ascending: false } };
+        if (filters.search) {
+            options.search = [
+                { column: 'name', value: filters.search },
+                { column: 'pickup', value: filters.search },
+                { column: 'dropoff', value: filters.search },
+                { column: 'mobile', value: filters.search }
+            ];
+        }
+        if (filters.status) {
+            options.filter = [{ column: 'status', value: filters.status }];
+        }
+        return this._query('quotes', options);
     },
 
-    getQuote(id) {
-        return this.getQuotes().find(q => q.id === id);
+    async getQuote(id) {
+        const { data, error } = await supabase.from('quotes').select('*').eq('id', id).single();
+        if (error) return null;
+        return data;
     },
 
-    addQuote(data) {
-        const quotes = this.getQuotes();
-        const quote = {
-            id: this._genId(),
-            ...data,
-            status: data.status || 'pending',
-            createdAt: new Date().toISOString()
-        };
-        quotes.unshift(quote);
-        this._set(this.KEYS.quotes, quotes);
-        return quote;
+    async addQuote(data) {
+        const { data: result, error } = await supabase
+            .from('quotes')
+            .insert({
+                name: data.name,
+                mobile: data.mobile,
+                email: data.email,
+                pickup: data.pickup,
+                dropoff: data.dropoff,
+                date: data.date,
+                time: data.time,
+                passengers: data.passengers,
+                vehicle: data.vehicle,
+                offered_price: data.offered_price,
+                notes: data.notes,
+                status: data.status || 'pending'
+            })
+            .select()
+            .single();
+        if (error) {
+            console.error('Add quote error:', error);
+            return null;
+        }
+        return result;
     },
 
-    updateQuote(id, updates) {
-        const quotes = this.getQuotes();
-        const idx = quotes.findIndex(q => q.id === id);
-        if (idx === -1) return null;
-        quotes[idx] = { ...quotes[idx], ...updates, updatedAt: new Date().toISOString() };
-        this._set(this.KEYS.quotes, quotes);
-        return quotes[idx];
+    async updateQuote(id, updates) {
+        const { data, error } = await supabase
+            .from('quotes')
+            .update({ ...updates, updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) {
+            console.error('Update quote error:', error);
+            return null;
+        }
+        return data;
     },
 
-    deleteQuote(id) {
-        const quotes = this.getQuotes().filter(q => q.id !== id);
-        this._set(this.KEYS.quotes, quotes);
+    async deleteQuote(id) {
+        const { error } = await supabase.from('quotes').delete().eq('id', id);
+        if (error) console.error('Delete quote error:', error);
     },
 
     // ── Drivers ──────────────────────────────────────────────
-    getDrivers() {
-        return this._get(this.KEYS.drivers);
+    async getDrivers(filters = {}) {
+        const options = { order: { column: 'created_at', ascending: false } };
+        if (filters.search) {
+            options.search = [
+                { column: 'first_name', value: filters.search },
+                { column: 'last_name', value: filters.search },
+                { column: 'email', value: filters.search },
+                { column: 'mobile', value: filters.search }
+            ];
+        }
+        if (filters.status) {
+            options.filter = [{ column: 'status', value: filters.status }];
+        }
+        return this._query('drivers', options);
     },
 
-    getDriver(id) {
-        return this.getDrivers().find(d => d.id === id);
+    async getDriver(id) {
+        const { data, error } = await supabase.from('drivers').select('*').eq('id', id).single();
+        if (error) return null;
+        return data;
     },
 
-    addDriver(data) {
-        const drivers = this.getDrivers();
-        const driver = {
-            id: this._genId(),
-            ...data,
-            status: data.status || 'pending',
-            createdAt: new Date().toISOString()
-        };
-        drivers.unshift(driver);
-        this._set(this.KEYS.drivers, drivers);
-        return driver;
+    async addDriver(data) {
+        const { data: result, error } = await supabase
+            .from('drivers')
+            .insert({
+                first_name: data.firstName,
+                last_name: data.lastName,
+                mobile: data.mobile,
+                email: data.email,
+                phdl: data.phdl,
+                dbs_status: data.dbs,
+                experience: data.experience,
+                notes: data.notes,
+                status: data.status || 'pending'
+            })
+            .select()
+            .single();
+        if (error) {
+            console.error('Add driver error:', error);
+            return null;
+        }
+        return result;
     },
 
-    updateDriver(id, updates) {
-        const drivers = this.getDrivers();
-        const idx = drivers.findIndex(d => d.id === id);
-        if (idx === -1) return null;
-        drivers[idx] = { ...drivers[idx], ...updates, updatedAt: new Date().toISOString() };
-        this._set(this.KEYS.drivers, drivers);
-        return drivers[idx];
+    async updateDriver(id, updates) {
+        const dbUpdates = {};
+        if (updates.status) dbUpdates.status = updates.status;
+        if (updates.firstName) dbUpdates.first_name = updates.firstName;
+        if (updates.lastName) dbUpdates.last_name = updates.lastName;
+        if (updates.mobile) dbUpdates.mobile = updates.mobile;
+        if (updates.email) dbUpdates.email = updates.email;
+        if (updates.phdl) dbUpdates.phdl = updates.phdl;
+        if (updates.dbs) dbUpdates.dbs_status = updates.dbs;
+        if (updates.experience) dbUpdates.experience = updates.experience;
+        if (updates.notes) dbUpdates.notes = updates.notes;
+        dbUpdates.updated_at = new Date().toISOString();
+
+        const { data, error } = await supabase
+            .from('drivers')
+            .update(dbUpdates)
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) {
+            console.error('Update driver error:', error);
+            return null;
+        }
+        return data;
     },
 
-    deleteDriver(id) {
-        const drivers = this.getDrivers().filter(d => d.id !== id);
-        this._set(this.KEYS.drivers, drivers);
+    async deleteDriver(id) {
+        const { error } = await supabase.from('drivers').delete().eq('id', id);
+        if (error) console.error('Delete driver error:', error);
     },
 
     // ── Vehicles ─────────────────────────────────────────────
-    getVehicles() {
-        return this._get(this.KEYS.vehicles);
+    async getVehicles(filters = {}) {
+        const options = { order: { column: 'created_at', ascending: false } };
+        if (filters.search) {
+            options.search = [
+                { column: 'driver_name', value: filters.search },
+                { column: 'reg', value: filters.search },
+                { column: 'make', value: filters.search },
+                { column: 'model', value: filters.search }
+            ];
+        }
+        if (filters.status) {
+            options.filter = [{ column: 'status', value: filters.status }];
+        }
+        return this._query('vehicles', options);
     },
 
-    getVehicle(id) {
-        return this.getVehicles().find(v => v.id === id);
+    async getVehicle(id) {
+        const { data, error } = await supabase.from('vehicles').select('*').eq('id', id).single();
+        if (error) return null;
+        return data;
     },
 
-    addVehicle(data) {
-        const vehicles = this.getVehicles();
-        const vehicle = {
-            id: this._genId(),
-            ...data,
-            status: data.status || 'pending',
-            createdAt: new Date().toISOString()
-        };
-        vehicles.unshift(vehicle);
-        this._set(this.KEYS.vehicles, vehicles);
-        return vehicle;
+    async addVehicle(data) {
+        const { data: result, error } = await supabase
+            .from('vehicles')
+            .insert({
+                driver_name: data.driverName,
+                driver_mobile: data.driverMobile,
+                driver_email: data.driverEmail,
+                reg: data.reg,
+                make: data.make,
+                model: data.model,
+                year: data.year,
+                colour: data.colour,
+                phvl: data.phvl,
+                notes: data.notes,
+                status: data.status || 'pending'
+            })
+            .select()
+            .single();
+        if (error) {
+            console.error('Add vehicle error:', error);
+            return null;
+        }
+        return result;
     },
 
-    updateVehicle(id, updates) {
-        const vehicles = this.getVehicles();
-        const idx = vehicles.findIndex(v => v.id === id);
-        if (idx === -1) return null;
-        vehicles[idx] = { ...vehicles[idx], ...updates, updatedAt: new Date().toISOString() };
-        this._set(this.KEYS.vehicles, vehicles);
-        return vehicles[idx];
+    async updateVehicle(id, updates) {
+        const dbUpdates = {};
+        if (updates.status) dbUpdates.status = updates.status;
+        if (updates.driverName) dbUpdates.driver_name = updates.driverName;
+        if (updates.driverMobile) dbUpdates.driver_mobile = updates.driverMobile;
+        if (updates.driverEmail) dbUpdates.driver_email = updates.driverEmail;
+        if (updates.reg) dbUpdates.reg = updates.reg;
+        if (updates.make) dbUpdates.make = updates.make;
+        if (updates.model) dbUpdates.model = updates.model;
+        if (updates.year) dbUpdates.year = updates.year;
+        if (updates.colour) dbUpdates.colour = updates.colour;
+        if (updates.phvl) dbUpdates.phvl = updates.phvl;
+        if (updates.notes) dbUpdates.notes = updates.notes;
+        dbUpdates.updated_at = new Date().toISOString();
+
+        const { data, error } = await supabase
+            .from('vehicles')
+            .update(dbUpdates)
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) {
+            console.error('Update vehicle error:', error);
+            return null;
+        }
+        return data;
     },
 
-    deleteVehicle(id) {
-        const vehicles = this.getVehicles().filter(v => v.id !== id);
-        this._set(this.KEYS.vehicles, vehicles);
+    async deleteVehicle(id) {
+        const { error } = await supabase.from('vehicles').delete().eq('id', id);
+        if (error) console.error('Delete vehicle error:', error);
     },
 
     // ── Pricing ──────────────────────────────────────────────
-    getPricing() {
-        const pricing = this._get(this.KEYS.pricing);
-        if (pricing.length === 0) {
-            return this._getDefaultPricing();
+    async getPricing() {
+        const { data, error } = await supabase
+            .from('pricing')
+            .select('*')
+            .order('sort_order', { ascending: true });
+        if (error) {
+            console.error('Get pricing error:', error);
+            return [];
         }
-        return pricing;
+        return data || [];
     },
 
-    updatePricing(pricingData) {
-        this._set(this.KEYS.pricing, pricingData);
+    async updatePricingRow(id, updates) {
+        const { error } = await supabase
+            .from('pricing')
+            .update({ route: updates.route, saloon: updates.saloon, mpv: updates.mpv })
+            .eq('id', id);
+        if (error) console.error('Update pricing error:', error);
     },
 
-    _getDefaultPricing() {
-        return [
-            { id: 'cardiff-heathrow', route: 'Cardiff to Heathrow', saloon: 230, mpv: 250 },
-            { id: 'cardiff-bristol', route: 'Cardiff to Bristol', saloon: 135, mpv: 155 },
-            { id: 'cardiff-cardiff-airport', route: 'Cardiff to Cardiff Airport', saloon: 60, mpv: 80 },
-            { id: 'cardiff-gatwick', route: 'Cardiff to Gatwick', saloon: 320, mpv: 340 },
-            { id: 'cardiff-birmingham', route: 'Cardiff to Birmingham', saloon: 230, mpv: 260 },
-            { id: 'cardiff-manchester', route: 'Cardiff to Manchester', saloon: 320, mpv: 350 }
-        ];
+    async addPricingRow(route, saloon, mpv) {
+        const { data, error } = await supabase
+            .from('pricing')
+            .insert({ route, saloon, mpv, sort_order: 99 })
+            .select()
+            .single();
+        if (error) {
+            console.error('Add pricing error:', error);
+            return null;
+        }
+        return data;
+    },
+
+    async deletePricingRow(id) {
+        const { error } = await supabase.from('pricing').delete().eq('id', id);
+        if (error) console.error('Delete pricing error:', error);
     },
 
     // ── Stats ────────────────────────────────────────────────
-    getStats() {
-        const bookings = this.getBookings();
-        const quotes = this.getQuotes();
-        const drivers = this.getDrivers();
-        const vehicles = this.getVehicles();
+    async getStats() {
+        const [bookings, quotes, drivers, vehicles] = await Promise.all([
+            this.getBookings(),
+            this.getQuotes(),
+            this.getDrivers(),
+            this.getVehicles()
+        ]);
 
         const totalRevenue = bookings
             .filter(b => b.payment === 'paid')
@@ -210,7 +393,7 @@ const Data = {
             pendingBookings: bookings.filter(b => b.status === 'pending').length,
             confirmedBookings: bookings.filter(b => b.status === 'confirmed').length,
             completedBookings: bookings.filter(b => b.status === 'completed').length,
-            totalRevenue: totalRevenue,
+            totalRevenue,
             pendingQuotes: quotes.filter(q => q.status === 'pending').length,
             totalQuotes: quotes.length,
             totalDrivers: drivers.length,
@@ -220,27 +403,14 @@ const Data = {
     },
 
     // ── Export to CSV ────────────────────────────────────────
-    exportCSV(entity) {
+    async exportCSV(entity) {
         let data, filename;
         switch (entity) {
-            case 'bookings':
-                data = this.getBookings();
-                filename = 'aurex-bookings.csv';
-                break;
-            case 'quotes':
-                data = this.getQuotes();
-                filename = 'aurex-quotes.csv';
-                break;
-            case 'drivers':
-                data = this.getDrivers();
-                filename = 'aurex-drivers.csv';
-                break;
-            case 'vehicles':
-                data = this.getVehicles();
-                filename = 'aurex-vehicles.csv';
-                break;
-            default:
-                return;
+            case 'bookings': data = await this.getBookings(); filename = 'aurex-bookings.csv'; break;
+            case 'quotes': data = await this.getQuotes(); filename = 'aurex-quotes.csv'; break;
+            case 'drivers': data = await this.getDrivers(); filename = 'aurex-drivers.csv'; break;
+            case 'vehicles': data = await this.getVehicles(); filename = 'aurex-vehicles.csv'; break;
+            default: return;
         }
 
         if (!data.length) {
@@ -266,37 +436,5 @@ const Data = {
         a.click();
         URL.revokeObjectURL(url);
         Toast.show(`Exported ${data.length} records`, 'success');
-    },
-
-    // ── Seed sample data ─────────────────────────────────────
-    seedSampleData() {
-        if (this.getBookings().length > 0) return;
-
-        const sampleBookings = [
-            { name: 'John Smith', email: 'john@example.com', mobile: '+44 7700 123456', pickup: 'Cardiff City Centre', dropoff: 'Heathrow Airport T5', airport: 'Heathrow', date: '2026-07-20', time: '04:30', passengers: 2, suitcases: 2, vehicle: 'Mercedes E-Class', amount: '230', status: 'confirmed', payment: 'paid' },
-            { name: 'Sarah Williams', email: 'sarah@example.com', mobile: '+44 7700 234567', pickup: 'Cardiff Bay', dropoff: 'Bristol Airport', airport: 'Bristol', date: '2026-07-22', time: '06:00', passengers: 3, suitcases: 3, vehicle: 'Mercedes V-Class', amount: '155', status: 'pending', payment: 'unpaid' },
-            { name: 'Michael Brown', email: 'michael@example.com', mobile: '+44 7700 345678', pickup: 'Cardiff Central Station', dropoff: 'Gatwick Airport', airport: 'Gatwick', date: '2026-07-25', time: '05:15', passengers: 1, suitcases: 1, vehicle: 'Tesla Model Y', amount: '320', status: 'completed', payment: 'paid' },
-            { name: 'Emma Jones', email: 'emma@example.com', mobile: '+44 7700 456789', pickup: 'Newport City Centre', dropoff: 'Heathrow Airport T2', airport: 'Heathrow', date: '2026-07-28', time: '03:45', passengers: 4, suitcases: 4, vehicle: 'Mercedes V-Class', amount: '250', status: 'pending', payment: 'unpaid' },
-            { name: 'David Taylor', email: 'david@example.com', mobile: '+44 7700 567890', pickup: 'Swansea Marina', dropoff: 'Cardiff Airport', airport: 'Cardiff Airport', date: '2026-07-30', time: '07:00', passengers: 2, suitcases: 1, vehicle: 'Mercedes E-Class', amount: '60', status: 'confirmed', payment: 'paid' }
-        ];
-
-        sampleBookings.forEach(b => this.addBooking(b));
-
-        const sampleQuotes = [
-            { name: 'James Wilson', mobile: '+44 7700 111222', pickup: 'Barry Town Centre', dropoff: 'Manchester Airport', date: '2026-08-01', time: '04:00', passengers: 2, vehicle: 'Mercedes E-Class', notes: 'Early morning flight', status: 'pending' },
-            { name: 'Lisa Anderson', mobile: '+44 7700 333444', pickup: 'Pontypridd', dropoff: 'Stansted Airport', date: '2026-08-05', time: '06:30', passengers: 1, vehicle: 'Tesla Model Y', notes: '', status: 'pending' },
-            { name: 'Robert Davies', mobile: '+44 7700 555666', pickup: 'Caerphilly', dropoff: 'Luton Airport', date: '2026-08-10', time: '05:00', passengers: 3, vehicle: 'Mercedes V-Class', notes: 'Need child seat', status: 'accepted' }
-        ];
-
-        sampleQuotes.forEach(q => this.addQuote(q));
-
-        const sampleDrivers = [
-            { firstName: 'Ahmed', lastName: 'Hassan', mobile: '+44 7700 777888', email: 'ahmed@example.com', phdl: 'Yes', dbs: 'Enhanced - Clear', experience: '5 years', status: 'approved' },
-            { firstName: 'Tom', lastName: 'Evans', mobile: '+44 7700 999000', email: 'tom@example.com', phdl: 'Yes', dbs: 'Enhanced - Clear', experience: '3 years', status: 'pending' }
-        ];
-
-        sampleDrivers.forEach(d => this.addDriver(d));
-
-        Toast.show('Sample data loaded', 'success');
     }
 };

@@ -36,19 +36,12 @@
             </div>
 
             <div class="content">
-                <div class="stats-grid" style="margin-bottom:1.5rem;">
-                    <div class="stat-card"><div class="stat-label">Total Drivers</div><div class="stat-value" id="totalDrivers">0</div></div>
-                    <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value warning" id="pendingDrivers">0</div></div>
-                    <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-value success" id="approvedDrivers">0</div></div>
-                </div>
+                <div class="stats-grid" style="margin-bottom:1.5rem;" id="statsGrid"></div>
 
                 <div class="table-wrapper">
                     <div class="table-header">
                         <div class="filter-group">
-                            <div class="search-box">
-                                <i class="fa-solid fa-search"></i>
-                                <input type="text" id="searchInput" placeholder="Search drivers..." oninput="renderTable()">
-                            </div>
+                            <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="searchInput" placeholder="Search drivers..." oninput="renderTable()"></div>
                             <select id="statusFilter" onchange="renderTable()">
                                 <option value="">All Status</option>
                                 <option value="pending">Pending</option>
@@ -58,68 +51,44 @@
                         </div>
                     </div>
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Contact</th>
-                                <th>PHDL</th>
-                                <th>DBS</th>
-                                <th>Experience</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="driversTable"></tbody>
+                        <thead><tr><th>Name</th><th>Contact</th><th>PHDL</th><th>DBS</th><th>Experience</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="driversTable"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- View Modal -->
     <div class="modal-overlay" id="viewModal">
         <div class="modal">
-            <div class="modal-header">
-                <h3>Driver Details</h3>
-                <button class="modal-close" onclick="closeViewModal()">&times;</button>
-            </div>
+            <div class="modal-header"><h3>Driver Details</h3><button class="modal-close" onclick="closeViewModal()">&times;</button></div>
             <div class="modal-body" id="viewContent"></div>
             <div class="modal-footer" id="viewFooter"></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
     <script>
         if (!Auth.requireAuth()) throw new Error('Not authenticated');
 
-        function updateStats() {
-            const drivers = Data.getDrivers();
-            document.getElementById('totalDrivers').textContent = drivers.length;
-            document.getElementById('pendingDrivers').textContent = drivers.filter(d => d.status === 'pending').length;
-            document.getElementById('approvedDrivers').textContent = drivers.filter(d => d.status === 'approved').length;
+        async function updateStats() {
+            const drivers = await Data.getDrivers();
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card"><div class="stat-label">Total Drivers</div><div class="stat-value">${drivers.length}</div></div>
+                <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value warning">${drivers.filter(d => d.status === 'pending').length}</div></div>
+                <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-value success">${drivers.filter(d => d.status === 'approved').length}</div></div>
+            `;
         }
 
-        function getFiltered() {
-            let drivers = Data.getDrivers();
-            const search = document.getElementById('searchInput').value.toLowerCase();
+        async function renderTable() {
+            await updateStats();
+            const search = document.getElementById('searchInput').value;
             const status = document.getElementById('statusFilter').value;
-
-            if (search) {
-                drivers = drivers.filter(d =>
-                    ((d.firstName||'') + ' ' + (d.lastName||'')).toLowerCase().includes(search) ||
-                    (d.email||'').toLowerCase().includes(search) ||
-                    (d.mobile||'').toLowerCase().includes(search)
-                );
-            }
-            if (status) drivers = drivers.filter(d => d.status === status);
-            return drivers;
-        }
-
-        function renderTable() {
-            updateStats();
-            const drivers = getFiltered();
+            const drivers = await Data.getDrivers({ search, status });
             const tbody = document.getElementById('driversTable');
 
             if (drivers.length === 0) {
@@ -129,10 +98,10 @@
 
             tbody.innerHTML = drivers.map(d => `
                 <tr>
-                    <td><strong>${escapeHtml(d.firstName)} ${escapeHtml(d.lastName)}</strong></td>
+                    <td><strong>${escapeHtml(d.first_name)} ${escapeHtml(d.last_name)}</strong></td>
                     <td>${escapeHtml(d.mobile)}<br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(d.email)}</span></td>
                     <td>${escapeHtml(d.phdl) || '—'}</td>
-                    <td>${escapeHtml(d.dbs) || '—'}</td>
+                    <td>${escapeHtml(d.dbs_status) || '—'}</td>
                     <td>${escapeHtml(d.experience) || '—'}</td>
                     <td><span class="badge badge-${d.status === 'approved' ? 'completed' : d.status === 'rejected' ? 'cancelled' : 'pending'}">${d.status}</span></td>
                     <td>
@@ -147,32 +116,32 @@
             `).join('');
         }
 
-        function updateDriverStatus(id, status) {
-            Data.updateDriver(id, { status });
+        async function updateDriverStatus(id, status) {
+            await Data.updateDriver(id, { status });
             Toast.show(`Driver ${status}`, status === 'approved' ? 'success' : 'warning');
-            renderTable();
+            await renderTable();
         }
 
-        function deleteDriver(id) {
+        async function deleteDriver(id) {
             if (!confirm('Delete this driver application?')) return;
-            Data.deleteDriver(id);
+            await Data.deleteDriver(id);
             Toast.show('Driver deleted', 'success');
-            renderTable();
+            await renderTable();
         }
 
-        function viewDriver(id) {
-            const d = Data.getDriver(id);
+        async function viewDriver(id) {
+            const d = await Data.getDriver(id);
             if (!d) return;
             document.getElementById('viewContent').innerHTML = `
                 <div class="detail-grid">
-                    <div class="detail-item"><div class="detail-label">Full Name</div><div class="detail-value">${escapeHtml(d.firstName)} ${escapeHtml(d.lastName)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Full Name</div><div class="detail-value">${escapeHtml(d.first_name)} ${escapeHtml(d.last_name)}</div></div>
                     <div class="detail-item"><div class="detail-label">Mobile</div><div class="detail-value">${escapeHtml(d.mobile)}</div></div>
                     <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value">${escapeHtml(d.email) || '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">PHDL</div><div class="detail-value">${escapeHtml(d.phdl) || '—'}</div></div>
-                    <div class="detail-item"><div class="detail-label">DBS Status</div><div class="detail-value">${escapeHtml(d.dbs) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">DBS Status</div><div class="detail-value">${escapeHtml(d.dbs_status) || '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">Experience</div><div class="detail-value">${escapeHtml(d.experience) || '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-${d.status === 'approved' ? 'completed' : d.status === 'rejected' ? 'cancelled' : 'pending'}">${d.status}</span></div></div>
-                    <div class="detail-item"><div class="detail-label">Applied</div><div class="detail-value">${formatDateTime(d.createdAt)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Applied</div><div class="detail-value">${formatDateTime(d.created_at)}</div></div>
                 </div>
                 ${d.notes ? `<div style="margin-top:1.5rem;"><div class="detail-label" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:0.5rem;">Notes</div><p>${escapeHtml(d.notes)}</p></div>` : ''}
             `;

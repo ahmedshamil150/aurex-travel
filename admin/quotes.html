@@ -39,10 +39,7 @@
                 <div class="table-wrapper">
                     <div class="table-header">
                         <div class="filter-group">
-                            <div class="search-box">
-                                <i class="fa-solid fa-search"></i>
-                                <input type="text" id="searchInput" placeholder="Search quotes..." oninput="renderTable()">
-                            </div>
+                            <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="searchInput" placeholder="Search quotes..." oninput="renderTable()"></div>
                             <select id="statusFilter" onchange="renderTable()">
                                 <option value="">All Status</option>
                                 <option value="pending">Pending</option>
@@ -53,18 +50,8 @@
                         <span id="quoteCount" style="font-size:0.82rem;color:var(--text-muted);"></span>
                     </div>
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Customer</th>
-                                <th>Route</th>
-                                <th>Date/Time</th>
-                                <th>Vehicle</th>
-                                <th>Offered Price</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="quotesTable"></tbody>
+                        <thead><tr><th>Customer</th><th>Route</th><th>Date/Time</th><th>Vehicle</th><th>Offered Price</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="quotesTable"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -74,40 +61,24 @@
     <!-- View / Respond Modal -->
     <div class="modal-overlay" id="viewModal">
         <div class="modal">
-            <div class="modal-header">
-                <h3>Quote Details</h3>
-                <button class="modal-close" onclick="closeViewModal()">&times;</button>
-            </div>
+            <div class="modal-header"><h3>Quote Details</h3><button class="modal-close" onclick="closeViewModal()">&times;</button></div>
             <div class="modal-body" id="viewContent"></div>
             <div class="modal-footer" id="viewFooter"></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
     <script>
         if (!Auth.requireAuth()) throw new Error('Not authenticated');
 
-        function getFiltered() {
-            let quotes = Data.getQuotes();
-            const search = document.getElementById('searchInput').value.toLowerCase();
+        async function renderTable() {
+            const search = document.getElementById('searchInput').value;
             const status = document.getElementById('statusFilter').value;
-
-            if (search) {
-                quotes = quotes.filter(q =>
-                    (q.name||'').toLowerCase().includes(search) ||
-                    (q.pickup||'').toLowerCase().includes(search) ||
-                    (q.dropoff||'').toLowerCase().includes(search) ||
-                    (q.mobile||'').toLowerCase().includes(search)
-                );
-            }
-            if (status) quotes = quotes.filter(q => q.status === status);
-            return quotes;
-        }
-
-        function renderTable() {
-            const quotes = getFiltered();
+            const quotes = await Data.getQuotes({ search, status });
             document.getElementById('quoteCount').textContent = `${quotes.length} quote${quotes.length !== 1 ? 's' : ''}`;
             const tbody = document.getElementById('quotesTable');
 
@@ -122,7 +93,7 @@
                     <td>${escapeHtml(q.pickup)} → ${escapeHtml(q.dropoff)}</td>
                     <td>${escapeHtml(q.date)}<br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(q.time)}</span></td>
                     <td>${escapeHtml(q.vehicle)}</td>
-                    <td>${q.offeredPrice ? '<strong>' + formatCurrency(q.offeredPrice) + '</strong>' : '<span style="color:var(--text-muted);">—</span>'}</td>
+                    <td>${q.offered_price ? '<strong>' + formatCurrency(q.offered_price) + '</strong>' : '<span style="color:var(--text-muted);">—</span>'}</td>
                     <td><span class="badge badge-${q.status}">${q.status}</span></td>
                     <td>
                         <button class="btn btn-outline btn-sm" onclick="viewQuote('${q.id}')" title="View"><i class="fa-solid fa-eye"></i></button>
@@ -136,21 +107,21 @@
             `).join('');
         }
 
-        function respondQuote(id, status) {
-            Data.updateQuote(id, { status });
+        async function respondQuote(id, status) {
+            await Data.updateQuote(id, { status });
             Toast.show(`Quote ${status}`, status === 'accepted' ? 'success' : 'warning');
-            renderTable();
+            await renderTable();
         }
 
-        function deleteQuote(id) {
+        async function deleteQuote(id) {
             if (!confirm('Delete this quote?')) return;
-            Data.deleteQuote(id);
+            await Data.deleteQuote(id);
             Toast.show('Quote deleted', 'success');
-            renderTable();
+            await renderTable();
         }
 
-        function viewQuote(id) {
-            const q = Data.getQuote(id);
+        async function viewQuote(id) {
+            const q = await Data.getQuote(id);
             if (!q) return;
             document.getElementById('viewContent').innerHTML = `
                 <div class="detail-grid">
@@ -162,7 +133,7 @@
                     <div class="detail-item"><div class="detail-label">Time</div><div class="detail-value">${escapeHtml(q.time)}</div></div>
                     <div class="detail-item"><div class="detail-label">Passengers</div><div class="detail-value">${escapeHtml(q.passengers) || '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">Vehicle</div><div class="detail-value">${escapeHtml(q.vehicle)}</div></div>
-                    <div class="detail-item"><div class="detail-label">Offered Price</div><div class="detail-value">${q.offeredPrice ? formatCurrency(q.offeredPrice) : '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Offered Price</div><div class="detail-value">${q.offered_price ? formatCurrency(q.offered_price) : '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-${q.status}">${q.status}</span></div></div>
                 </div>
                 ${q.notes ? `<div style="margin-top:1.5rem;"><div class="detail-label" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:0.5rem;">Notes</div><p>${escapeHtml(q.notes)}</p></div>` : ''}

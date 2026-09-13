@@ -39,10 +39,7 @@
                 <div class="table-wrapper">
                     <div class="table-header">
                         <div class="filter-group">
-                            <div class="search-box">
-                                <i class="fa-solid fa-search"></i>
-                                <input type="text" id="searchInput" placeholder="Search vehicles..." oninput="renderTable()">
-                            </div>
+                            <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="searchInput" placeholder="Search vehicles..." oninput="renderTable()"></div>
                             <select id="statusFilter" onchange="renderTable()">
                                 <option value="">All Status</option>
                                 <option value="pending">Pending</option>
@@ -52,59 +49,34 @@
                         </div>
                     </div>
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Driver</th>
-                                <th>Vehicle</th>
-                                <th>Registration</th>
-                                <th>PHVL</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="vehiclesTable"></tbody>
+                        <thead><tr><th>Driver</th><th>Vehicle</th><th>Registration</th><th>PHVL</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="vehiclesTable"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- View Modal -->
     <div class="modal-overlay" id="viewModal">
         <div class="modal">
-            <div class="modal-header">
-                <h3>Vehicle Details</h3>
-                <button class="modal-close" onclick="closeViewModal()">&times;</button>
-            </div>
+            <div class="modal-header"><h3>Vehicle Details</h3><button class="modal-close" onclick="closeViewModal()">&times;</button></div>
             <div class="modal-body" id="viewContent"></div>
             <div class="modal-footer" id="viewFooter"></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
     <script>
         if (!Auth.requireAuth()) throw new Error('Not authenticated');
 
-        function getFiltered() {
-            let vehicles = Data.getVehicles();
-            const search = document.getElementById('searchInput').value.toLowerCase();
+        async function renderTable() {
+            const search = document.getElementById('searchInput').value;
             const status = document.getElementById('statusFilter').value;
-
-            if (search) {
-                vehicles = vehicles.filter(v =>
-                    ((v.driverName||'')).toLowerCase().includes(search) ||
-                    ((v.make||'') + ' ' + (v.model||'')).toLowerCase().includes(search) ||
-                    (v.reg||'').toLowerCase().includes(search)
-                );
-            }
-            if (status) vehicles = vehicles.filter(v => v.status === status);
-            return vehicles;
-        }
-
-        function renderTable() {
-            const vehicles = getFiltered();
+            const vehicles = await Data.getVehicles({ search, status });
             const tbody = document.getElementById('vehiclesTable');
 
             if (vehicles.length === 0) {
@@ -114,7 +86,7 @@
 
             tbody.innerHTML = vehicles.map(v => `
                 <tr>
-                    <td><strong>${escapeHtml(v.driverName)}</strong><br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(v.driverMobile)}</span></td>
+                    <td><strong>${escapeHtml(v.driver_name)}</strong><br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(v.driver_mobile)}</span></td>
                     <td>${escapeHtml(v.year)} ${escapeHtml(v.make)} ${escapeHtml(v.model)}<br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(v.colour)}</span></td>
                     <td><strong>${escapeHtml(v.reg)}</strong></td>
                     <td>${escapeHtml(v.phvl) || '—'}</td>
@@ -131,34 +103,34 @@
             `).join('');
         }
 
-        function updateVehicleStatus(id, status) {
-            Data.updateVehicle(id, { status });
+        async function updateVehicleStatus(id, status) {
+            await Data.updateVehicle(id, { status });
             Toast.show(`Vehicle ${status}`, status === 'approved' ? 'success' : 'warning');
-            renderTable();
+            await renderTable();
         }
 
-        function deleteVehicle(id) {
+        async function deleteVehicle(id) {
             if (!confirm('Delete this vehicle registration?')) return;
-            Data.deleteVehicle(id);
+            await Data.deleteVehicle(id);
             Toast.show('Vehicle deleted', 'success');
-            renderTable();
+            await renderTable();
         }
 
-        function viewVehicle(id) {
-            const v = Data.getVehicle(id);
+        async function viewVehicle(id) {
+            const v = await Data.getVehicle(id);
             if (!v) return;
             document.getElementById('viewContent').innerHTML = `
                 <div class="detail-grid">
-                    <div class="detail-item"><div class="detail-label">Driver Name</div><div class="detail-value">${escapeHtml(v.driverName)}</div></div>
-                    <div class="detail-item"><div class="detail-label">Driver Mobile</div><div class="detail-value">${escapeHtml(v.driverMobile)}</div></div>
-                    <div class="detail-item"><div class="detail-label">Driver Email</div><div class="detail-value">${escapeHtml(v.driverEmail) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Driver Name</div><div class="detail-value">${escapeHtml(v.driver_name)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Driver Mobile</div><div class="detail-value">${escapeHtml(v.driver_mobile)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Driver Email</div><div class="detail-value">${escapeHtml(v.driver_email) || '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">Registration</div><div class="detail-value"><strong>${escapeHtml(v.reg)}</strong></div></div>
                     <div class="detail-item"><div class="detail-label">Make / Model</div><div class="detail-value">${escapeHtml(v.make)} ${escapeHtml(v.model)}</div></div>
                     <div class="detail-item"><div class="detail-label">Year</div><div class="detail-value">${escapeHtml(v.year) || '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">Colour</div><div class="detail-value">${escapeHtml(v.colour) || '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">PHVL</div><div class="detail-value">${escapeHtml(v.phvl) || '—'}</div></div>
                     <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-${v.status === 'approved' ? 'completed' : v.status === 'rejected' ? 'cancelled' : 'pending'}">${v.status}</span></div></div>
-                    <div class="detail-item"><div class="detail-label">Registered</div><div class="detail-value">${formatDateTime(v.createdAt)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Registered</div><div class="detail-value">${formatDateTime(v.created_at)}</div></div>
                 </div>
             `;
             const footer = document.getElementById('viewFooter');

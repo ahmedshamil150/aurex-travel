@@ -1,36 +1,52 @@
 /* ===================================================
-   Auth Module — Login / Logout / Session Check
+   Auth Module — Supabase-backed login / session
    =================================================== */
 
 const Auth = {
-    STORAGE_KEY: 'aurex_admin_session',
-    PASSWORD_KEY: 'aurex_admin_password',
-    DEFAULT_PASSWORD: 'admin123',
+    SESSION_KEY: 'aurex_admin_session',
 
-    init() {
-        if (!localStorage.getItem(this.PASSWORD_KEY)) {
-            localStorage.setItem(this.PASSWORD_KEY, this.DEFAULT_PASSWORD);
+    async login(email, password) {
+        if (!supabase) {
+            if (!initSupabase()) {
+                console.error('Supabase not loaded');
+                return false;
+            }
         }
-    },
 
-    login(password) {
-        this.init();
-        const stored = localStorage.getItem(this.PASSWORD_KEY);
-        if (password === stored) {
-            const session = { loggedIn: true, timestamp: Date.now() };
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(session));
+        try {
+            const passwordHash = await sha256(password);
+            const { data, error } = await supabase
+                .from('admin_users')
+                .select('*')
+                .eq('email', email)
+                .eq('password_hash', passwordHash)
+                .single();
+
+            if (error || !data) {
+                return false;
+            }
+
+            const session = {
+                loggedIn: true,
+                email: data.email,
+                id: data.id,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
             return true;
+        } catch (err) {
+            console.error('Login error:', err);
+            return false;
         }
-        return false;
     },
 
     logout() {
-        localStorage.removeItem(this.STORAGE_KEY);
+        localStorage.removeItem(this.SESSION_KEY);
         window.location.href = 'index.html';
     },
 
     isLoggedIn() {
-        const session = JSON.parse(localStorage.getItem(this.STORAGE_KEY));
+        const session = JSON.parse(localStorage.getItem(this.SESSION_KEY));
         return session && session.loggedIn === true;
     },
 
@@ -42,12 +58,7 @@ const Auth = {
         return true;
     },
 
-    changePassword(currentPass, newPass) {
-        const stored = localStorage.getItem(this.PASSWORD_KEY);
-        if (currentPass !== stored) return false;
-        localStorage.setItem(this.PASSWORD_KEY, newPass);
-        return true;
+    getSession() {
+        return JSON.parse(localStorage.getItem(this.SESSION_KEY) || '{}');
     }
 };
-
-Auth.init();
