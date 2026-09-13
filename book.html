@@ -167,15 +167,42 @@
                 </form>
             </div>
 
-            <!-- STEP 3 — Booking Confirmed Message -->
-            <div id="bookingConfirmed" style="display:none; max-width:900px; text-align:center; padding:4rem 2rem;">
-                <div class="payment-panel-icon" style="margin:0 auto 1.5rem auto; width:72px; height:72px;">
-                    <i class="fa-solid fa-circle-check" style="font-size:2rem;"></i>
+            <!-- STEP 3 — Booking Status Tracker -->
+            <div id="bookingConfirmed" style="display:none; max-width:700px; margin:0 auto; padding:3rem 2rem;">
+                <div style="text-align:center; margin-bottom:2rem;">
+                    <div class="payment-panel-icon" style="margin:0 auto 1.5rem auto; width:72px; height:72px;">
+                        <i class="fa-solid fa-circle-check" style="font-size:2rem;"></i>
+                    </div>
+                    <h2 id="statusTitle" style="font-weight:300; margin-bottom:0.5rem;">Booking Received!</h2>
+                    <p id="statusSubtitle" style="color:var(--text-muted); max-width:480px; margin:0 auto; line-height:1.7;">Your booking has been saved. See the live status below.</p>
                 </div>
-                <h2 style="font-weight:300; margin-bottom:1rem;">Thank You — We're On It!</h2>
-                <p style="color:var(--text-muted); max-width:520px; margin:0 auto 0.75rem auto; line-height:1.8;">Your payment notification has been sent to our team via WhatsApp. We will review and confirm your booking shortly.</p>
-                <p style="color:var(--text-muted); max-width:520px; margin:0 auto 2rem auto; font-size:0.9rem;">You will receive a confirmation message on WhatsApp or by phone within 30 minutes.</p>
-                <a href="index.html" class="btn-primary" style="display:inline-block;">Return to Home</a>
+
+                <div id="statusTracker" style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:1.5rem;">
+                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                        <span style="font-size:0.78rem; color:var(--text-muted); min-width:80px;">Status:</span>
+                        <span id="statusBadge" class="badge badge-pending" style="font-size:0.88rem; padding:4px 12px;">pending</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                        <span style="font-size:0.78rem; color:var(--text-muted); min-width:80px;">Payment:</span>
+                        <span id="paymentBadge" class="badge badge-unpaid" style="font-size:0.88rem; padding:4px 12px;">unpaid</span>
+                    </div>
+                    <div id="statusNote" style="display:none; padding:0.75rem 1rem; background:var(--bg-input); border-radius:6px; font-size:0.85rem; color:var(--text-muted); margin-top:0.75rem;"></div>
+                    <div style="margin-top:1rem; font-size:0.78rem; color:var(--text-muted);">
+                        <i class="fa-solid fa-rotate" style="margin-right:4px;"></i> Status updates automatically every 10 seconds
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+                    <a href="tel:+447405805932" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none;">
+                        <i class="fa-solid fa-phone"></i> Call Us Now
+                    </a>
+                    <a href="https://wa.me/447405805932" target="_blank" class="btn-whatsapp" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none;">
+                        <i class="fa-brands fa-whatsapp"></i> WhatsApp Us
+                    </a>
+                    <a href="index.html" class="btn-secondary" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none;">
+                        <i class="fa-solid fa-house"></i> Return Home
+                    </a>
+                </div>
             </div>
             <div id="paymentPanel" class="payment-panel" style="display:none; max-width: 900px;">
 
@@ -268,6 +295,9 @@
                     <button id="editBookingBtn" class="btn-secondary" style="width:auto;">
                         <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>Edit Booking Details
                     </button>
+                    <a href="tel:+447405805932" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; margin-left:1rem;">
+                        <i class="fa-solid fa-phone"></i> Call Us
+                    </a>
                 </div>
 
             </div>
@@ -683,21 +713,50 @@
             waBtn.addEventListener('click', () => processBooking(true));
         }
 
+        // ── Show status tracker ─────────────────────────────────────────────────
+        let statusPollInterval = null;
+        let trackedBookingId = null;
+
+        function showStatusTracker(bookingId, title, subtitle) {
+            formSection.style.display = 'none';
+            payPanel.style.display = 'none';
+            document.getElementById('statusTitle').textContent = title || 'Booking Received!';
+            document.getElementById('statusSubtitle').textContent = subtitle || 'Your booking has been saved. See the live status below.';
+            document.getElementById('bookingConfirmed').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (!bookingId) return;
+            trackedBookingId = bookingId;
+            pollBookingStatus(bookingId);
+            if (statusPollInterval) clearInterval(statusPollInterval);
+            statusPollInterval = setInterval(() => pollBookingStatus(bookingId), 10000);
+        }
+
+        async function pollBookingStatus(bookingId) {
+            if (!publicDb || !bookingId) return;
+            try {
+                const { data, error } = await publicDb.from('bookings').select('status, payment, notes').eq('id', bookingId).single();
+                if (error || !data) return;
+                const statusEl = document.getElementById('statusBadge');
+                const payEl = document.getElementById('paymentBadge');
+                const noteEl = document.getElementById('statusNote');
+                if (statusEl) { statusEl.textContent = data.status; statusEl.className = `badge badge-${data.status}`; }
+                if (payEl) { payEl.textContent = data.payment; payEl.className = `badge badge-${data.payment}`; }
+                if (noteEl && data.notes) { noteEl.style.display = 'block'; noteEl.innerHTML = `<strong>Admin note:</strong> ${escapeHtml(data.notes)}`; }
+            } catch (e) { console.warn('Status poll error:', e); }
+        }
+
         // ── Payment success redirect ────────────────────────────────────────────
         if (params.get('payment') === 'success') {
             const pendingBookingId = localStorage.getItem('aurex_pending_booking');
             if (pendingBookingId && publicDb) {
                 publicDb.from('bookings').update({ payment: 'paid', status: 'confirmed', updated_at: new Date().toISOString() }).eq('id', pendingBookingId).then(({ error }) => {
                     if (error) console.warn('Payment status update failed:', error);
-                    localStorage.removeItem('aurex_pending_booking');
                 });
+                localStorage.removeItem('aurex_pending_booking');
+                showStatusTracker(pendingBookingId, 'Payment Received!', 'Your payment has been confirmed. We will send you a booking confirmation shortly.');
+            } else {
+                showStatusTracker(null, 'Payment Received!', 'Your payment has been confirmed. We will send you a booking confirmation shortly.');
             }
-            formSection.style.display = 'none';
-            payPanel.style.display = 'none';
-            document.getElementById('bookingConfirmed').querySelector('h2').textContent = 'Payment Received!';
-            document.getElementById('bookingConfirmed').querySelector('p').textContent = 'Your payment has been confirmed. We will send you a booking confirmation shortly.';
-            document.getElementById('bookingConfirmed').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         } else if (params.get('payment') === 'cancel') {
             // Payment cancelled — show payment panel again
         }
@@ -705,10 +764,10 @@
         // ── Update booking payment in Supabase ─────────────────────────────────
         async function updatePayment(method) {
             const pendingBookingId = localStorage.getItem('aurex_pending_booking');
-            if (!pendingBookingId || !publicDb) return;
+            if (!pendingBookingId || !publicDb) return null;
             const { error } = await publicDb.from('bookings').update({ payment: method, updated_at: new Date().toISOString() }).eq('id', pendingBookingId);
             if (error) console.warn('Payment update failed:', error);
-            localStorage.removeItem('aurex_pending_booking');
+            return pendingBookingId;
         }
 
         function buildPaymentWAMessage(method) {
@@ -724,25 +783,18 @@
 
         // ── Bank Transfer button ──────────────────────────────────────────────
         document.getElementById('bankTransferBtn')?.addEventListener('click', async () => {
-            await updatePayment('bank_transfer');
-            payPanel.style.display = 'none';
-            document.getElementById('bookingConfirmed').querySelector('h2').textContent = 'Bank Transfer Selected';
-            document.getElementById('bookingConfirmed').querySelector('p').textContent = 'Please make the bank transfer using the details above. Your booking will be confirmed once payment is received.';
-            document.getElementById('bookingConfirmed').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            sendBookingEmail();
+            const id = await updatePayment('bank_transfer');
+            localStorage.removeItem('aurex_pending_booking');
+            showStatusTracker(id, 'Bank Transfer Selected', 'Please make the bank transfer using the details shown. Your booking will be confirmed once payment is received.');
         });
 
         // ── Cash button ──────────────────────────────────────────────────────
         document.getElementById('cashConfirmBtn')?.addEventListener('click', async () => {
-            await updatePayment('cash');
+            const id = await updatePayment('cash');
+            localStorage.removeItem('aurex_pending_booking');
             const msg = buildPaymentWAMessage('Cash');
             window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-            payPanel.style.display = 'none';
-            document.getElementById('bookingConfirmed').querySelector('h2').textContent = 'Cash Booking Confirmed';
-            document.getElementById('bookingConfirmed').querySelector('p').textContent = 'Please have the exact cash amount ready for your driver on the day of travel.';
-            document.getElementById('bookingConfirmed').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showStatusTracker(id, 'Cash Booking Confirmed', 'Please have the exact cash amount ready for your driver on the day of travel.');
         });
 
         const stripePayBtn = document.getElementById('stripePayBtn');
