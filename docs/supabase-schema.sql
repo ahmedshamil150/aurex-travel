@@ -7,14 +7,13 @@
 CREATE TABLE IF NOT EXISTS admin_users (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    password TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert default admin (password: admin123)
--- The password_hash is a SHA-256 hash. In production, use bcrypt via an API route.
-INSERT INTO admin_users (email, password_hash)
-VALUES ('admin@aurex.co.uk', encode(sha256('admin123'::bytea), 'hex'))
+-- Insert default admin (email: admin@aurex.co.uk, password: admin123)
+INSERT INTO admin_users (email, password)
+VALUES ('admin@aurex.co.uk', 'admin123')
 ON CONFLICT (email) DO NOTHING;
 
 
