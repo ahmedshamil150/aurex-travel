@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotes — Aurex Admin</title>
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h2>Aurex</h2><span>Admin Panel</span></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="bookings.html"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+                <a href="quotes.html"><i class="fa-solid fa-file-invoice"></i> Quotes</a>
+                <a href="pricing.html"><i class="fa-solid fa-tag"></i> Pricing</a>
+                <a href="drivers.html"><i class="fa-solid fa-id-card"></i> Drivers</a>
+                <a href="vehicles.html"><i class="fa-solid fa-car"></i> Vehicles</a>
+                <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            <div class="sidebar-footer"><a href="#" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <button class="btn btn-outline btn-sm sidebar-toggle" style="display:none;"><i class="fa-solid fa-bars"></i></button>
+                <h1>Quotes</h1>
+                <div class="topbar-actions">
+                    <button class="btn btn-outline btn-sm" onclick="Data.exportCSV('quotes')"><i class="fa-solid fa-download"></i> Export</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="table-wrapper">
+                    <div class="table-header">
+                        <div class="filter-group">
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="Search quotes..." oninput="renderTable()">
+                            </div>
+                            <select id="statusFilter" onchange="renderTable()">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <span id="quoteCount" style="font-size:0.82rem;color:var(--text-muted);"></span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Route</th>
+                                <th>Date/Time</th>
+                                <th>Vehicle</th>
+                                <th>Offered Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quotesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- View / Respond Modal -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Quote Details</h3>
+                <button class="modal-close" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="viewContent"></div>
+            <div class="modal-footer" id="viewFooter"></div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        if (!Auth.requireAuth()) throw new Error('Not authenticated');
+
+        function getFiltered() {
+            let quotes = Data.getQuotes();
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+
+            if (search) {
+                quotes = quotes.filter(q =>
+                    (q.name||'').toLowerCase().includes(search) ||
+                    (q.pickup||'').toLowerCase().includes(search) ||
+                    (q.dropoff||'').toLowerCase().includes(search) ||
+                    (q.mobile||'').toLowerCase().includes(search)
+                );
+            }
+            if (status) quotes = quotes.filter(q => q.status === status);
+            return quotes;
+        }
+
+        function renderTable() {
+            const quotes = getFiltered();
+            document.getElementById('quoteCount').textContent = `${quotes.length} quote${quotes.length !== 1 ? 's' : ''}`;
+            const tbody = document.getElementById('quotesTable');
+
+            if (quotes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-file-circle-xmark"></i><h3>No quotes found</h3></div></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = quotes.map(q => `
+                <tr>
+                    <td><strong>${escapeHtml(q.name)}</strong><br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(q.mobile)}</span></td>
+                    <td>${escapeHtml(q.pickup)} → ${escapeHtml(q.dropoff)}</td>
+                    <td>${escapeHtml(q.date)}<br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(q.time)}</span></td>
+                    <td>${escapeHtml(q.vehicle)}</td>
+                    <td>${q.offeredPrice ? '<strong>' + formatCurrency(q.offeredPrice) + '</strong>' : '<span style="color:var(--text-muted);">—</span>'}</td>
+                    <td><span class="badge badge-${q.status}">${q.status}</span></td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="viewQuote('${q.id}')" title="View"><i class="fa-solid fa-eye"></i></button>
+                        ${q.status === 'pending' ? `
+                            <button class="btn btn-success btn-sm" onclick="respondQuote('${q.id}','accepted')" title="Accept"><i class="fa-solid fa-check"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="respondQuote('${q.id}','rejected')" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                        ` : ''}
+                        <button class="btn btn-danger btn-sm" onclick="deleteQuote('${q.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function respondQuote(id, status) {
+            Data.updateQuote(id, { status });
+            Toast.show(`Quote ${status}`, status === 'accepted' ? 'success' : 'warning');
+            renderTable();
+        }
+
+        function deleteQuote(id) {
+            if (!confirm('Delete this quote?')) return;
+            Data.deleteQuote(id);
+            Toast.show('Quote deleted', 'success');
+            renderTable();
+        }
+
+        function viewQuote(id) {
+            const q = Data.getQuote(id);
+            if (!q) return;
+            document.getElementById('viewContent').innerHTML = `
+                <div class="detail-grid">
+                    <div class="detail-item"><div class="detail-label">Customer</div><div class="detail-value">${escapeHtml(q.name)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Mobile</div><div class="detail-value">${escapeHtml(q.mobile)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Pickup</div><div class="detail-value">${escapeHtml(q.pickup)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Drop-off</div><div class="detail-value">${escapeHtml(q.dropoff)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Date</div><div class="detail-value">${escapeHtml(q.date)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Time</div><div class="detail-value">${escapeHtml(q.time)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Passengers</div><div class="detail-value">${escapeHtml(q.passengers) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Vehicle</div><div class="detail-value">${escapeHtml(q.vehicle)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Offered Price</div><div class="detail-value">${q.offeredPrice ? formatCurrency(q.offeredPrice) : '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-${q.status}">${q.status}</span></div></div>
+                </div>
+                ${q.notes ? `<div style="margin-top:1.5rem;"><div class="detail-label" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:0.5rem;">Notes</div><p>${escapeHtml(q.notes)}</p></div>` : ''}
+            `;
+            const footer = document.getElementById('viewFooter');
+            if (q.status === 'pending') {
+                footer.innerHTML = `
+                    <button class="btn btn-outline" onclick="closeViewModal()">Close</button>
+                    <button class="btn btn-danger" onclick="respondQuote('${q.id}','rejected');closeViewModal();">Reject</button>
+                    <button class="btn btn-accent" onclick="respondQuote('${q.id}','accepted');closeViewModal();">Accept</button>
+                `;
+            } else {
+                footer.innerHTML = '<button class="btn btn-outline" onclick="closeViewModal()">Close</button>';
+            }
+            document.getElementById('viewModal').classList.add('open');
+        }
+
+        function closeViewModal() { document.getElementById('viewModal').classList.remove('open'); }
+        document.getElementById('viewModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeViewModal(); });
+
+        renderTable();
+        if (window.innerWidth <= 900) document.querySelector('.sidebar-toggle').style.display = 'inline-flex';
+        window.addEventListener('resize', () => {
+            document.querySelector('.sidebar-toggle').style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';
+        });
+    </script>
+</body>
+</html>

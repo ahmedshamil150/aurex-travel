@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicles — Aurex Admin</title>
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h2>Aurex</h2><span>Admin Panel</span></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="bookings.html"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+                <a href="quotes.html"><i class="fa-solid fa-file-invoice"></i> Quotes</a>
+                <a href="pricing.html"><i class="fa-solid fa-tag"></i> Pricing</a>
+                <a href="drivers.html"><i class="fa-solid fa-id-card"></i> Drivers</a>
+                <a href="vehicles.html"><i class="fa-solid fa-car"></i> Vehicles</a>
+                <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            <div class="sidebar-footer"><a href="#" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <button class="btn btn-outline btn-sm sidebar-toggle" style="display:none;"><i class="fa-solid fa-bars"></i></button>
+                <h1>Vehicles</h1>
+                <div class="topbar-actions">
+                    <button class="btn btn-outline btn-sm" onclick="Data.exportCSV('vehicles')"><i class="fa-solid fa-download"></i> Export</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="table-wrapper">
+                    <div class="table-header">
+                        <div class="filter-group">
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="Search vehicles..." oninput="renderTable()">
+                            </div>
+                            <select id="statusFilter" onchange="renderTable()">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Driver</th>
+                                <th>Vehicle</th>
+                                <th>Registration</th>
+                                <th>PHVL</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vehiclesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- View Modal -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Vehicle Details</h3>
+                <button class="modal-close" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="viewContent"></div>
+            <div class="modal-footer" id="viewFooter"></div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        if (!Auth.requireAuth()) throw new Error('Not authenticated');
+
+        function getFiltered() {
+            let vehicles = Data.getVehicles();
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+
+            if (search) {
+                vehicles = vehicles.filter(v =>
+                    ((v.driverName||'')).toLowerCase().includes(search) ||
+                    ((v.make||'') + ' ' + (v.model||'')).toLowerCase().includes(search) ||
+                    (v.reg||'').toLowerCase().includes(search)
+                );
+            }
+            if (status) vehicles = vehicles.filter(v => v.status === status);
+            return vehicles;
+        }
+
+        function renderTable() {
+            const vehicles = getFiltered();
+            const tbody = document.getElementById('vehiclesTable');
+
+            if (vehicles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-car"></i><h3>No vehicles found</h3></div></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = vehicles.map(v => `
+                <tr>
+                    <td><strong>${escapeHtml(v.driverName)}</strong><br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(v.driverMobile)}</span></td>
+                    <td>${escapeHtml(v.year)} ${escapeHtml(v.make)} ${escapeHtml(v.model)}<br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(v.colour)}</span></td>
+                    <td><strong>${escapeHtml(v.reg)}</strong></td>
+                    <td>${escapeHtml(v.phvl) || '—'}</td>
+                    <td><span class="badge badge-${v.status === 'approved' ? 'completed' : v.status === 'rejected' ? 'cancelled' : 'pending'}">${v.status}</span></td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="viewVehicle('${v.id}')" title="View"><i class="fa-solid fa-eye"></i></button>
+                        ${v.status === 'pending' ? `
+                            <button class="btn btn-success btn-sm" onclick="updateVehicleStatus('${v.id}','approved')" title="Approve"><i class="fa-solid fa-check"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="updateVehicleStatus('${v.id}','rejected')" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                        ` : ''}
+                        <button class="btn btn-danger btn-sm" onclick="deleteVehicle('${v.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateVehicleStatus(id, status) {
+            Data.updateVehicle(id, { status });
+            Toast.show(`Vehicle ${status}`, status === 'approved' ? 'success' : 'warning');
+            renderTable();
+        }
+
+        function deleteVehicle(id) {
+            if (!confirm('Delete this vehicle registration?')) return;
+            Data.deleteVehicle(id);
+            Toast.show('Vehicle deleted', 'success');
+            renderTable();
+        }
+
+        function viewVehicle(id) {
+            const v = Data.getVehicle(id);
+            if (!v) return;
+            document.getElementById('viewContent').innerHTML = `
+                <div class="detail-grid">
+                    <div class="detail-item"><div class="detail-label">Driver Name</div><div class="detail-value">${escapeHtml(v.driverName)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Driver Mobile</div><div class="detail-value">${escapeHtml(v.driverMobile)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Driver Email</div><div class="detail-value">${escapeHtml(v.driverEmail) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Registration</div><div class="detail-value"><strong>${escapeHtml(v.reg)}</strong></div></div>
+                    <div class="detail-item"><div class="detail-label">Make / Model</div><div class="detail-value">${escapeHtml(v.make)} ${escapeHtml(v.model)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Year</div><div class="detail-value">${escapeHtml(v.year) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Colour</div><div class="detail-value">${escapeHtml(v.colour) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">PHVL</div><div class="detail-value">${escapeHtml(v.phvl) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-${v.status === 'approved' ? 'completed' : v.status === 'rejected' ? 'cancelled' : 'pending'}">${v.status}</span></div></div>
+                    <div class="detail-item"><div class="detail-label">Registered</div><div class="detail-value">${formatDateTime(v.createdAt)}</div></div>
+                </div>
+            `;
+            const footer = document.getElementById('viewFooter');
+            if (v.status === 'pending') {
+                footer.innerHTML = `
+                    <button class="btn btn-outline" onclick="closeViewModal()">Close</button>
+                    <button class="btn btn-danger" onclick="updateVehicleStatus('${v.id}','rejected');closeViewModal();">Reject</button>
+                    <button class="btn btn-accent" onclick="updateVehicleStatus('${v.id}','approved');closeViewModal();">Approve</button>
+                `;
+            } else {
+                footer.innerHTML = '<button class="btn btn-outline" onclick="closeViewModal()">Close</button>';
+            }
+            document.getElementById('viewModal').classList.add('open');
+        }
+
+        function closeViewModal() { document.getElementById('viewModal').classList.remove('open'); }
+        document.getElementById('viewModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeViewModal(); });
+
+        renderTable();
+        if (window.innerWidth <= 900) document.querySelector('.sidebar-toggle').style.display = 'inline-flex';
+        window.addEventListener('resize', () => {
+            document.querySelector('.sidebar-toggle').style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';
+        });
+    </script>
+</body>
+</html>

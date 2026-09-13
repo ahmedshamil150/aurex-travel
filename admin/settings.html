@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings — Aurex Admin</title>
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h2>Aurex</h2><span>Admin Panel</span></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="bookings.html"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+                <a href="quotes.html"><i class="fa-solid fa-file-invoice"></i> Quotes</a>
+                <a href="pricing.html"><i class="fa-solid fa-tag"></i> Pricing</a>
+                <a href="drivers.html"><i class="fa-solid fa-id-card"></i> Drivers</a>
+                <a href="vehicles.html"><i class="fa-solid fa-car"></i> Vehicles</a>
+                <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            <div class="sidebar-footer"><a href="#" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <button class="btn btn-outline btn-sm sidebar-toggle" style="display:none;"><i class="fa-solid fa-bars"></i></button>
+                <h1>Settings</h1>
+            </div>
+
+            <div class="content">
+                <!-- Change Password -->
+                <div class="table-wrapper" style="margin-bottom:1.5rem;">
+                    <div class="table-header"><h2>Change Password</h2></div>
+                    <div style="padding:1.5rem;max-width:400px;">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPass">
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPass">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPass">
+                        </div>
+                        <button class="btn btn-accent" onclick="changePassword()">Update Password</button>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="table-wrapper" style="margin-bottom:1.5rem;">
+                    <div class="table-header"><h2>Data Management</h2></div>
+                    <div style="padding:1.5rem;">
+                        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                            <button class="btn btn-outline" onclick="Data.exportCSV('bookings')"><i class="fa-solid fa-download"></i> Export Bookings</button>
+                            <button class="btn btn-outline" onclick="Data.exportCSV('quotes')"><i class="fa-solid fa-download"></i> Export Quotes</button>
+                            <button class="btn btn-outline" onclick="Data.exportCSV('drivers')"><i class="fa-solid fa-download"></i> Export Drivers</button>
+                            <button class="btn btn-outline" onclick="Data.exportCSV('vehicles')"><i class="fa-solid fa-download"></i> Export Vehicles</button>
+                        </div>
+                        <p style="font-size:0.82rem;color:var(--text-muted);margin-top:1rem;">Exports are CSV files that can be opened in Excel or Google Sheets.</p>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="table-wrapper" style="border-color:var(--danger);">
+                    <div class="table-header" style="border-bottom-color:var(--danger);"><h2 style="color:var(--danger);">Danger Zone</h2></div>
+                    <div style="padding:1.5rem;">
+                        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+                            <button class="btn btn-danger" onclick="clearAllData()"><i class="fa-solid fa-trash"></i> Clear All Data</button>
+                            <button class="btn btn-outline" onclick="resetSampleData()"><i class="fa-solid fa-rotate-left"></i> Load Sample Data</button>
+                        </div>
+                        <p style="font-size:0.82rem;color:var(--text-muted);margin-top:1rem;">Clearing data removes all bookings, quotes, drivers, and vehicles from localStorage. This cannot be undone.</p>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="table-wrapper" style="margin-top:1.5rem;">
+                    <div class="table-header"><h2>System Info</h2></div>
+                    <div style="padding:1.5rem;">
+                        <div class="detail-grid">
+                            <div class="detail-item"><div class="detail-label">Version</div><div class="detail-value">1.0.0</div></div>
+                            <div class="detail-item"><div class="detail-label">Storage</div><div class="detail-value" id="storageUsed">Calculating...</div></div>
+                            <div class="detail-item"><div class="detail-label">Bookings</div><div class="detail-value" id="infoBookings">0</div></div>
+                            <div class="detail-item"><div class="detail-label">Quotes</div><div class="detail-value" id="infoQuotes">0</div></div>
+                            <div class="detail-item"><div class="detail-label">Drivers</div><div class="detail-value" id="infoDrivers">0</div></div>
+                            <div class="detail-item"><div class="detail-label">Vehicles</div><div class="detail-value" id="infoVehicles">0</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        if (!Auth.requireAuth()) throw new Error('Not authenticated');
+
+        function changePassword() {
+            const current = document.getElementById('currentPass').value;
+            const newP = document.getElementById('newPass').value;
+            const confirm = document.getElementById('confirmPass').value;
+
+            if (!current || !newP) {
+                Toast.show('Please fill in all fields', 'error');
+                return;
+            }
+            if (newP !== confirm) {
+                Toast.show('New passwords do not match', 'error');
+                return;
+            }
+            if (newP.length < 4) {
+                Toast.show('Password must be at least 4 characters', 'error');
+                return;
+            }
+            if (Auth.changePassword(current, newP)) {
+                Toast.show('Password updated', 'success');
+                document.getElementById('currentPass').value = '';
+                document.getElementById('newPass').value = '';
+                document.getElementById('confirmPass').value = '';
+            } else {
+                Toast.show('Current password is incorrect', 'error');
+            }
+        }
+
+        function clearAllData() {
+            if (!confirm('Are you sure? This will delete ALL data and cannot be undone.')) return;
+            if (!confirm('Really delete everything?')) return;
+            localStorage.removeItem('aurex_bookings');
+            localStorage.removeItem('aurex_quotes');
+            localStorage.removeItem('aurex_drivers');
+            localStorage.removeItem('aurex_vehicles');
+            Toast.show('All data cleared', 'success');
+            updateSystemInfo();
+        }
+
+        function resetSampleData() {
+            localStorage.removeItem('aurex_bookings');
+            localStorage.removeItem('aurex_quotes');
+            localStorage.removeItem('aurex_drivers');
+            localStorage.removeItem('aurex_vehicles');
+            Data.seedSampleData();
+            updateSystemInfo();
+        }
+
+        function updateSystemInfo() {
+            document.getElementById('infoBookings').textContent = Data.getBookings().length;
+            document.getElementById('infoQuotes').textContent = Data.getQuotes().length;
+            document.getElementById('infoDrivers').textContent = Data.getDrivers().length;
+            document.getElementById('infoVehicles').textContent = Data.getVehicles().length;
+
+            let total = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key) && key.startsWith('aurex_')) {
+                    total += localStorage.getItem(key).length * 2;
+                }
+            }
+            document.getElementById('storageUsed').textContent = total > 1024 ? (total / 1024).toFixed(1) + ' KB' : total + ' B';
+        }
+
+        updateSystemInfo();
+        if (window.innerWidth <= 900) document.querySelector('.sidebar-toggle').style.display = 'inline-flex';
+        window.addEventListener('resize', () => {
+            document.querySelector('.sidebar-toggle').style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';
+        });
+    </script>
+</body>
+</html>

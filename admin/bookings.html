@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookings — Aurex Admin</title>
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h2>Aurex</h2><span>Admin Panel</span></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="bookings.html"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+                <a href="quotes.html"><i class="fa-solid fa-file-invoice"></i> Quotes</a>
+                <a href="pricing.html"><i class="fa-solid fa-tag"></i> Pricing</a>
+                <a href="drivers.html"><i class="fa-solid fa-id-card"></i> Drivers</a>
+                <a href="vehicles.html"><i class="fa-solid fa-car"></i> Vehicles</a>
+                <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            <div class="sidebar-footer"><a href="#" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <button class="btn btn-outline btn-sm sidebar-toggle" style="display:none;"><i class="fa-solid fa-bars"></i></button>
+                <h1>Bookings</h1>
+                <div class="topbar-actions">
+                    <button class="btn btn-outline btn-sm" onclick="Data.exportCSV('bookings')"><i class="fa-solid fa-download"></i> Export</button>
+                    <button class="btn btn-accent btn-sm" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Add Booking</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="table-wrapper">
+                    <div class="table-header">
+                        <div class="filter-group">
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="Search bookings..." oninput="renderTable()">
+                            </div>
+                            <select id="statusFilter" onchange="renderTable()">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <select id="paymentFilter" onchange="renderTable()">
+                                <option value="">All Payments</option>
+                                <option value="paid">Paid</option>
+                                <option value="unpaid">Unpaid</option>
+                            </select>
+                        </div>
+                        <div class="table-actions">
+                            <span id="bookingCount" style="font-size:0.82rem;color:var(--text-muted);"></span>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Route</th>
+                                <th>Date/Time</th>
+                                <th>Vehicle</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Booking</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="fName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile *</label>
+                        <input type="text" id="fMobile" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="fEmail">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pickup Address *</label>
+                        <input type="text" id="fPickup" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Drop-off Address *</label>
+                        <input type="text" id="fDropoff" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Airport</label>
+                        <select id="fAirport">
+                            <option value="">None</option>
+                            <option>Heathrow</option><option>Gatwick</option><option>Bristol</option>
+                            <option>Cardiff Airport</option><option>Birmingham</option><option>Manchester</option>
+                            <option>Stansted</option><option>Luton</option><option>London City</option><option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Flight Number</label>
+                        <input type="text" id="fFlight">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="fDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time *</label>
+                        <input type="time" id="fTime" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Passengers</label>
+                        <input type="number" id="fPassengers" min="1" max="7" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Suitcases</label>
+                        <input type="number" id="fSuitcases" min="0" max="10" value="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Vehicle *</label>
+                        <select id="fVehicle" required>
+                            <option value="">Select</option>
+                            <option>Tesla Model Y</option>
+                            <option>Mercedes E-Class</option>
+                            <option>Mercedes V-Class</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (£)</label>
+                        <input type="number" id="fAmount" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="fStatus">
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment</label>
+                        <select id="fPayment">
+                            <option value="unpaid">Unpaid</option>
+                            <option value="paid">Paid</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="fNotes" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-accent" onclick="saveBooking()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Modal -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Booking Details</h3>
+                <button class="modal-close" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="viewContent"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeViewModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        if (!Auth.requireAuth()) throw new Error('Not authenticated');
+
+        function getFiltered() {
+            let bookings = Data.getBookings();
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const payment = document.getElementById('paymentFilter').value;
+
+            if (search) {
+                bookings = bookings.filter(b =>
+                    (b.name||'').toLowerCase().includes(search) ||
+                    (b.pickup||'').toLowerCase().includes(search) ||
+                    (b.dropoff||'').toLowerCase().includes(search) ||
+                    (b.email||'').toLowerCase().includes(search) ||
+                    (b.mobile||'').toLowerCase().includes(search)
+                );
+            }
+            if (status) bookings = bookings.filter(b => b.status === status);
+            if (payment) bookings = bookings.filter(b => b.payment === payment);
+            return bookings;
+        }
+
+        function renderTable() {
+            const bookings = getFiltered();
+            document.getElementById('bookingCount').textContent = `${bookings.length} booking${bookings.length !== 1 ? 's' : ''}`;
+            const tbody = document.getElementById('bookingsTable');
+
+            if (bookings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-calendar-xmark"></i><h3>No bookings found</h3><p>Try adjusting your filters</p></div></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = bookings.map(b => `
+                <tr>
+                    <td><strong>${escapeHtml(b.name)}</strong><br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(b.mobile)}</span></td>
+                    <td style="max-width:200px;">${escapeHtml(b.pickup)} → ${escapeHtml(b.dropoff)}</td>
+                    <td>${escapeHtml(b.date)}<br><span style="font-size:0.78rem;color:var(--text-muted);">${escapeHtml(b.time)}</span></td>
+                    <td>${escapeHtml(b.vehicle)}</td>
+                    <td><strong>${formatCurrency(b.amount)}</strong></td>
+                    <td><span class="badge badge-${b.status}">${b.status}</span></td>
+                    <td><span class="badge badge-${b.payment}">${b.payment}</span></td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="viewBooking('${b.id}')" title="View"><i class="fa-solid fa-eye"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="editBooking('${b.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteBooking('${b.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Add Booking';
+            document.getElementById('editId').value = '';
+            ['fName','fMobile','fEmail','fPickup','fDropoff','fFlight','fNotes','fAmount'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('fAirport').value = '';
+            document.getElementById('fDate').value = '';
+            document.getElementById('fTime').value = '';
+            document.getElementById('fPassengers').value = '1';
+            document.getElementById('fSuitcases').value = '0';
+            document.getElementById('fVehicle').value = '';
+            document.getElementById('fStatus').value = 'pending';
+            document.getElementById('fPayment').value = 'unpaid';
+            document.getElementById('bookingModal').classList.add('open');
+        }
+
+        function editBooking(id) {
+            const b = Data.getBooking(id);
+            if (!b) return;
+            document.getElementById('modalTitle').textContent = 'Edit Booking';
+            document.getElementById('editId').value = id;
+            document.getElementById('fName').value = b.name || '';
+            document.getElementById('fMobile').value = b.mobile || '';
+            document.getElementById('fEmail').value = b.email || '';
+            document.getElementById('fPickup').value = b.pickup || '';
+            document.getElementById('fDropoff').value = b.dropoff || '';
+            document.getElementById('fAirport').value = b.airport || '';
+            document.getElementById('fFlight').value = b.flight || '';
+            document.getElementById('fDate').value = b.date || '';
+            document.getElementById('fTime').value = b.time || '';
+            document.getElementById('fPassengers').value = b.passengers || 1;
+            document.getElementById('fSuitcases').value = b.suitcases || 0;
+            document.getElementById('fVehicle').value = b.vehicle || '';
+            document.getElementById('fAmount').value = b.amount || '';
+            document.getElementById('fStatus').value = b.status || 'pending';
+            document.getElementById('fPayment').value = b.payment || 'unpaid';
+            document.getElementById('fNotes').value = b.notes || '';
+            document.getElementById('bookingModal').classList.add('open');
+        }
+
+        function saveBooking() {
+            const id = document.getElementById('editId').value;
+            const data = {
+                name: document.getElementById('fName').value.trim(),
+                mobile: document.getElementById('fMobile').value.trim(),
+                email: document.getElementById('fEmail').value.trim(),
+                pickup: document.getElementById('fPickup').value.trim(),
+                dropoff: document.getElementById('fDropoff').value.trim(),
+                airport: document.getElementById('fAirport').value,
+                flight: document.getElementById('fFlight').value.trim(),
+                date: document.getElementById('fDate').value,
+                time: document.getElementById('fTime').value,
+                passengers: document.getElementById('fPassengers').value,
+                suitcases: document.getElementById('fSuitcases').value,
+                vehicle: document.getElementById('fVehicle').value,
+                amount: document.getElementById('fAmount').value,
+                status: document.getElementById('fStatus').value,
+                payment: document.getElementById('fPayment').value,
+                notes: document.getElementById('fNotes').value.trim()
+            };
+
+            if (!data.name || !data.pickup || !data.dropoff || !data.date || !data.time || !data.vehicle) {
+                Toast.show('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (id) {
+                Data.updateBooking(id, data);
+                Toast.show('Booking updated', 'success');
+            } else {
+                Data.addBooking(data);
+                Toast.show('Booking created', 'success');
+            }
+            closeModal();
+            renderTable();
+        }
+
+        function deleteBooking(id) {
+            if (!confirm('Are you sure you want to delete this booking?')) return;
+            Data.deleteBooking(id);
+            Toast.show('Booking deleted', 'success');
+            renderTable();
+        }
+
+        function viewBooking(id) {
+            const b = Data.getBooking(id);
+            if (!b) return;
+            document.getElementById('viewContent').innerHTML = `
+                <div class="detail-grid">
+                    <div class="detail-item"><div class="detail-label">Customer</div><div class="detail-value">${escapeHtml(b.name)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Mobile</div><div class="detail-value">${escapeHtml(b.mobile)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value">${escapeHtml(b.email) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Vehicle</div><div class="detail-value">${escapeHtml(b.vehicle)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Pickup</div><div class="detail-value">${escapeHtml(b.pickup)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Drop-off</div><div class="detail-value">${escapeHtml(b.dropoff)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Airport</div><div class="detail-value">${escapeHtml(b.airport) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Flight</div><div class="detail-value">${escapeHtml(b.flight) || '—'}</div></div>
+                    <div class="detail-item"><div class="detail-label">Date</div><div class="detail-value">${escapeHtml(b.date)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Time</div><div class="detail-value">${escapeHtml(b.time)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Passengers</div><div class="detail-value">${escapeHtml(b.passengers)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Suitcases</div><div class="detail-value">${escapeHtml(b.suitcases)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Amount</div><div class="detail-value">${formatCurrency(b.amount)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-${b.status}">${b.status}</span></div></div>
+                    <div class="detail-item"><div class="detail-label">Payment</div><div class="detail-value"><span class="badge badge-${b.payment}">${b.payment}</span></div></div>
+                    <div class="detail-item"><div class="detail-label">Created</div><div class="detail-value">${formatDateTime(b.createdAt)}</div></div>
+                </div>
+                ${b.notes ? `<div style="margin-top:1.5rem;"><div class="detail-label" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:0.5rem;">Notes</div><p style="font-size:0.88rem;">${escapeHtml(b.notes)}</p></div>` : ''}
+            `;
+            document.getElementById('viewModal').classList.add('open');
+        }
+
+        function closeModal() { document.getElementById('bookingModal').classList.remove('open'); }
+        function closeViewModal() { document.getElementById('viewModal').classList.remove('open'); }
+
+        document.getElementById('bookingModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+        document.getElementById('viewModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeViewModal(); });
+
+        renderTable();
+
+        if (window.innerWidth <= 900) document.querySelector('.sidebar-toggle').style.display = 'inline-flex';
+        window.addEventListener('resize', () => {
+            document.querySelector('.sidebar-toggle').style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';
+        });
+    </script>
+</body>
+</html>

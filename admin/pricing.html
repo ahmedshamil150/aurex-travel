@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing — Aurex Admin</title>
+    <link rel="icon" type="image/png" href="../images/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h2>Aurex</h2><span>Admin Panel</span></div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="bookings.html"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+                <a href="quotes.html"><i class="fa-solid fa-file-invoice"></i> Quotes</a>
+                <a href="pricing.html"><i class="fa-solid fa-tag"></i> Pricing</a>
+                <a href="drivers.html"><i class="fa-solid fa-id-card"></i> Drivers</a>
+                <a href="vehicles.html"><i class="fa-solid fa-car"></i> Vehicles</a>
+                <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            <div class="sidebar-footer"><a href="#" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <button class="btn btn-outline btn-sm sidebar-toggle" style="display:none;"><i class="fa-solid fa-bars"></i></button>
+                <h1>Pricing</h1>
+                <div class="topbar-actions">
+                    <button class="btn btn-accent btn-sm" onclick="addRow()"><i class="fa-solid fa-plus"></i> Add Route</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="table-wrapper">
+                    <div class="table-header">
+                        <h2>Fixed Route Prices</h2>
+                        <div class="table-actions">
+                            <button class="btn btn-outline btn-sm" onclick="resetDefaults()"><i class="fa-solid fa-rotate-left"></i> Reset Defaults</button>
+                            <button class="btn btn-accent btn-sm" onclick="savePricing()"><i class="fa-solid fa-check"></i> Save All</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Route</th>
+                                <th>Saloon Price (£)</th>
+                                <th>MPV / 7-Seater Price (£)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pricingTable"></tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top:2rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--accent);">
+                    <p style="font-size:0.88rem;color:var(--text-muted);"><strong style="color:var(--text);">Note:</strong> These prices are stored locally in the admin panel. After saving, update <code style="background:var(--bg-input);padding:2px 6px;font-size:0.82rem;">script.js</code> and <code style="background:var(--bg-input);padding:2px 6px;font-size:0.82rem;">prices.html</code> on the main website to reflect changes.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        if (!Auth.requireAuth()) throw new Error('Not authenticated');
+
+        let pricing = Data.getPricing();
+
+        function renderTable() {
+            const tbody = document.getElementById('pricingTable');
+            if (pricing.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><i class="fa-solid fa-tag"></i><h3>No routes configured</h3></div></td></tr>';
+                return;
+            }
+            tbody.innerHTML = pricing.map((p, i) => `
+                <tr>
+                    <td><input type="text" value="${escapeHtml(p.route)}" onchange="pricing[${i}].route=this.value" style="background:transparent;border:none;color:var(--text);font-size:0.88rem;width:100%;"></td>
+                    <td><input type="number" value="${p.saloon}" onchange="pricing[${i}].saloon=parseFloat(this.value)||0" style="background:transparent;border:none;color:var(--accent);font-size:1rem;font-weight:600;width:100px;"></td>
+                    <td><input type="number" value="${p.mpv}" onchange="pricing[${i}].mpv=parseFloat(this.value)||0" style="background:transparent;border:none;color:var(--accent);font-size:1rem;font-weight:600;width:100px;"></td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeRow(${i})"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        function addRow() {
+            pricing.push({ id: 'custom-' + Date.now(), route: 'New Route', saloon: 0, mpv: 0 });
+            renderTable();
+        }
+
+        function removeRow(idx) {
+            pricing.splice(idx, 1);
+            renderTable();
+        }
+
+        function savePricing() {
+            Data.updatePricing(pricing);
+            Toast.show('Pricing saved', 'success');
+        }
+
+        function resetDefaults() {
+            if (!confirm('Reset to default prices?')) return;
+            pricing = Data._getDefaultPricing();
+            Data.updatePricing(pricing);
+            renderTable();
+            Toast.show('Prices reset to defaults', 'success');
+        }
+
+        renderTable();
+        if (window.innerWidth <= 900) document.querySelector('.sidebar-toggle').style.display = 'inline-flex';
+        window.addEventListener('resize', () => {
+            document.querySelector('.sidebar-toggle').style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';
+        });
+    </script>
+</body>
+</html>
