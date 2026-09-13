@@ -8,46 +8,32 @@ const Auth = {
     ADMIN_PASSWORD: 'admin123',
 
     async login(email, password) {
-        if (!supabase) {
-            if (!initSupabase()) {
-                console.error('Supabase not loaded');
-                return false;
-            }
+        if (!db) {
+            if (!initSupabase()) return false;
         }
 
         try {
-            // Query admin_users table
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('admin_users')
                 .select('*')
                 .eq('email', email)
                 .eq('password', password)
                 .single();
 
-            if (error) {
-                console.error('Login query error:', error);
-                // If table doesn't exist or query fails, fall back to hardcoded check
+            if (error || !data) {
                 if (email === this.ADMIN_EMAIL && password === this.ADMIN_PASSWORD) {
-                    const session = { loggedIn: true, email: email, timestamp: Date.now() };
-                    localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+                    localStorage.setItem(this.SESSION_KEY, JSON.stringify({ loggedIn: true, email, timestamp: Date.now() }));
                     return true;
                 }
                 return false;
             }
 
-            if (data) {
-                const session = { loggedIn: true, email: data.email, timestamp: Date.now() };
-                localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-                return true;
-            }
-
-            return false;
+            localStorage.setItem(this.SESSION_KEY, JSON.stringify({ loggedIn: true, email: data.email, timestamp: Date.now() }));
+            return true;
         } catch (err) {
             console.error('Login error:', err);
-            // Fallback to hardcoded check
             if (email === this.ADMIN_EMAIL && password === this.ADMIN_PASSWORD) {
-                const session = { loggedIn: true, email: email, timestamp: Date.now() };
-                localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+                localStorage.setItem(this.SESSION_KEY, JSON.stringify({ loggedIn: true, email, timestamp: Date.now() }));
                 return true;
             }
             return false;

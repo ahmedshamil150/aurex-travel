@@ -3,10 +3,11 @@
    =================================================== */
 
 const Data = {
-    // ── Generic helpers ──────────────────────────────────────
     async _query(table, options = {}) {
-        if (!supabase) initSupabase();
-        let query = supabase.from(table).select(options.select || '*');
+        if (!db) initSupabase();
+        if (!db) return [];
+
+        let query = db.from(table).select(options.select || '*');
 
         if (options.filter) {
             options.filter.forEach(f => {
@@ -55,57 +56,39 @@ const Data = {
     },
 
     async getBooking(id) {
-        const { data, error } = await supabase.from('bookings').select('*').eq('id', id).single();
+        const { data, error } = await db.from('bookings').select('*').eq('id', id).single();
         if (error) return null;
         return data;
     },
 
     async addBooking(data) {
-        const { data: result, error } = await supabase
+        const { data: result, error } = await db
             .from('bookings')
             .insert({
-                name: data.name,
-                mobile: data.mobile,
-                email: data.email,
-                pickup: data.pickup,
-                dropoff: data.dropoff,
-                airport: data.airport,
-                flight: data.flight,
-                date: data.date,
-                time: data.time,
-                passengers: data.passengers,
-                suitcases: data.suitcases,
-                vehicle: data.vehicle,
-                amount: data.amount,
-                status: data.status || 'pending',
-                payment: data.payment || 'unpaid',
+                name: data.name, mobile: data.mobile, email: data.email,
+                pickup: data.pickup, dropoff: data.dropoff, airport: data.airport,
+                flight: data.flight, date: data.date, time: data.time,
+                passengers: data.passengers, suitcases: data.suitcases,
+                vehicle: data.vehicle, amount: data.amount,
+                status: data.status || 'pending', payment: data.payment || 'unpaid',
                 notes: data.notes
             })
-            .select()
-            .single();
-        if (error) {
-            console.error('Add booking error:', error);
-            return null;
-        }
+            .select().single();
+        if (error) { console.error('Add booking error:', error); return null; }
         return result;
     },
 
     async updateBooking(id, updates) {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('bookings')
             .update({ ...updates, updated_at: new Date().toISOString() })
-            .eq('id', id)
-            .select()
-            .single();
-        if (error) {
-            console.error('Update booking error:', error);
-            return null;
-        }
+            .eq('id', id).select().single();
+        if (error) { console.error('Update booking error:', error); return null; }
         return data;
     },
 
     async deleteBooking(id) {
-        const { error } = await supabase.from('bookings').delete().eq('id', id);
+        const { error } = await db.from('bookings').delete().eq('id', id);
         if (error) console.error('Delete booking error:', error);
     },
 
@@ -127,53 +110,37 @@ const Data = {
     },
 
     async getQuote(id) {
-        const { data, error } = await supabase.from('quotes').select('*').eq('id', id).single();
+        const { data, error } = await db.from('quotes').select('*').eq('id', id).single();
         if (error) return null;
         return data;
     },
 
     async addQuote(data) {
-        const { data: result, error } = await supabase
+        const { data: result, error } = await db
             .from('quotes')
             .insert({
-                name: data.name,
-                mobile: data.mobile,
-                email: data.email,
-                pickup: data.pickup,
-                dropoff: data.dropoff,
-                date: data.date,
-                time: data.time,
-                passengers: data.passengers,
-                vehicle: data.vehicle,
-                offered_price: data.offered_price,
-                notes: data.notes,
-                status: data.status || 'pending'
+                name: data.name, mobile: data.mobile, email: data.email,
+                pickup: data.pickup, dropoff: data.dropoff,
+                date: data.date, time: data.time, passengers: data.passengers,
+                vehicle: data.vehicle, offered_price: data.offered_price,
+                notes: data.notes, status: data.status || 'pending'
             })
-            .select()
-            .single();
-        if (error) {
-            console.error('Add quote error:', error);
-            return null;
-        }
+            .select().single();
+        if (error) { console.error('Add quote error:', error); return null; }
         return result;
     },
 
     async updateQuote(id, updates) {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('quotes')
             .update({ ...updates, updated_at: new Date().toISOString() })
-            .eq('id', id)
-            .select()
-            .single();
-        if (error) {
-            console.error('Update quote error:', error);
-            return null;
-        }
+            .eq('id', id).select().single();
+        if (error) { console.error('Update quote error:', error); return null; }
         return data;
     },
 
     async deleteQuote(id) {
-        const { error } = await supabase.from('quotes').delete().eq('id', id);
+        const { error } = await db.from('quotes').delete().eq('id', id);
         if (error) console.error('Delete quote error:', error);
     },
 
@@ -195,31 +162,22 @@ const Data = {
     },
 
     async getDriver(id) {
-        const { data, error } = await supabase.from('drivers').select('*').eq('id', id).single();
+        const { data, error } = await db.from('drivers').select('*').eq('id', id).single();
         if (error) return null;
         return data;
     },
 
     async addDriver(data) {
-        const { data: result, error } = await supabase
+        const { data: result, error } = await db
             .from('drivers')
             .insert({
-                first_name: data.firstName,
-                last_name: data.lastName,
-                mobile: data.mobile,
-                email: data.email,
-                phdl: data.phdl,
-                dbs_status: data.dbs,
-                experience: data.experience,
-                notes: data.notes,
-                status: data.status || 'pending'
+                first_name: data.firstName, last_name: data.lastName,
+                mobile: data.mobile, email: data.email, phdl: data.phdl,
+                dbs_status: data.dbs, experience: data.experience,
+                notes: data.notes, status: data.status || 'pending'
             })
-            .select()
-            .single();
-        if (error) {
-            console.error('Add driver error:', error);
-            return null;
-        }
+            .select().single();
+        if (error) { console.error('Add driver error:', error); return null; }
         return result;
     },
 
@@ -236,21 +194,16 @@ const Data = {
         if (updates.notes) dbUpdates.notes = updates.notes;
         dbUpdates.updated_at = new Date().toISOString();
 
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('drivers')
             .update(dbUpdates)
-            .eq('id', id)
-            .select()
-            .single();
-        if (error) {
-            console.error('Update driver error:', error);
-            return null;
-        }
+            .eq('id', id).select().single();
+        if (error) { console.error('Update driver error:', error); return null; }
         return data;
     },
 
     async deleteDriver(id) {
-        const { error } = await supabase.from('drivers').delete().eq('id', id);
+        const { error } = await db.from('drivers').delete().eq('id', id);
         if (error) console.error('Delete driver error:', error);
     },
 
@@ -272,33 +225,22 @@ const Data = {
     },
 
     async getVehicle(id) {
-        const { data, error } = await supabase.from('vehicles').select('*').eq('id', id).single();
+        const { data, error } = await db.from('vehicles').select('*').eq('id', id).single();
         if (error) return null;
         return data;
     },
 
     async addVehicle(data) {
-        const { data: result, error } = await supabase
+        const { data: result, error } = await db
             .from('vehicles')
             .insert({
-                driver_name: data.driverName,
-                driver_mobile: data.driverMobile,
-                driver_email: data.driverEmail,
-                reg: data.reg,
-                make: data.make,
-                model: data.model,
-                year: data.year,
-                colour: data.colour,
-                phvl: data.phvl,
-                notes: data.notes,
-                status: data.status || 'pending'
+                driver_name: data.driverName, driver_mobile: data.driverMobile,
+                driver_email: data.driverEmail, reg: data.reg, make: data.make,
+                model: data.model, year: data.year, colour: data.colour,
+                phvl: data.phvl, notes: data.notes, status: data.status || 'pending'
             })
-            .select()
-            .single();
-        if (error) {
-            console.error('Add vehicle error:', error);
-            return null;
-        }
+            .select().single();
+        if (error) { console.error('Add vehicle error:', error); return null; }
         return result;
     },
 
@@ -317,39 +259,31 @@ const Data = {
         if (updates.notes) dbUpdates.notes = updates.notes;
         dbUpdates.updated_at = new Date().toISOString();
 
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('vehicles')
             .update(dbUpdates)
-            .eq('id', id)
-            .select()
-            .single();
-        if (error) {
-            console.error('Update vehicle error:', error);
-            return null;
-        }
+            .eq('id', id).select().single();
+        if (error) { console.error('Update vehicle error:', error); return null; }
         return data;
     },
 
     async deleteVehicle(id) {
-        const { error } = await supabase.from('vehicles').delete().eq('id', id);
+        const { error } = await db.from('vehicles').delete().eq('id', id);
         if (error) console.error('Delete vehicle error:', error);
     },
 
     // ── Pricing ──────────────────────────────────────────────
     async getPricing() {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('pricing')
             .select('*')
             .order('sort_order', { ascending: true });
-        if (error) {
-            console.error('Get pricing error:', error);
-            return [];
-        }
+        if (error) { console.error('Get pricing error:', error); return []; }
         return data || [];
     },
 
     async updatePricingRow(id, updates) {
-        const { error } = await supabase
+        const { error } = await db
             .from('pricing')
             .update({ route: updates.route, saloon: updates.saloon, mpv: updates.mpv })
             .eq('id', id);
@@ -357,20 +291,16 @@ const Data = {
     },
 
     async addPricingRow(route, saloon, mpv) {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('pricing')
             .insert({ route, saloon, mpv, sort_order: 99 })
-            .select()
-            .single();
-        if (error) {
-            console.error('Add pricing error:', error);
-            return null;
-        }
+            .select().single();
+        if (error) { console.error('Add pricing error:', error); return null; }
         return data;
     },
 
     async deletePricingRow(id) {
-        const { error } = await supabase.from('pricing').delete().eq('id', id);
+        const { error } = await db.from('pricing').delete().eq('id', id);
         if (error) console.error('Delete pricing error:', error);
     },
 
